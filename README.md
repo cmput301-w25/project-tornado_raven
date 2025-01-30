@@ -1,15 +1,15 @@
-# CMPUT 301 W25 - Team [Team Name]
+# CMPUT 301 W25 - Team Lava Surfers
 
 ## Team Members
 
-| Name        | CCID   | GitHub Username |
-| ----------- | ------ | --------------- |
-| Chenqi Yang | chenqi3 | OnionRingPro     |
-| [Full Name] | [CCID] | [@username]     |
-| [Full Name] | [CCID] | [@username]     |
-| [Full Name] | [CCID] | [@username]     |
-| [Full Name] | [CCID] | [@username]     |
-| [Full Name] | [CCID] | [@username]     |
+| Name          | CCID     | GitHub Username |
+|---------------|----------| --------------- |
+| Chenqi Yang   | chenqi3  | OnionRingPro     |
+| Jingtao Zhang | jingtao3 | J1ngta0Z887     |
+| [Full Name]   | [CCID]   | [@username]     |
+| [Full Name]   | [CCID]   | [@username]     |
+| [Full Name]   | [CCID]   | [@username]     |
+| [Full Name]   | [CCID]   | [@username]     |
 
 ## Project Description
 
