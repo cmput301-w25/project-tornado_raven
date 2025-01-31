@@ -9,7 +9,7 @@
 | Lucy Jing          | luping2  | Lucy-Jing        |
 | Anraj Singh Dhanju        | anraj   | AnrajSinghDhanju     |
 | Ishan Moudgil      | imoudgil | imoudgil         |
-| [Full Name]        | [CCID]   | [@username]      |
+| Rosie Wang         | yiru15   | cool799      |
 
 ## Project Description
 
