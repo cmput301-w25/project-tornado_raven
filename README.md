@@ -6,7 +6,7 @@
 |---------------|----------| --------------- |
 | Chenqi Yang   | chenqi3  | OnionRingPro     |
 | Jingtao Zhang | jingtao3 | J1ngta0Z887     |
-| [Full Name]   | [CCID]   | [@username]     |
+| Lucy Jing     | luping2  | Lucy-Jing       |
 | [Full Name]   | [CCID]   | [@username]     |
 | [Full Name]   | [CCID]   | [@username]     |
 | [Full Name]   | [CCID]   | [@username]     |
