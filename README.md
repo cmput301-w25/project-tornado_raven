@@ -7,7 +7,7 @@
 | Chenqi Yang        | chenqi3  | OnionRingPro     |
 | Jingtao Zhang      | jingtao3 | J1ngta0Z887      |
 | Lucy Jing          | luping2  | Lucy-Jing        |
-| Anraj Singh Dhanju | anraj    | AnrajSinghDhanju |
+|  |     |  |
 | Ishan Moudgil      | imoudgil | imoudgil         |
 | [Full Name]        | [CCID]   | [@username]      |
 
