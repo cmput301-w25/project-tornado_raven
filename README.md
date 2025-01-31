@@ -2,14 +2,14 @@
 
 ## Team Members
 
-| Name          | CCID     | GitHub Username |
-|---------------|----------| --------------- |
-| Chenqi Yang   | chenqi3  | OnionRingPro     |
-| Jingtao Zhang | jingtao3 | J1ngta0Z887     |
-| Lucy Jing     | luping2  | Lucy-Jing       |
-| Anraj Singh Dhanju  | anraj  | AnrajSinghDhanju     |
-| [Full Name]   | [CCID]   | [@username]     |
-| [Full Name]   | [CCID]   | [@username]     |
+| Name               | CCID     | GitHub Username  |
+|--------------------|----------|------------------|
+| Chenqi Yang        | chenqi3  | OnionRingPro     |
+| Jingtao Zhang      | jingtao3 | J1ngta0Z887      |
+| Lucy Jing          | luping2  | Lucy-Jing        |
+| Anraj Singh Dhanju | anraj    | AnrajSinghDhanju |
+| Ishan Moudgil      | imoudgil | imoudgil         |
+| [Full Name]        | [CCID]   | [@username]      |
 
 ## Project Description
 
