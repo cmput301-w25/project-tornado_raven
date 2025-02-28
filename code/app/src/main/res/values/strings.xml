@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">Project</string>
+    <string-array name="emotions">
+        <item>Happy</item>
+        <item>Sad</item>
+        <item>Angry</item>
+        <item>Excited</item>
+        <item>Calm</item>
+        <item>Anxious</item>
+        <item>Frustrated</item>
+        <item>Motivated</item>
+    </string-array>
 </resources>
