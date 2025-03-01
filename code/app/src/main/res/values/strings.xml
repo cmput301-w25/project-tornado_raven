@@ -1,3 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Project</string>
+    <!-- General -->
+    <string name="app_name">MoodTrackerApp</string>
+
+    <!-- Screens / Titles -->
+    <string name="title_followers">Followers</string>
+    <string name="title_users_followed">Users Followed</string>
+
+    <!-- Buttons / Actions -->
+    <string name="btn_show_last_week">Show Last Week</string>
+    <string name="btn_filter_by_mood">Filter by Mood</string>
+    <string name="btn_filter_by_keyword">Filter by Keyword</string>
+    <string name="btn_remove">Remove</string>
+    <string name="btn_unfollow">Unfollow</string>
+    <string name="btn_show_pending_requests">Show Pending Follow Requests</string>
+
+    <!-- Bottom Navigation (Text Only) -->
+    <string name="nav_followers">Followers</string>
+    <string name="nav_mood_followees">Mood Followees</string>
+    <string name="nav_my_mood_history">My Mood History</string>
+    <string name="nav_mood_map">Mood Map</string>
+    <string name="nav_profile">Profile</string>
+
+    <!-- Dialogs -->
+    <string name="dialog_filter_mood_title">Select Mood</string>
+    <string name="dialog_filter_mood_happy">😊 Happy</string>
+    <string name="dialog_filter_mood_sad">😢 Sad</string>
+    <string name="dialog_filter_mood_angry">😡 Angry</string>
+    <string name="dialog_filter_mood_scared">😱 Scared</string>
+    <string name="dialog_filter_mood_ok">OK</string>
+    <string name="dialog_filter_mood_cancel">Cancel</string>
+
+    <string name="dialog_filter_keyword_title">Enter Keyword</string>
+    <string name="dialog_filter_keyword_ok">OK</string>
+    <string name="dialog_filter_keyword_cancel">Cancel</string>
 </resources>
