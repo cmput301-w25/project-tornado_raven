@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MoodMapActivity">
+
+    <!-- Google Map -->
+    <fragment
+        android:id="@+id/map"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:name="com.google.android.gms.maps.SupportMapFragment" />
+
+    <!-- Filters -->
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:gravity="center"
+        android:background="#DDDDDD"
+        android:padding="10dp">
+
+        <Button
+            android:id="@+id/btnFilterHistory"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Filter: My History" />
+
+        <Button
+            android:id="@+id/btnFilterFollowing"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Filter: Following"
+            android:layout_marginLeft="10dp" />
+
+        <Button
+            android:id="@+id/btnFilterNearby"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Filter: Nearby"
+            android:layout_marginLeft="10dp" />
+    </LinearLayout>
+
+    <!-- Zoom Controls -->
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="60dp">
+
+        <Button
+            android:id="@+id/btnZoomIn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Zoom In" />
+
+        <Button
+            android:id="@+id/btnZoomOut"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Zoom Out"
+            android:layout_marginLeft="10dp" />
+    </LinearLayout>
+
+    <!-- Mood Description -->
+    <TextView
+        android:id="@+id/moodDescription"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="The mood of Wendy.Pleakley is (Party)"
+        android:textSize="16sp"
+        android:textColor="#333333"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="100dp"
+        android:background="#E0E0E0"
+        android:padding="10dp" />
+</RelativeLayout>
