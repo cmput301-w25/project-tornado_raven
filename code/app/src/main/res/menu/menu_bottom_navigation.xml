@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- Followers -->
+    <item
+        android:id="@+id/nav_followers"
+        android:title="@string/nav_followers"
+        app:showAsAction="always" />
+
+    <!-- Mood Followees -->
+    <item
+        android:id="@+id/nav_mood_followees"
+        android:title="@string/nav_mood_followees"
+        app:showAsAction="always" />
+
+    <!-- My Mood History -->
+    <item
+        android:id="@+id/nav_my_mood_history"
+        android:title="@string/nav_my_mood_history"
+        app:showAsAction="always" />
+
+    <!-- Mood Map -->
+    <item
+        android:id="@+id/nav_mood_map"
+        android:title="@string/nav_mood_map"
+        app:showAsAction="always" />
+
+    <!-- Profile -->
+    <item
+        android:id="@+id/nav_profile"
+        android:title="@string/nav_profile"
+        app:showAsAction="always" />
+
+</menu>

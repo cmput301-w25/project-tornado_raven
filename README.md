@@ -1,7 +1,7 @@
 # CMPUT 301 W25 - Team Lava Surfers
 
 ## Team Members
-
+=======
 | Name               | CCID     | GitHub Username  |
 |--------------------|----------|------------------|
 | Chenqi Yang        | chenqi3  | OnionRingPro     |
