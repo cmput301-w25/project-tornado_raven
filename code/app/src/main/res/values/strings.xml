@@ -11,7 +11,7 @@
     <string name="nav_profile">My Profile</string>
 
     <!-- Screens / Titles -->
-    <string name="title_followees">Followees</string>
+    <string name="title_followees">Following</string>
     <string name="title_followed_moods">Followed Moods</string>
 
     <!-- Buttons / Actions -->
