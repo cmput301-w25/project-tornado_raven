@@ -106,63 +106,87 @@
             android:orientation="vertical"
             android:layout_marginTop="16dp">
 
-            <TextView
-                android:id="@+id/mood1_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Mood 1 (Most Recent):"
-                android:textStyle="bold" />
-
+            <!-- Mood 1 -->
             <LinearLayout
+                android:id="@+id/mood1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:orientation="vertical"
+                android:padding="8dp"
+                android:background="@drawable/mood_event_background"
+                android:layout_marginBottom="8dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/mood1_emotion"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Emotion"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <ImageView
+                        android:id="@+id/mood1_image"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginStart="8dp"
+                        android:src="@drawable/ic_default" />
+                </LinearLayout>
 
                 <TextView
-                    android:id="@+id/mood1_emotion"
+                    android:id="@+id/mood1_date"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Dancing" />
+                    android:text="Date"
+                    android:textSize="14sp"
+                    android:layout_marginTop="4dp" />
 
-                <ImageView
-                    android:id="@+id/mood1_image"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:src="@drawable/ic_profile"
-                    android:layout_marginStart="8dp" />
+                <TextView
+                    android:id="@+id/mood1_reason"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Reason"
+                    android:textSize="14sp"
+                    android:layout_marginTop="4dp" />
             </LinearLayout>
 
-            <TextView
-                android:id="@+id/mood1_date"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="2025-02-12" />
-
-            <TextView
-                android:id="@+id/mood1_reason"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Reason: Went to dance class with Lilo." />
-
-            <!-- Other Mood Events -->
-            <Button
-                android:id="@+id/mood_event2"
+            <!-- Mood 2 -->
+            <LinearLayout
+                android:id="@+id/mood2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Mood Event 2" />
+                android:orientation="vertical"
+                android:padding="8dp"
+                android:background="@drawable/mood_event_background"
+                android:layout_marginBottom="8dp">
 
-            <Button
-                android:id="@+id/mood_event3"
+                <!-- Same structure as Mood 1 -->
+            </LinearLayout>
+
+            <!-- Mood 3 -->
+            <LinearLayout
+                android:id="@+id/mood3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Mood Event 3" />
+                android:orientation="vertical"
+                android:padding="8dp"
+                android:background="@drawable/mood_event_background">
 
+                <!-- Same structure as Mood 1 -->
+            </LinearLayout>
+
+            <!-- Add New Mood Button -->
             <Button
                 android:id="@+id/add_mood_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="+ Add New Mood" />
+                android:text="+ Add New Mood"
+                android:layout_marginTop="16dp" />
         </LinearLayout>
 
         <!-- Follow Requests and Other Options -->
