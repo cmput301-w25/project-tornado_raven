@@ -36,6 +36,8 @@
         <activity
             android:name=".activities.UsersFollowedActivity"
             android:exported="false" />
+        <activity android:name=".activities.FolloweesActivity" />
+        <activity android:name=".activities.FollowedMoodsActivity" />
 
     </application>
 </manifest>

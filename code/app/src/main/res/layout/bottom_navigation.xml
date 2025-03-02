@@ -1,20 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/bottomNavContainer"
+    android:id="@+id/layoutBottomNav"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:foregroundGravity="bottom">
+    android:layout_gravity="bottom">
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        app:itemHorizontalTranslationEnabled="false"
+        android:background="?android:attr/windowBackground"
+        app:menu="@menu/menu_bottom_navigation"
         app:labelVisibilityMode="labeled"
-        app:menu="@menu/menu_bottom_navigation" />
+        android:layout_gravity="bottom"
+        app:itemHorizontalTranslationEnabled="false"/>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-</FrameLayout>
 

@@ -2,34 +2,39 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <!-- Followers -->
+    <!-- 1) Followees -->
     <item
-        android:id="@+id/nav_followers"
-        android:title="@string/nav_followers"
+        android:id="@+id/nav_followees"
+        android:title="@string/nav_followees"
+        android:icon="@drawable/ic_followees"
         app:showAsAction="always" />
 
-    <!-- Mood Followees -->
+    <!-- 2) Followed Moods -->
     <item
-        android:id="@+id/nav_mood_followees"
-        android:title="@string/nav_mood_followees"
+        android:id="@+id/nav_followed_moods"
+        android:title="@string/nav_followed_moods"
+        android:icon="@drawable/ic_mood"
         app:showAsAction="always" />
 
-    <!-- My Mood History -->
+    <!-- 3) My Mood History -->
     <item
         android:id="@+id/nav_my_mood_history"
         android:title="@string/nav_my_mood_history"
+        android:icon="@drawable/ic_history"
         app:showAsAction="always" />
 
-    <!-- Mood Map -->
+    <!-- 4) Mood Map -->
     <item
         android:id="@+id/nav_mood_map"
         android:title="@string/nav_mood_map"
+        android:icon="@drawable/ic_map"
         app:showAsAction="always" />
 
-    <!-- Profile -->
+    <!-- 5) My Profile -->
     <item
         android:id="@+id/nav_profile"
         android:title="@string/nav_profile"
+        android:icon="@drawable/ic_profile"
         app:showAsAction="always" />
 
 </menu>
