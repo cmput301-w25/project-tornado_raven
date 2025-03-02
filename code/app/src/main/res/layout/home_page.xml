@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Title -->
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="LUCKY MOODS - HOME"
+            android:textStyle="bold"
+            android:textSize="24sp"
+            android:layout_gravity="center_horizontal" />
+
+        <!-- Sync Status -->
+        <TextView
+            android:id="@+id/sync_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pending Sync ... / Synced"
+            android:background="#F5F5DC"
+            android:padding="4dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="4dp" />
+
+        <!-- Profile and Welcome Message Section (Horizontal Layout) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end"
+            android:layout_marginTop="16dp">
+
+            <!-- Welcome Text -->
+            <TextView
+                android:id="@+id/welcome_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Hi, Welcome back Stitch, what's in your mind?"
+                android:textSize="16sp"
+                android:layout_gravity="center_vertical" />
+
+            <!-- Profile Picture -->
+            <ImageView
+                android:id="@+id/profile_picture"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:src="@drawable/ic_profile"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <!-- Profile Button -->
+        <Button
+            android:id="@+id/profile_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Profile"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="#D1A3FF" />
+
+        <!-- Filters -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp">
+
+            <Button
+                android:id="@+id/last7days_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Last 7 Days"
+                android:backgroundTint="#90EE90" />
+
+            <Button
+                android:id="@+id/filter_emotion_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Filter by emotion"
+                android:backgroundTint="#ADD8E6"
+                android:layout_marginStart="8dp" />
+
+            <Button
+                android:id="@+id/filter_keyword_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Filter by keyword"
+                android:backgroundTint="#ADD8E6"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <!-- Mood Entries Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="16dp">
+
+            <!-- Mood 1 -->
+            <LinearLayout
+                android:id="@+id/mood1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="8dp"
+                android:background="@drawable/mood_event_background"
+                android:layout_marginBottom="8dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/mood1_emotion"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Emotion"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <ImageView
+                        android:id="@+id/mood1_image"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginStart="8dp"
+                        android:src="@drawable/ic_default" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/mood1_date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Date"
+                    android:textSize="14sp"
+                    android:layout_marginTop="4dp" />
+
+                <TextView
+                    android:id="@+id/mood1_reason"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Reason"
+                    android:textSize="14sp"
+                    android:layout_marginTop="4dp" />
+            </LinearLayout>
+
+            <!-- Mood 2 -->
+            <LinearLayout
+                android:id="@+id/mood2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="8dp"
+                android:background="@drawable/mood_event_background"
+                android:layout_marginBottom="8dp">
+
+                <!-- Same structure as Mood 1 -->
+            </LinearLayout>
+
+            <!-- Mood 3 -->
+            <LinearLayout
+                android:id="@+id/mood3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="8dp"
+                android:background="@drawable/mood_event_background">
+
+                <!-- Same structure as Mood 1 -->
+            </LinearLayout>
+
+            <!-- Add New Mood Button -->
+            <Button
+                android:id="@+id/add_mood_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="+ Add New Mood"
+                android:layout_marginTop="16dp" />
+        </LinearLayout>
+
+        <!-- Follow Requests and Other Options -->
+        <Button
+            android:id="@+id/follow_request_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Follow Request Management"
+            android:backgroundTint="#00CED1"
+            android:layout_marginTop="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <Button
+                android:id="@+id/mood_map_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Mood Map"
+                android:backgroundTint="#90EE90" />
+
+            <Button
+                android:id="@+id/user_followed_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="User Followed"
+                android:backgroundTint="#90EE90" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

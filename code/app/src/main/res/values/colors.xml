@@ -2,4 +2,12 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="anger">#FF0000</color> <!-- Red -->
+    <color name="confusion">#808080</color> <!-- Gray -->
+    <color name="disgust">#023020</color> <!-- Green -->
+    <color name="fear">#000080</color> <!-- Navy Blue -->
+    <color name="happiness">#FFFF00</color> <!-- Yellow -->
+    <color name="sadness">#0000FF</color> <!-- Blue -->
+    <color name="shame">#800080</color> <!-- Purple -->
+    <color name="surprise">#FFA500</color> <!-- Orange -->
 </resources>
