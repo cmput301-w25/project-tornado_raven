@@ -1,4 +1,4 @@
-package com.example.project;
+package com.example.project.activities;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -15,7 +15,18 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.project.R;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+
+import java.util.HashMap;
+import java.util.Map;
+
 public class MainActivity extends AppCompatActivity {
+
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
+    CollectionReference userRef = db.collection("users");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,12 +80,18 @@ public class MainActivity extends AppCompatActivity {
         btnLogin.setOnClickListener(view -> {
             String username = etUsername.getText().toString();
             String password = etPassword.getText().toString();
-            if (validateLogin(username, password)) {
-                Toast.makeText(MainActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
-                dialog.dismiss(); // close dialog
-            } else {
-                Toast.makeText(MainActivity.this, "Invalid Credentials", Toast.LENGTH_SHORT).show();
-            }
+            validateLogin(username,password, new LoginCallback() {
+                @Override
+                public void onSuccess() {
+                    Toast.makeText(MainActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
+                }
+
+                @Override
+                public void onFailure(String errorMessage) {
+                    Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+                }
+            });
         });
 
         // switch to register interface
@@ -95,12 +112,24 @@ public class MainActivity extends AppCompatActivity {
                 String confirmPassword = etRegisterConfirmPassword.getText().toString();
 
                 if (newPassword.equals(confirmPassword) && !newUsername.isEmpty()) {
-                    Toast.makeText(MainActivity.this, "Registration Successful", Toast.LENGTH_SHORT).show();
-                    // return to login interface
-                    registerLayout.setVisibility(View.GONE);
-                    loginLayout.setVisibility(View.VISIBLE);
+                    registerUser(newUsername, newPassword, new RegisterCallback() {
+                        @Override
+                        public void onSuccess(String username) {
+                            Toast.makeText(MainActivity.this, "Register successful: ( " + username + ")", Toast.LENGTH_SHORT).show();
+                            // switch back to login
+                            registerLayout.setVisibility(View.GONE);
+                            loginLayout.setVisibility(View.VISIBLE);
+                            etUsername.setText("");
+                            etPassword.setText("");
+                        }
+
+                        @Override
+                        public void onFailure(String errorMessage) {
+                            Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 } else {
-                    Toast.makeText(MainActivity.this, "Passwords do not match!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "password does not match or username is empty", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -111,6 +140,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 registerLayout.setVisibility(View.GONE);
                 loginLayout.setVisibility(View.VISIBLE);
+
             }
         });
 
@@ -123,7 +153,56 @@ public class MainActivity extends AppCompatActivity {
      * @param password password the user input
      * @return true if both username matched the database and password matched the username, false otherwise
      */
-    private boolean validateLogin(String username, String password) {
-        return username.equals("admin") && password.equals("1234");
+    private void validateLogin(String username, String password, LoginCallback callback) {
+        if (username.equals("admin") && password.equals("1234")) {
+            callback.onSuccess();
+        }
+        userRef.whereEqualTo("username",username)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if(!queryDocumentSnapshots.isEmpty()) {
+                        String storedPassword = queryDocumentSnapshots.getDocuments().get(0).getString("password");
+                        if (storedPassword != null && storedPassword.equals(password)) {
+                            callback.onSuccess();
+                        } else {
+                            callback.onFailure("Wrong password");
+                        }
+                    } else {
+                            callback.onFailure("Username does not exist");
+                    }
+                })
+                .addOnFailureListener(e -> callback.onFailure("Database error"));
     }
+
+    private void registerUser(String username, String password, RegisterCallback callback) {
+        userRef.whereEqualTo("username", username)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        callback.onFailure("username already exists");
+                    } else {
+                        Map<String, Object> data = new HashMap<>();
+                        data.put("username", username);
+                        data.put("password", password);
+                        userRef.add(data)
+                                .addOnSuccessListener(documentReference -> callback.onSuccess(documentReference.getId()))
+                                .addOnFailureListener(e -> callback.onFailure("Register Failed: " + e.getMessage()));
+                    }
+                })
+                .addOnFailureListener(e -> callback.onFailure("Database Error: " + e.getMessage()));
+    }
+
+    /**
+     * login callback interface to check the callback result
+     */
+    interface LoginCallback {
+        void onSuccess();
+        void onFailure(String errorMessage);
+    }
+
+    interface RegisterCallback {
+        void onSuccess(String username);
+        void onFailure(String errorMessage);
+    }
+
 }
