@@ -1,5 +1,6 @@
 package com.example.project.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -85,6 +86,9 @@ public class MainActivity extends AppCompatActivity {
                 public void onSuccess() {
                     Toast.makeText(MainActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
+
+                    Intent intent = new Intent(MainActivity.this, MoodHistoryActivity.class);
+                    startActivity(intent); // invoke new activity
                 }
 
                 @Override
