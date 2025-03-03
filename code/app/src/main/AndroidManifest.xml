@@ -27,6 +27,16 @@
             </intent-filter>
         </activity>
 
+        <!-- Login Activity -->
+        <activity
+            android:name=".activities.LoginActivity"
+            android:exported="true" />
+
+        <!-- Edit Mood Activity -->
+        <activity
+            android:name=".activities.EditMoodActivity"
+            android:exported="true" />
+
         <!-- Followers Activity -->
         <activity
             android:name=".activities.FollowersActivity"
@@ -36,11 +46,15 @@
         <activity
             android:name=".activities.UsersFollowedActivity"
             android:exported="false" />
+
+        <!-- Followees Activity -->
         <activity android:name=".activities.FolloweesActivity" />
+
+        <!-- Followed Moods Activity -->
         <activity android:name=".activities.FollowedMoodsActivity" />
 
-        <!-- Declare MoodHistoryActivity -->
-        <activity android:name=".activities.MoodHistoryActivity"></activity>
+        <!-- Mood History Activity -->
+        <activity android:name=".activities.MoodHistoryActivity" />
 
     </application>
 </manifest>

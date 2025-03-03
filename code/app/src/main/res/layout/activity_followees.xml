@@ -44,6 +44,6 @@
         app:labelVisibilityMode="labeled"
         android:layout_gravity="bottom"
         app:itemHorizontalTranslationEnabled="false"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
