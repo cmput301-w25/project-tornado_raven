@@ -1,137 +1,157 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white"
-    android:padding="16dp">
+    android:background="@android:color/white">
 
-    <LinearLayout
+    <!-- Scrollable Content -->
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center_horizontal">
+        android:layout_height="match_parent"
+        android:layout_marginBottom="56dp"
+        android:padding="16dp">
 
-        <!-- Back Button -->
-        <ImageButton
-            android:id="@+id/backButton"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="@android:color/transparent"
-            android:src="@android:drawable/ic_media_previous"
-            android:layout_gravity="start"/>
-
-        <!-- Title -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:fontFamily="sans-serif-black"
-            android:text="EDITING MOOD"
-            android:textSize="34sp"
-            android:textStyle="bold" />
-
-        <!-- Mood Selection (Dropdown) -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Mood:"
-            android:textSize="16sp"
-            android:layout_marginTop="10dp" />
-
-        <!-- Reason (Text Box) -->
-        <Spinner
-            android:id="@+id/moodSpinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:drawable/btn_dropdown"
-            android:padding="8dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Reason (Max 22 char):"
-            android:textSize="16sp"
-            android:layout_marginTop="10dp" />
-
-        <EditText
-            android:id="@+id/reasonEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Enter reason"
-            android:maxLength="22"
-            android:inputType="text"
-            android:background="@android:drawable/edit_text"
-            android:padding="10dp"/>
-
-        <!-- Social Situation (Text Box) -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Social Situation:"
-            android:textSize="16sp"
-            android:layout_marginTop="10dp" />
-
-        <EditText
-            android:id="@+id/socialSituationEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Enter social situation"
-            android:inputType="text"
-            android:background="@android:drawable/edit_text"
-            android:padding="10dp"/>
-
-        <!-- Location (Text Box) -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Location:"
-            android:textSize="16sp"
-            android:layout_marginTop="10dp" />
-
-        <EditText
-            android:id="@+id/locationEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Enter location"
-            android:inputType="text"
-            android:background="@android:drawable/edit_text"
-            android:padding="10dp"/>
-
-        <!-- Delete Mood Button -->
-        <Button
-            android:id="@+id/deleteMoodButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Delete this Mood"
-            android:textColor="@android:color/holo_red_dark"
-            android:background="@android:color/transparent"
-            android:textStyle="bold"
-            android:layout_marginTop="20dp"/>
-
-        <!-- Save and Cancel Buttons (Side by Side) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="10dp"
-            android:gravity="center">
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
 
-            <Button
-                android:id="@+id/saveButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="Save (Or store it offline upload later)"
-                android:layout_weight="1"
-                android:layout_marginEnd="5dp"/>
+            <!-- Back Button -->
+            <ImageButton
+                android:id="@+id/backButton"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@android:color/transparent"
+                android:src="@android:drawable/ic_media_previous"
+                android:layout_gravity="start"/>
 
-            <Button
-                android:id="@+id/cancelButton"
-                android:layout_width="0dp"
+            <!-- Title -->
+            <TextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Cancel"
-                android:layout_weight="1"
-                android:layout_marginStart="5dp"/>
+                android:layout_marginTop="10dp"
+                android:fontFamily="sans-serif-black"
+                android:text="EDITING MOOD"
+                android:textSize="34sp"
+                android:textStyle="bold" />
+
+            <!-- Mood Selection (Dropdown) -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mood:"
+                android:textSize="16sp"
+                android:layout_marginTop="10dp" />
+
+            <Spinner
+                android:id="@+id/moodSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:drawable/btn_dropdown"
+                android:padding="8dp" />
+
+            <!-- Reason -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Reason (Max 22 char):"
+                android:textSize="16sp"
+                android:layout_marginTop="10dp" />
+
+            <EditText
+                android:id="@+id/reasonEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Enter reason"
+                android:maxLength="22"
+                android:inputType="text"
+                android:background="@android:drawable/edit_text"
+                android:padding="10dp"/>
+
+            <!-- Social Situation -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Social Situation:"
+                android:textSize="16sp"
+                android:layout_marginTop="10dp" />
+
+            <EditText
+                android:id="@+id/socialSituationEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Enter social situation"
+                android:inputType="text"
+                android:background="@android:drawable/edit_text"
+                android:padding="10dp"/>
+
+            <!-- Location -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Location:"
+                android:textSize="16sp"
+                android:layout_marginTop="10dp" />
+
+            <EditText
+                android:id="@+id/locationEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Enter location"
+                android:inputType="text"
+                android:background="@android:drawable/edit_text"
+                android:padding="10dp"/>
+
+            <!-- Delete Mood Button -->
+            <Button
+                android:id="@+id/deleteMoodButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Delete this Mood"
+                android:textColor="@android:color/holo_red_dark"
+                android:background="@android:color/transparent"
+                android:textStyle="bold"
+                android:layout_marginTop="20dp"/>
+
+            <!-- Save and Cancel Buttons (Side by Side) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp"
+                android:gravity="center">
+
+                <Button
+                    android:id="@+id/saveButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="Save (Or store it offline upload later)"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="5dp"/>
+
+                <Button
+                    android:id="@+id/cancelButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="Cancel"
+                    android:layout_weight="1"
+                    android:layout_marginStart="5dp"/>
+            </LinearLayout>
         </LinearLayout>
+    </ScrollView>
 
-    </LinearLayout>
-</ScrollView>
+    <!-- Bottom Navigation -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="?android:attr/windowBackground"
+        app:menu="@menu/menu_bottom_navigation"
+        app:labelVisibilityMode="labeled"
+        app:itemHorizontalTranslationEnabled="false"/>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
