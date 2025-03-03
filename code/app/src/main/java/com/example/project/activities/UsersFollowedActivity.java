@@ -1,5 +1,6 @@
 package com.example.project.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -50,8 +51,10 @@ public class UsersFollowedActivity extends AppCompatActivity {
         });
         recyclerUsersFollowed.setAdapter(usersFollowedAdapter);
 
-        bottomNav = findViewById(R.id.bottomNavigation);
-        bottomNav.setOnNavigationItemSelectedListener(item -> onBottomNavItemSelected(item));
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
+        bottomNavigationView.setSelectedItemId(R.id.nav_followed_moods); // Highlight correct tab
+
+        bottomNavigationView.setOnItemSelectedListener(this::onBottomNavItemSelected);
 
         // Filter button clicks
         findViewById(R.id.btnShowLastWeek).setOnClickListener(v -> showLastWeekFilter());
@@ -64,31 +67,27 @@ public class UsersFollowedActivity extends AppCompatActivity {
             Toast.makeText(this, "Showing pending follow requests...", Toast.LENGTH_SHORT).show();
         });
 
-        // Optionally highlight the 'Mood Followees' tab
-        bottomNav.setSelectedItemId(R.id.nav_followed_moods);
     }
 
     private boolean onBottomNavItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
         if (id == R.id.nav_followees) {
-            // Switch to FollowersActivity
-            finish(); // close this activity
-            // or use an intent to open FollowersActivity
-            // or just do:
-            // startActivity(new Intent(this, FollowersActivity.class));
-            return true;
+            return true; // Already in FolloweesActivity
         } else if (id == R.id.nav_followed_moods) {
-            // Already here
+            startActivity(new Intent(this, FollowedMoodsActivity.class));
+            overridePendingTransition(0, 0);
+            finish(); // Close current activity
             return true;
         } else if (id == R.id.nav_my_mood_history) {
-            Toast.makeText(this, "Go to My Mood History screen", Toast.LENGTH_SHORT).show();
-            return true;
-        } else if (id == R.id.nav_mood_map) {
-            Toast.makeText(this, "Go to Mood Map screen", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, MoodHistoryActivity.class));
+            overridePendingTransition(0, 0);
+            finish();
             return true;
         } else if (id == R.id.nav_profile) {
-            Toast.makeText(this, "Go to Profile screen", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, UsersFollowedActivity.class));
+            overridePendingTransition(0, 0);
+            finish();
             return true;
         }
         return false;

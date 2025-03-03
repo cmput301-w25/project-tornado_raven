@@ -50,32 +50,36 @@ public class FolloweesActivity extends AppCompatActivity {
         });
         recyclerFollowees.setAdapter(followeesAdapter);
 
-        bottomNav = findViewById(R.id.bottomNavigation);
-        bottomNav.setOnNavigationItemSelectedListener(item -> onBottomNavItemSelected(item));
-        // Highlight the first item by default
-        bottomNav.setSelectedItemId(R.id.nav_followees);
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
+        bottomNavigationView.setSelectedItemId(R.id.nav_followees); // Highlight correct tab
+
+        bottomNavigationView.setOnItemSelectedListener(this::onBottomNavItemSelected);
+
     }
 
     private boolean onBottomNavItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
+
         if (id == R.id.nav_followees) {
-            // Already here
-            return true;
+            return true; // Already in FolloweesActivity
         } else if (id == R.id.nav_followed_moods) {
-            // Go to the Followed Moods screen
             startActivity(new Intent(this, FollowedMoodsActivity.class));
+            overridePendingTransition(0, 0);
+            finish(); // Close current activity
             return true;
         } else if (id == R.id.nav_my_mood_history) {
-            Toast.makeText(this, "Go to My Mood History", Toast.LENGTH_SHORT).show();
-            return true;
-        } else if (id == R.id.nav_mood_map) {
-            Toast.makeText(this, "Go to Mood Map", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, MoodHistoryActivity.class));
+            overridePendingTransition(0, 0);
+            finish();
             return true;
         } else if (id == R.id.nav_profile) {
-            Toast.makeText(this, "Go to My Profile", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, UsersFollowedActivity.class));
+            overridePendingTransition(0, 0);
+            finish();
             return true;
         }
         return false;
     }
+
 }
 
