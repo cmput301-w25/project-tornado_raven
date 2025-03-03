@@ -13,6 +13,7 @@
     <!-- Screens / Titles -->
     <string name="title_followees">Following</string>
     <string name="title_followed_moods">Followed Moods</string>
+    <string name="mood_history">Mood History</string>
 
     <!-- Buttons / Actions -->
     <string name="btn_show_last_week">Show Last Week</string>
@@ -20,6 +21,8 @@
     <string name="btn_filter_by_keyword">Filter by Keyword</string>
     <string name="btn_unfollow">Unfollow</string>
     <string name="btn_show_pending_requests">Show Pending Follow Requests</string>
+    <string name="btn_details">Details</string>
+
 
     <!-- Dialogs -->
     <string name="dialog_filter_mood_title">Select Mood</string>
