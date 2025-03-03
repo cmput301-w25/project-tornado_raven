@@ -39,9 +39,9 @@ public class MoodHistoryActivity extends AppCompatActivity {
     // dummy data
     private List<MoodEvent> loadMoodHistory() {
         List<MoodEvent> list = new ArrayList<>();
-        moodHistoryList.add(new MoodEvent(Emotion.HAPPINESS,new Date(), "get money", "home"));
-        moodHistoryList.add(new MoodEvent(Emotion.SADNESS, new Date(), "only 5 dollors", "home"));
-        moodHistoryList.add(new MoodEvent(Emotion.CONFUSION, new Date(), "lost my money", "home"));
+        list.add(new MoodEvent(Emotion.HAPPINESS,new Date(), "get money", "home"));
+        list.add(new MoodEvent(Emotion.SADNESS, new Date(), "only 5 dollors", "home"));
+        list.add(new MoodEvent(Emotion.CONFUSION, new Date(), "lost my money", "home"));
 
         return list;
     }

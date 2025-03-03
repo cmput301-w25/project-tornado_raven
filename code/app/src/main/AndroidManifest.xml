@@ -39,5 +39,8 @@
         <activity android:name=".activities.FolloweesActivity" />
         <activity android:name=".activities.FollowedMoodsActivity" />
 
+        <!-- Declare MoodHistoryActivity -->
+        <activity android:name=".activities.MoodHistoryActivity"></activity>
+
     </application>
 </manifest>
