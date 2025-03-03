@@ -30,6 +30,7 @@ public class LoginActivity extends AppCompatActivity {
     CollectionReference userRef = db.collection("users");
 
     @Override
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);

@@ -1,5 +1,6 @@
 package com.example.project.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -52,10 +53,10 @@ public class FollowedMoodsActivity extends AppCompatActivity {
         });
         recyclerFollowedMoods.setAdapter(followeesAdapter);
 
-        bottomNav = findViewById(R.id.bottomNavigation);
-        bottomNav.setOnNavigationItemSelectedListener(item -> onBottomNavItemSelected(item));
-        // Highlight the second item
-        bottomNav.setSelectedItemId(R.id.nav_followed_moods);
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
+        bottomNavigationView.setSelectedItemId(R.id.nav_followed_moods); // Highlight correct tab
+
+        bottomNavigationView.setOnItemSelectedListener(item -> onBottomNavItemSelected(item));
 
         // Filter button logic
         findViewById(R.id.btnShowLastWeek).setOnClickListener(v -> {
@@ -73,23 +74,29 @@ public class FollowedMoodsActivity extends AppCompatActivity {
 
     private boolean onBottomNavItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.nav_followees) {
-            finish(); // or navigate
+
+        if (id == R.id.nav_followees && !isCurrentActivity(FolloweesActivity.class)) {
+            startActivity(new Intent(this, FolloweesActivity.class));
+            overridePendingTransition(0, 0);
+            finish();
             return true;
         } else if (id == R.id.nav_followed_moods) {
-            // Already here
+            return true; // Already in FollowedMoodsActivity
+        } else if (id == R.id.nav_my_mood_history && !isCurrentActivity(MoodHistoryActivity.class)) {
+            startActivity(new Intent(this, MoodHistoryActivity.class));
+            overridePendingTransition(0, 0);
+            finish();
             return true;
-        } else if (id == R.id.nav_my_mood_history) {
-            Toast.makeText(this, "Go to My Mood History", Toast.LENGTH_SHORT).show();
-            return true;
-        } else if (id == R.id.nav_mood_map) {
-            Toast.makeText(this, "Go to Mood Map", Toast.LENGTH_SHORT).show();
-            return true;
-        } else if (id == R.id.nav_profile) {
-            Toast.makeText(this, "Go to My Profile", Toast.LENGTH_SHORT).show();
+        } else if (id == R.id.nav_profile && !isCurrentActivity(UsersFollowedActivity.class)) {
+            startActivity(new Intent(this, UsersFollowedActivity.class));
+            overridePendingTransition(0, 0);
+            finish();
             return true;
         }
         return false;
+    }
+    private boolean isCurrentActivity(Class<?> activityClass) {
+        return this.getClass().equals(activityClass);
     }
 }
 

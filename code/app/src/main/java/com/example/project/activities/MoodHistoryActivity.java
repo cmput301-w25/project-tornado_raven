@@ -12,6 +12,7 @@ import com.example.project.Emotion;
 import com.example.project.MoodEvent;
 import com.example.project.R;
 import com.example.project.adapters.MoodHistoryAdapter;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -35,6 +36,33 @@ public class MoodHistoryActivity extends AppCompatActivity {
         //set adapter
         moodHistoryAdapter = new MoodHistoryAdapter(this,moodHistoryList);
         recyclerView.setAdapter(moodHistoryAdapter);
+        // Setup Bottom Navigation
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
+        bottomNavigationView.setSelectedItemId(R.id.nav_my_mood_history); // Highlight the correct tab
+
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+
+            if (id == R.id.nav_followees && !isCurrentActivity(FolloweesActivity.class)) {
+                startActivity(new Intent(this, FolloweesActivity.class));
+                overridePendingTransition(0, 0);
+                finish();
+                return true;
+            } else if (id == R.id.nav_followed_moods && !isCurrentActivity(FollowedMoodsActivity.class)) {
+                startActivity(new Intent(this, FollowedMoodsActivity.class));
+                overridePendingTransition(0, 0);
+                finish();
+                return true;
+            } else if (id == R.id.nav_my_mood_history) {
+                return true; // Already in MoodHistoryActivity
+            } else if (id == R.id.nav_profile && !isCurrentActivity(UsersFollowedActivity.class)) {
+                startActivity(new Intent(this, UsersFollowedActivity.class));
+                overridePendingTransition(0, 0);
+                finish();
+                return true;
+            }
+            return false;
+        });
     }
 
     // dummy data
@@ -68,6 +96,9 @@ public class MoodHistoryActivity extends AppCompatActivity {
                 }
             }
         }
+    }
+    private boolean isCurrentActivity(Class<?> activityClass) {
+        return this.getClass().equals(activityClass);
     }
 
 }
