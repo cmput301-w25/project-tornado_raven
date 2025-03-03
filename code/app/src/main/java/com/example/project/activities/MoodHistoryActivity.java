@@ -1,5 +1,6 @@
 package com.example.project.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
@@ -45,4 +46,28 @@ public class MoodHistoryActivity extends AppCompatActivity {
 
         return list;
     }
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        //updating
+        Intent intent = getIntent();
+        if (intent != null) {
+            if (intent.hasExtra("updatedMood")) {
+                MoodEvent updatedMood = (MoodEvent) intent.getSerializableExtra("updatedMood");
+                if (updatedMood != null) {
+                    moodHistoryAdapter.updateMood(updatedMood);
+                }
+            }
+
+            // deleteing
+            if (intent.hasExtra("deleteMood")) {
+                MoodEvent deletedMood = (MoodEvent) intent.getSerializableExtra("deleteMood");
+                if (deletedMood != null) {
+                    moodHistoryAdapter.deleteMood(deletedMood);
+                }
+            }
+        }
+    }
+
 }
