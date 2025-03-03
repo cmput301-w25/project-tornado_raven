@@ -65,20 +65,20 @@ public class UsersFollowedActivity extends AppCompatActivity {
         });
 
         // Optionally highlight the 'Mood Followees' tab
-        bottomNav.setSelectedItemId(R.id.nav_mood_followees);
+        bottomNav.setSelectedItemId(R.id.nav_followed_moods);
     }
 
     private boolean onBottomNavItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.nav_followers) {
+        if (id == R.id.nav_followees) {
             // Switch to FollowersActivity
             finish(); // close this activity
             // or use an intent to open FollowersActivity
             // or just do:
             // startActivity(new Intent(this, FollowersActivity.class));
             return true;
-        } else if (id == R.id.nav_mood_followees) {
+        } else if (id == R.id.nav_followed_moods) {
             // Already here
             return true;
         } else if (id == R.id.nav_my_mood_history) {
