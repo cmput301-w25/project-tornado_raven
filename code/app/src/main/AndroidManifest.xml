@@ -19,13 +19,23 @@
 
         <!-- Main Activity (App Entry Point) -->
         <activity
-            android:name=".MainActivity"
+            android:name=".activities.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Login Activity -->
+        <activity
+            android:name=".activities.LoginActivity"
+            android:exported="true" />
+
+        <!-- Edit Mood Activity -->
+        <activity
+            android:name=".activities.EditMoodActivity"
+            android:exported="true" />
 
         <!-- Followers Activity -->
         <activity
@@ -36,8 +46,15 @@
         <activity
             android:name=".activities.UsersFollowedActivity"
             android:exported="false" />
+
+        <!-- Followees Activity -->
         <activity android:name=".activities.FolloweesActivity" />
+
+        <!-- Followed Moods Activity -->
         <activity android:name=".activities.FollowedMoodsActivity" />
+
+        <!-- Mood History Activity -->
+        <activity android:name=".activities.MoodHistoryActivity" />
 
     </application>
 </manifest>

@@ -1,5 +1,6 @@
 package com.example.project.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
@@ -39,10 +40,34 @@ public class MoodHistoryActivity extends AppCompatActivity {
     // dummy data
     private List<MoodEvent> loadMoodHistory() {
         List<MoodEvent> list = new ArrayList<>();
-        moodHistoryList.add(new MoodEvent(Emotion.HAPPINESS,new Date(), "get money", "home"));
-        moodHistoryList.add(new MoodEvent(Emotion.SADNESS, new Date(), "only 5 dollors", "home"));
-        moodHistoryList.add(new MoodEvent(Emotion.CONFUSION, new Date(), "lost my money", "home"));
+        list.add(new MoodEvent(Emotion.HAPPINESS,new Date(), "get money", "home"));
+        list.add(new MoodEvent(Emotion.SADNESS, new Date(), "only 5 dollors", "home"));
+        list.add(new MoodEvent(Emotion.CONFUSION, new Date(), "lost my money", "home"));
 
         return list;
     }
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        //updating
+        Intent intent = getIntent();
+        if (intent != null) {
+            if (intent.hasExtra("updatedMood")) {
+                MoodEvent updatedMood = (MoodEvent) intent.getSerializableExtra("updatedMood");
+                if (updatedMood != null) {
+                    moodHistoryAdapter.updateMood(updatedMood);
+                }
+            }
+
+            // deleteing
+            if (intent.hasExtra("deleteMood")) {
+                MoodEvent deletedMood = (MoodEvent) intent.getSerializableExtra("deleteMood");
+                if (deletedMood != null) {
+                    moodHistoryAdapter.deleteMood(deletedMood);
+                }
+            }
+        }
+    }
+
 }

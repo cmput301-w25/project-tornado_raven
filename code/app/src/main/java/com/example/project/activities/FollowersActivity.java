@@ -26,9 +26,9 @@ public class FollowersActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_followers);
+        setContentView(R.layout.activity_followees);
 
-        recyclerFollowers = findViewById(R.id.recyclerFollowers);
+        recyclerFollowers = findViewById(R.id.recyclerFollowees);
         recyclerFollowers.setLayoutManager(new LinearLayoutManager(this));
 
         // Demo data
@@ -52,16 +52,16 @@ public class FollowersActivity extends AppCompatActivity {
         bottomNav.setOnNavigationItemSelectedListener(item -> onBottomNavItemSelected(item));
 
         // Optionally highlight the 'Followers' tab
-        bottomNav.setSelectedItemId(R.id.nav_followers);
+        bottomNav.setSelectedItemId(R.id.nav_followees);
     }
 
     private boolean onBottomNavItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.nav_followers) {
+        if (id == R.id.nav_followees) {
             // Already here
             return true;
-        } else if (id == R.id.nav_mood_followees) {
+        } else if (id == R.id.nav_followed_moods) {
             Intent intent = new Intent(this, UsersFollowedActivity.class);
             startActivity(intent);
             return true;

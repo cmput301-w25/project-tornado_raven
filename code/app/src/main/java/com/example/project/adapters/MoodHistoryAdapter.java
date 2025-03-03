@@ -1,7 +1,9 @@
 package com.example.project.adapters;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.project.MoodEvent;
 import com.example.project.R;
+import com.example.project.activities.EditMoodActivity;
 
 import java.util.List;
 
@@ -41,6 +44,11 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         holder.reason.setText(moodEvent.getTrigger());
         holder.social.setText(moodEvent.getSocialSituation());
 
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, EditMoodActivity.class);
+            intent.putExtra("moodEvent", moodEvent);
+            context.startActivity(intent);
+        });
 
         holder.detailsButton.setOnClickListener(v -> showDetailsDialog(moodEvent));
     }
@@ -49,6 +57,27 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
     public int getItemCount() {
         return moodHistoryList.size();
     }
+    // updating event
+    public void updateMood(MoodEvent updatedMood) {
+        for (int i = 0; i < moodHistoryList.size(); i++) {
+            if (moodHistoryList.get(i).getDate().equals(updatedMood.getDate())) {
+                moodHistoryList.set(i, updatedMood);
+                notifyItemChanged(i);
+                break;
+            }
+        }
+    }
+    //deleting event
+    public void deleteMood(MoodEvent deletedMood) {
+        for (int i = 0; i < moodHistoryList.size(); i++) {
+            if (moodHistoryList.get(i).getDate().equals(deletedMood.getDate())) {
+                moodHistoryList.remove(i);
+                notifyItemRemoved(i);
+                break;
+            }
+        }
+    }
+
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public TextView emotion;
