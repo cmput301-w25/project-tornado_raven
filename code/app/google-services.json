@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "148316363827",
+    "project_id": "cmput301-project-tornado-1858c",
+    "storage_bucket": "cmput301-project-tornado-1858c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:148316363827:android:5974efce6e107cb2a79746",
+        "android_client_info": {
+          "package_name": "com.example.project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_kymSeujExes-4cE0WP92L8oIitrvTMM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
