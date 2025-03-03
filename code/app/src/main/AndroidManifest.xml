@@ -19,7 +19,7 @@
 
         <!-- Main Activity (App Entry Point) -->
         <activity
-            android:name=".MainActivity"
+            android:name=".activities.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
