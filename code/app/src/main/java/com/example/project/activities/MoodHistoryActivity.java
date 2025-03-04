@@ -2,7 +2,10 @@ package com.example.project.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -74,31 +77,28 @@ public class MoodHistoryActivity extends AppCompatActivity {
 
         return list;
     }
+
     @Override
     protected void onResume() {
         super.onResume();
+        if (EditMoodActivity.updatedMoodEvent != null) {
+            updateMoodItem(EditMoodActivity.updatedMoodEvent);
+            EditMoodActivity.updatedMoodEvent = null;
+        }
+    }
 
-        //updating
-        Intent intent = getIntent();
-        if (intent != null) {
-            if (intent.hasExtra("updatedMood")) {
-                MoodEvent updatedMood = (MoodEvent) intent.getSerializableExtra("updatedMood");
-                if (updatedMood != null) {
-                    moodHistoryAdapter.updateMood(updatedMood);
-                }
-            }
-
-            // deleteing
-            if (intent.hasExtra("deleteMood")) {
-                MoodEvent deletedMood = (MoodEvent) intent.getSerializableExtra("deleteMood");
-                if (deletedMood != null) {
-                    moodHistoryAdapter.deleteMood(deletedMood);
-                }
+    private void updateMoodItem(MoodEvent updatedMood) {
+        for (int i = 0; i < moodHistoryList.size(); i++) {
+            if (moodHistoryList.get(i).getId().equals(updatedMood.getId())) {
+                moodHistoryList.set(i, updatedMood);
+                moodHistoryAdapter.notifyItemChanged(i);
+                Toast.makeText(this, "Mood updated", Toast.LENGTH_SHORT).show();
+                return;
             }
         }
     }
+
     private boolean isCurrentActivity(Class<?> activityClass) {
         return this.getClass().equals(activityClass);
     }
-
 }
