@@ -2,9 +2,11 @@ package com.example.project;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.UUID;
 
 public class MoodEvent implements Serializable {
     private Emotion emotion;
+    private String id;
     private Date date;
     private String trigger;
     private String socialSituation;
@@ -15,6 +17,7 @@ public class MoodEvent implements Serializable {
         this.date = date;
         this.trigger = trigger;
         this.socialSituation = socialSituation;
+        this.id = UUID.randomUUID().toString();
     }
 
     public void setEmotion(Emotion emotion) {
@@ -54,6 +57,15 @@ public class MoodEvent implements Serializable {
 
     public void setLocation(String location) {
         this.location = location;
+    }
+    public String getId() {
+        return id;
+    }
+    public void update(MoodEvent newEvent) {
+        this.emotion = newEvent.getEmotion();
+        this.date = newEvent.getDate();
+        this.trigger = newEvent.getTrigger();
+        this.socialSituation = newEvent.getSocialSituation();
     }
 
 }
