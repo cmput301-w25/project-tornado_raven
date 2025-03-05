@@ -12,11 +12,12 @@ public class MoodEvent implements Serializable {
     private String socialSituation;
     private String location;
 
-    public MoodEvent(Emotion emotion, Date date, String trigger, String socialSituation) {
+    public MoodEvent(Emotion emotion, Date date, String trigger, String socialSituation, String location) {
         this.emotion = emotion;
         this.date = date;
         this.trigger = trigger;
         this.socialSituation = socialSituation;
+        this.location=location;
         this.id = UUID.randomUUID().toString();
     }
 
