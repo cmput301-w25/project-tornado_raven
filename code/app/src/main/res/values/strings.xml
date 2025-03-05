@@ -23,6 +23,8 @@
     <string name="btn_unfollow">Unfollow</string>
     <string name="btn_show_pending_requests">Show Pending Follow Requests</string>
     <string name="btn_details">Details</string>
+    <string name="clearfilter">Clear Filters</string>
+
 
     <!-- spinner item-->
     <string-array name="choices">

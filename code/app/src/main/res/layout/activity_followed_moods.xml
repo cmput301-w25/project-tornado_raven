@@ -48,6 +48,13 @@
             android:layout_height="wrap_content"
             android:text="@string/btn_filter_by_keyword"
             android:layout_marginStart="8dp" />
+        <Button
+            android:id="@+id/btnClearFilters"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="@string/clearfilter"
+            android:padding="8dp" />
     </LinearLayout>
 
     <!-- RecyclerView for Moods from Followees -->
