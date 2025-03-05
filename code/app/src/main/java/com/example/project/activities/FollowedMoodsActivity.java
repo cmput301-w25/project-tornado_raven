@@ -1,8 +1,12 @@
 package com.example.project.activities;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.MenuItem;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -31,6 +35,8 @@ public class FollowedMoodsActivity extends AppCompatActivity {
     // Optionally create a new adapter "FollowedMoodsAdapter" if you want different logic
 
     private List<String> followedMoodsList;
+    private List<String> originalMoodsList; // Stores unfiltered data
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +52,8 @@ public class FollowedMoodsActivity extends AppCompatActivity {
         followedMoodsList.add("Bob: Stressed about exam");
         followedMoodsList.add("Carla: Enjoying the sunshine");
 
+        originalMoodsList = new ArrayList<>(followedMoodsList); // Backup for resetting
+
         // Re-using the same adapter for demonstration
         // so we can see user name + "mood" from the string
         followeesAdapter = new FolloweesAdapter(followedMoodsList, position -> {
@@ -58,7 +66,17 @@ public class FollowedMoodsActivity extends AppCompatActivity {
 
         bottomNavigationView.setOnItemSelectedListener(item -> onBottomNavItemSelected(item));
 
-        // Filter button logic
+        // ✅ Set up filtering buttons
+        Button btnShowLastWeek = findViewById(R.id.btnShowLastWeek);
+        Button btnFilterByMood = findViewById(R.id.btnFilterByMood);
+        Button btnFilterByKeyword = findViewById(R.id.btnFilterByKeyword);
+        Button btnClearFilters = findViewById(R.id.btnClearFilters);
+
+        btnShowLastWeek.setOnClickListener(v -> filterByLastWeek());
+        btnFilterByMood.setOnClickListener(v -> showMoodFilterDialog());
+        btnFilterByKeyword.setOnClickListener(v -> showKeywordSearchDialog());
+        btnClearFilters.setOnClickListener(v -> clearFilters());
+        /*// Filter button logic
         findViewById(R.id.btnShowLastWeek).setOnClickListener(v -> {
             Toast.makeText(this, "Filtering by last week...", Toast.LENGTH_SHORT).show();
         });
@@ -69,7 +87,7 @@ public class FollowedMoodsActivity extends AppCompatActivity {
         findViewById(R.id.btnFilterByKeyword).setOnClickListener(v -> {
             DialogFragment dialog = new FilterKeywordDialog();
             dialog.show(getSupportFragmentManager(), "FilterKeywordDialog");
-        });
+        });*/
     }
 
     private boolean onBottomNavItemSelected(@NonNull MenuItem item) {
@@ -97,6 +115,100 @@ public class FollowedMoodsActivity extends AppCompatActivity {
     }
     private boolean isCurrentActivity(Class<?> activityClass) {
         return this.getClass().equals(activityClass);
+    }
+
+    // ✅ Filtering by Last Week
+    private void filterByLastWeek() {
+        List<String> tempList = new ArrayList<>();
+
+        // Simulate filtering by last week (only keeps recent moods)
+        for (String mood : originalMoodsList) {
+            if (mood.contains("Feeling Great!") || mood.contains("Stressed about exam")) { // Example condition
+                tempList.add(mood);
+            }
+        }
+        updateList(tempList, "Filtered:Last week's moods");
+    }
+
+    // ✅ Filtering by Mood Type
+    private void showMoodFilterDialog() {
+        final String[] moods = {"Feeling Great!", "Stressed", "Enjoying", "CLEAR FILTER"};
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Select Mood to Filter")
+                .setItems(moods, (dialog, which) -> {
+                    if (moods[which].equals("CLEAR FILTER")) {
+                        clearFilters();
+                    } else {
+                        filterByMood(moods[which]);
+                    }
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+
+        builder.create().show();
+    }
+
+    private void filterByMood(String selectedMood) {
+        List<String> tempList = new ArrayList<>();
+
+        for (String mood : originalMoodsList) {
+            if (mood.toLowerCase().contains(selectedMood.toLowerCase())) {
+                tempList.add(mood);
+            }
+        }
+        updateList(tempList, "Filtered by mood: " + selectedMood);
+
+
+    }
+
+    // ✅ Filtering by Keyword
+    private void showKeywordSearchDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Search by Keyword");
+
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+
+        builder.setPositiveButton("Search", (dialog, which) -> {
+            String keyword = input.getText().toString().trim();
+            filterByKeyword(keyword);
+        });
+
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+
+        builder.create().show();
+    }
+
+    private void filterByKeyword(String keyword) {
+        if (keyword.isEmpty()) {
+            Toast.makeText(this, "Enter a keyword!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        List<String> tempList = new ArrayList<>();
+        for (String mood : originalMoodsList) {
+            if (mood.toLowerCase().contains(keyword.toLowerCase())) {
+                tempList.add(mood);
+            }
+        }
+        updateList(tempList, "Filtered by keyword: " + keyword);
+    }
+
+    // ✅ Clear Filters and Restore Full List
+    private void clearFilters() {
+        followeesAdapter.resetList(); // Call the resetList() method in the adapter
+        Toast.makeText(this, "Filters cleared", Toast.LENGTH_SHORT).show();
+    }
+
+    // ✅ Update List for Filters
+    // ✅ Updates the adapter list and shows a toast message
+    private void updateList(List<String> newList, String toastMessage) {
+        if (newList.isEmpty()) {
+            Toast.makeText(this, "No results found!", Toast.LENGTH_SHORT).show();
+        } else {
+            followeesAdapter.updateList(newList); // Use adapter's method instead of modifying followedMoodsList
+            Toast.makeText(this, toastMessage, Toast.LENGTH_SHORT).show();
+        }
     }
 }
 

@@ -17,16 +17,21 @@ import com.example.project.MoodEvent;
 import com.example.project.R;
 import com.example.project.activities.EditMoodActivity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.ViewHolder> {
 
     private List<MoodEvent> moodHistoryList;
+    private List<MoodEvent> originalList; // Stores full list for filtering
+
     private Context context;
 
     public MoodHistoryAdapter(Context context, List<MoodEvent> moodHistoryList) {
         this.context = context;
-        this.moodHistoryList = moodHistoryList;
+        this.moodHistoryList = new ArrayList<>(moodHistoryList);
+        this.originalList = new ArrayList<>(moodHistoryList); // Preserve full list
+
     }
 
     @NonNull
@@ -67,6 +72,18 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
             }
         }
     }
+    // ✅ Add method to update list
+    public void updateList(List<MoodEvent> newList) {
+        moodHistoryList.clear();
+        moodHistoryList.addAll(newList);
+        notifyDataSetChanged();
+    }
+    // ✅ Restore full unfiltered list when needed
+    public void resetList() {
+        moodHistoryList.clear();
+        moodHistoryList.addAll(originalList);
+        notifyDataSetChanged();
+    }
     //deleting event
     public void deleteMood(MoodEvent deletedMood) {
         for (int i = 0; i < moodHistoryList.size(); i++) {
@@ -96,17 +113,18 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         }
     }
 
+
     private void showDetailsDialog(MoodEvent moodEvent) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Mood Details");
+        StringBuilder message = new StringBuilder();
 
-        // toString
-        String message = "Emotion: " + moodEvent.getEmotion().toString() + "\n"
-                + "Date: " + moodEvent.getDate().toString() + "\n"
-                + "Reason: " + moodEvent.getTrigger() + "\n"
-                + "Social Situation: " + moodEvent.getSocialSituation();
+        message.append("Emotion: ").append(moodEvent.getEmotion().toString()).append("\n")
+                .append("Date: ").append(moodEvent.getDate().toString()).append("\n")
+                .append("Reason: ").append(moodEvent.getTrigger()).append("\n")
+                .append("Social Situation: ").append(moodEvent.getSocialSituation());
 
-        builder.setMessage(message);
+        builder.setMessage(message.toString());
         builder.setPositiveButton("OK", (dialog, which) -> dialog.dismiss());
 
         builder.create().show();
