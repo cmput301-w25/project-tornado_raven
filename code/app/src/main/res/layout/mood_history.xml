@@ -27,7 +27,7 @@
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textMoodHistoryTitle">
+        tools:layout_editor_absoluteY="48dp">
 
         <Button
             android:id="@+id/btnShowLastMonth"
@@ -48,13 +48,14 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:text="@string/btn_filter_by_keyword" />
+
         <Button
             android:id="@+id/btnClearFilters"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:text="@string/clearfilter"
-            android:padding="8dp" />
+            android:padding="8dp"
+            android:text="@string/clearfilter" />
     </LinearLayout>
 
     <!-- RecyclerView for Moods from Followees -->
@@ -69,6 +70,18 @@
         android:clipToPadding="false"
         android:paddingBottom="32dp"
         tools:listitem="@layout/item_mood"/>
+
+    <!-- FloatingActionButton -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/floating_add_mood_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        app:srcCompat="@android:drawable/ic_menu_add"
+        app:layout_constraintBottom_toTopOf="@+id/bottomNavigation"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp" />
 
     <!-- Bottom Navigation Toolbar (Anchored at Bottom) -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
