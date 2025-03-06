@@ -21,6 +21,7 @@
     <!-- Filter Buttons (Horizontal) -->
     <LinearLayout
         android:id="@+id/layoutMoodHistoryFilters"
+        app:layout_constraintTop_toBottomOf="@id/textMoodHistoryTitle"
         android:layout_width="368dp"
         android:layout_height="83dp"
         android:gravity="center"
