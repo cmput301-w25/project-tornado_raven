@@ -94,6 +94,12 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
             }
         }
     }
+    // ✅ Add new mood at the top of the list
+    public void addMood(MoodEvent newMood) {
+        moodHistoryList.add(0, newMood); // Add new mood at the top
+        notifyItemInserted(0); // Notify RecyclerView to refresh UI
+    }
+
 
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

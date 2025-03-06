@@ -18,6 +18,7 @@ import com.example.project.MoodEvent;
 import com.example.project.R;
 import com.example.project.adapters.MoodHistoryAdapter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -75,20 +76,26 @@ public class MoodHistoryActivity extends AppCompatActivity {
         Button btnFilterByMood = findViewById(R.id.btnFilterByType);
         Button btnShowLastWeek = findViewById(R.id.btnShowLastMonth);
         Button btnClearFilter = findViewById(R.id.btnClearFilters); // Add a clear filter button
+        FloatingActionButton btnAddMood = findViewById(R.id.floating_add_mood_button); // Floating Action Button
 
 
         btnFilterByMood.setOnClickListener(v -> showMoodFilterDialog());
         btnShowLastWeek.setOnClickListener(v -> filterByLastWeek());
         btnClearFilter.setOnClickListener(v -> clearFilters()); // Reset filtering
 
+        btnAddMood.setOnClickListener(v -> {
+            Intent intent = new Intent(MoodHistoryActivity.this, AddingMoodActivity.class);
+            startActivityForResult(intent, 1); // ✅ Use requestCode 1
+        });
+
     }
 
     // dummy data
     private List<MoodEvent> loadMoodHistory() {
         List<MoodEvent> list = new ArrayList<>();
-        list.add(new MoodEvent(Emotion.HAPPINESS,new Date(), "get money", "home"));
-        list.add(new MoodEvent(Emotion.SADNESS, new Date(System.currentTimeMillis() - 3 * 24 * 60 * 60 * 1000), "only 5 dollors", "home"));
-        list.add(new MoodEvent(Emotion.CONFUSION, new Date(System.currentTimeMillis() - 10 * 24 * 60 * 60 * 1000), "lost my money", "home"));
+        list.add(new MoodEvent(Emotion.HAPPINESS,new Date(), "get money", "home", "home"));
+        list.add(new MoodEvent(Emotion.SADNESS, new Date(System.currentTimeMillis() - 3 * 24 * 60 * 60 * 1000), "only 5 dollors", "alone","home"));
+        list.add(new MoodEvent(Emotion.CONFUSION, new Date(System.currentTimeMillis() - 10 * 24 * 60 * 60 * 1000), "lost my money", "alone", "home"));
 
         return list;
     }
@@ -162,6 +169,19 @@ public class MoodHistoryActivity extends AppCompatActivity {
         moodHistoryAdapter.updateList(filteredList);
         Toast.makeText(this, "Filters cleared", Toast.LENGTH_SHORT).show();
     }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 1 && resultCode == RESULT_OK) { // ✅ Check if it's from AddingMoodActivity
+            if (data != null && data.hasExtra("newMood")) {
+                MoodEvent newMood = (MoodEvent) data.getSerializableExtra("newMood");
+                moodHistoryAdapter.addMood(newMood); // ✅ Use the new method to update the list
+                recyclerView.smoothScrollToPosition(0); // Scroll to the top
+            }
+        }
+    }
+
 
     private boolean isCurrentActivity(Class<?> activityClass) {
         return this.getClass().equals(activityClass);
