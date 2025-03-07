@@ -15,12 +15,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.project.Emotion;
 import com.example.project.MoodEvent;
 import com.example.project.R;
+import com.example.project.SocialSituation;
 
 public class EditMoodActivity extends AppCompatActivity {
 
     private Spinner moodSpinner;
     private EditText reasonEditText, socialSituationEditText, locationEditText;
     private Button saveButton, cancelButton;
+    private Spinner socialSituationSpinner;
     private ImageButton backButton;
 
     private MoodEvent currentMood;
@@ -34,13 +36,13 @@ public class EditMoodActivity extends AppCompatActivity {
         // load components
         moodSpinner = findViewById(R.id.moodSpinner);
         reasonEditText = findViewById(R.id.reasonEditText);
-        socialSituationEditText = findViewById(R.id.socialSituationEditText);
+        socialSituationSpinner=findViewById(R.id.socialSituationSpinner);
         locationEditText = findViewById(R.id.locationEditText);
         saveButton = findViewById(R.id.saveButton);
         cancelButton = findViewById(R.id.cancelButton);
         backButton = findViewById(R.id.backButton);
 
-        setupSpinner();
+        setupSpinners();
 
         //data
         Intent intent = getIntent();
@@ -57,7 +59,7 @@ public class EditMoodActivity extends AppCompatActivity {
         saveButton.setOnClickListener(v -> saveChanges());
     }
 
-    private void setupSpinner() {
+    private void setupSpinners() {
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
                 this,
                 R.array.choices,
@@ -65,11 +67,17 @@ public class EditMoodActivity extends AppCompatActivity {
         );
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         moodSpinner.setAdapter(adapter);
+        ArrayAdapter<SocialSituation> socialSituationAdapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_spinner_item,
+                SocialSituation.values()
+        );
+        socialSituationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        socialSituationSpinner.setAdapter(socialSituationAdapter);
     }
 
     private void initData(MoodEvent mood) {
-        reasonEditText.setText(mood.getTrigger());
-        socialSituationEditText.setText(mood.getSocialSituation());
+        reasonEditText.setText(mood.getReason());
         locationEditText.setText(mood.getLocation());
 
         String[] emotions = getResources().getStringArray(R.array.choices);
@@ -78,6 +86,10 @@ public class EditMoodActivity extends AppCompatActivity {
                 moodSpinner.setSelection(i);
                 break;
             }
+        }
+        SocialSituation socialSituation = mood.getSocialSituation();
+        if (socialSituation != null) {
+            socialSituationSpinner.setSelection(socialSituation.ordinal());
         }
     }
 
@@ -95,12 +107,14 @@ public class EditMoodActivity extends AppCompatActivity {
         }
 
         // set data
-        currentMood.setTrigger(trigger);
-        currentMood.setSocialSituation(socialSituation);
+        currentMood.setReason(trigger);
         currentMood.setLocation(location);
 
         String selectedEmotion = moodSpinner.getSelectedItem().toString().toUpperCase();
         currentMood.setEmotion(Emotion.valueOf(selectedEmotion));
+
+        SocialSituation selectedSocialSituation = (SocialSituation) socialSituationSpinner.getSelectedItem();
+        currentMood.setSocialSituation(selectedSocialSituation);
 
         updatedMoodEvent = currentMood;
         updatedPosition = position;
