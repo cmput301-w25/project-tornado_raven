@@ -37,6 +37,12 @@
                 android:text="ADDING MOOD"
                 android:textSize="34sp"
                 android:textStyle="bold" />
+            <Button
+                android:id="@+id/submitButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Submit (Or store it offline upload later)" />
 
             <!-- Select Emotion (Dropdown) -->
             <TextView
@@ -125,12 +131,7 @@
                 android:text="Take Photo" />
 
             <!-- Submit Button -->
-            <Button
-                android:id="@+id/submitButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="Submit (Or store it offline upload later)" />
+
 
         </LinearLayout>
     </ScrollView>

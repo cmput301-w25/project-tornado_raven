@@ -25,6 +25,7 @@ import com.example.project.Emotion;
 import com.example.project.MoodEvent;
 import com.example.project.R;
 import com.example.project.SocialSituation;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -32,8 +33,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AddingMoodActivity extends AppCompatActivity {
+    private FirebaseFirestore db;
     private Spinner emotionSpinner;
     private Spinner socialSituationSpinner;
     private EditText reasonEditText;
@@ -49,6 +53,7 @@ public class AddingMoodActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.addingmood);
+        db = FirebaseFirestore.getInstance();
 
         // Initialize UI elements
         emotionSpinner = findViewById(R.id.emotionSpinner);
@@ -158,9 +163,10 @@ public class AddingMoodActivity extends AppCompatActivity {
         // Get user inputs
         String selectedEmotion = emotionSpinner.getSelectedItem().toString();
         String reason = reasonEditText.getText().toString().trim();
-        int socialSituationPosition = socialSituationSpinner.getSelectedItemPosition(); // Get selected position
-        SocialSituation socialSituation = SocialSituation.fromPosition(socialSituationPosition); // Convert to enum
+        int socialSituationPosition = socialSituationSpinner.getSelectedItemPosition();
+        SocialSituation socialSituation = socialSituationPosition >= 0 ? SocialSituation.fromPosition(socialSituationPosition) : null; // Optional
         String location = locationEditText.getText().toString().trim(); // Optional
+        Uri photoUri = selectedImageUri; // Optional
 
         // Validate required fields
         if (selectedEmotion.isEmpty() || reason.isEmpty()) {
@@ -171,28 +177,10 @@ public class AddingMoodActivity extends AppCompatActivity {
         // Convert emotion string to Emotion enum
         Emotion emotion;
         try {
-            emotion = Emotion.valueOf(selectedEmotion.toUpperCase()); // Ensure it matches enum names
+            emotion = Emotion.valueOf(selectedEmotion.toUpperCase());
         } catch (IllegalArgumentException e) {
             Toast.makeText(this, "Invalid Emotion Selected", Toast.LENGTH_SHORT).show();
             return;
-        }
-
-        // Handle image size validation and compression (if applicable)
-        Uri finalImageUri = null;
-        if (selectedImageUri != null) {
-            long sizeLimit = 65536; // 64 KB in bytes
-            if (!isImageUnderSizeLimit(selectedImageUri, sizeLimit)) {
-                // Compress the image if it exceeds the size limit
-                Bitmap compressedBitmap = compressImage(selectedImageUri);
-                if (compressedBitmap != null) {
-                    finalImageUri = saveCompressedImage(compressedBitmap);
-                } else {
-                    Toast.makeText(this, "Failed to compress image", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-            } else {
-                finalImageUri = selectedImageUri; // Use the original image if it's under the size limit
-            }
         }
 
         // Create new MoodEvent with optional fields
@@ -200,15 +188,53 @@ public class AddingMoodActivity extends AppCompatActivity {
                 emotion,
                 new Date(),
                 reason,
-                socialSituation, // Selected social situation (enum)
+                socialSituation, // Optional
                 location.isEmpty() ? null : location, // Optional
-                finalImageUri // Optional (can be null if no image is selected)
+                photoUri // Optional
         );
+
+        // Save to Firestore
+        saveMoodToFirestore(newMood);
 
         // Send data back to MoodHistoryActivity
         Intent resultIntent = new Intent();
         resultIntent.putExtra("newMood", newMood);
         setResult(RESULT_OK, resultIntent);
         finish(); // Close the activity
+    }
+
+    private void saveMoodToFirestore(MoodEvent moodEvent) {
+        // Create a map to store mood data
+        Map<String, Object> moodData = new HashMap<>();
+        moodData.put("emotion", moodEvent.getEmotion().toString());
+        moodData.put("date", moodEvent.getDate().toString());
+        moodData.put("reason", moodEvent.getReason());
+
+        // Add optional fields if they are not null
+        if (moodEvent.getSocialSituation() != null) {
+            moodData.put("socialSituation", moodEvent.getSocialSituation().toString());
+        }
+        if (moodEvent.getLocation() != null) {
+            moodData.put("location", moodEvent.getLocation());
+        }
+        if (moodEvent.getPhotoUri() != null) {
+            moodData.put("photoUrl", moodEvent.getPhotoUri().toString());
+        }
+
+        // Add a new document with an auto-generated ID
+        db.collection("MoodEvents")
+                .add(moodData)
+                .addOnSuccessListener(documentReference -> {
+                    // Retrieve the auto-generated document ID
+                    String documentId = documentReference.getId();
+
+                    // Optionally, save the document ID in your MoodEvent object
+                    moodEvent.setDocumentId(documentId);
+
+                    Toast.makeText(this, "Mood saved to Firestore!", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to save mood to Firestore: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
 }

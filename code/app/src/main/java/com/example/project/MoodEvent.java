@@ -12,8 +12,17 @@ public class MoodEvent implements Serializable {
     private Date date;
     private String Reason;
     private SocialSituation socialSituation;
+    private String documentId;
     private String location;
     private Uri photoUri;
+
+    public String getDocumentId() {
+        return documentId;
+    }
+
+    public void setDocumentId(String documentId) {
+        this.documentId = documentId;
+    }
 
     public MoodEvent(Emotion emotion, Date date, String reason, SocialSituation socialSituation, String location) {
         this.emotion = emotion;
@@ -68,6 +77,7 @@ public class MoodEvent implements Serializable {
     public String getReason() {
         return Reason;
     }
+    public MoodEvent() {};
 
     public SocialSituation getSocialSituation() {
         return socialSituation;
