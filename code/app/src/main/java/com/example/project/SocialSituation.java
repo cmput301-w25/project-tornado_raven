@@ -1,6 +1,7 @@
 package com.example.project;
 
 public enum SocialSituation {
+    None,
     ALONE,
     WITH_ONE_PERSON,
     WITH_TWO_TO_SEVERAL_PEOPLE,
@@ -9,16 +10,16 @@ public enum SocialSituation {
     // Static method to get the enum value from a position
     public static SocialSituation fromPosition(int position) {
         switch (position) {
-            case 0:
-                return ALONE;
             case 1:
-                return WITH_ONE_PERSON;
+                return ALONE;
             case 2:
-                return WITH_TWO_TO_SEVERAL_PEOPLE;
+                return WITH_ONE_PERSON;
             case 3:
+                return WITH_TWO_TO_SEVERAL_PEOPLE;
+            case 4:
                 return WITH_A_CROWD;
             default:
-                throw new IllegalArgumentException("Invalid position: " + position);
+                return None;
         }
     }
 }

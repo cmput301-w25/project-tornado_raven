@@ -38,6 +38,7 @@
     </string-array>
 
     <string-array name="social_situations">
+            <item>None</item>
             <item>Alone</item>
             <item>With one other person</item>
             <item>With two to several people</item>

@@ -126,7 +126,7 @@ public class AddingMoodActivity extends AppCompatActivity {
         }
     }
 
-    // Method 2: Compress the image
+
     private Bitmap compressImage(Uri imageUri) {
         try {
             InputStream inputStream = getContentResolver().openInputStream(imageUri);
@@ -145,7 +145,6 @@ public class AddingMoodActivity extends AppCompatActivity {
         }
     }
 
-    // Method 3: Save the compressed image to a file
     private Uri saveCompressedImage(Bitmap compressedBitmap) {
         try {
             File file = new File(getFilesDir(), "compressed_image_" + System.currentTimeMillis() + ".jpg");
