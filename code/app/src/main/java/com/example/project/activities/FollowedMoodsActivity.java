@@ -70,12 +70,12 @@ public class FollowedMoodsActivity extends AppCompatActivity {
         Button btnShowLastWeek = findViewById(R.id.btnShowLastWeek);
         Button btnFilterByMood = findViewById(R.id.btnFilterByMood);
         Button btnFilterByKeyword = findViewById(R.id.btnFilterByKeyword);
-        Button btnClearFilters = findViewById(R.id.btnClearFilters);
+        //Button btnClearFilters = findViewById(R.id.btnClearFilters);
 
         btnShowLastWeek.setOnClickListener(v -> filterByLastWeek());
         btnFilterByMood.setOnClickListener(v -> showMoodFilterDialog());
         btnFilterByKeyword.setOnClickListener(v -> showKeywordSearchDialog());
-        btnClearFilters.setOnClickListener(v -> clearFilters());
+        //btnClearFilters.setOnClickListener(v -> clearFilters());
         /*// Filter button logic
         findViewById(R.id.btnShowLastWeek).setOnClickListener(v -> {
             Toast.makeText(this, "Filtering by last week...", Toast.LENGTH_SHORT).show();
@@ -132,7 +132,7 @@ public class FollowedMoodsActivity extends AppCompatActivity {
 
     // ✅ Filtering by Mood Type
     private void showMoodFilterDialog() {
-        final String[] moods = {"Feeling Great!", "Stressed", "Enjoying", "CLEAR FILTER"};
+        final String[] moods = {"ANGER","CONFUSION","DISGUST","FEAR","HAPPINESS", "SADNESS","SHAME","SURPRISE","CLEAR FILTER"}; // Add more moods if needed
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Select Mood to Filter")
