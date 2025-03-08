@@ -37,25 +37,16 @@
             android:name=".activities.EditMoodActivity"
             android:exported="true" />
 
-        <!-- Followers Activity -->
-        <activity
-            android:name=".activities.FollowersActivity"
-            android:exported="false" />
-
-        <!-- Users Followed Activity -->
-        <activity
-            android:name=".activities.UsersFollowedActivity"
-            android:exported="false" />
-
-        <!-- Followees Activity -->
-        <activity android:name=".activities.FolloweesActivity" />
-
         <!-- Followed Moods Activity -->
         <activity android:name=".activities.FollowedMoodsActivity" />
 
         <!-- Mood History Activity -->
         <activity android:name=".activities.MoodHistoryActivity" />
         <activity android:name=".activities.AddingMoodActivity"/>
+
+
+        <!-- Common Space -->
+        <activity android:name=".activities.CommonSpaceActivity" />
 
 
     </application>

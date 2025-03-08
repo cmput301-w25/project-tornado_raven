@@ -4,47 +4,51 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.example.project.R;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main); // The layout for MainActivity, if you have one
 
-        // Check login status before setting up Bottom Navigation
         if (!isUserLoggedIn()) {
             startActivity(new Intent(this, LoginActivity.class));
-            finish(); // Close MainActivity so the user can't go back without logging in
+            finish();
             return;
         }
 
-        BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
-        bottomNavigationView.setSelectedItemId(R.id.nav_my_mood_history); // Highlight the correct tab
+        BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
+        bottomNav.setSelectedItemId(R.id.nav_my_mood_history);
 
-        bottomNavigationView.setOnItemSelectedListener(item -> {
+        bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
 
-            if (id == R.id.nav_followees && !isCurrentActivity(FolloweesActivity.class)) {
-                startActivity(new Intent(this, FolloweesActivity.class));
+            if (id == R.id.nav_common_space) {
+                startActivity(new Intent(this, CommonSpaceActivity.class));
                 overridePendingTransition(0, 0);
                 finish();
                 return true;
-            } else if (id == R.id.nav_followed_moods && !isCurrentActivity(FollowedMoodsActivity.class)) {
+            } else if (id == R.id.nav_followed_moods) {
                 startActivity(new Intent(this, FollowedMoodsActivity.class));
                 overridePendingTransition(0, 0);
                 finish();
                 return true;
-            } else if (id == R.id.nav_my_mood_history && !isCurrentActivity(MoodHistoryActivity.class)) {
+            } else if (id == R.id.nav_my_mood_history) {
                 startActivity(new Intent(this, MoodHistoryActivity.class));
                 overridePendingTransition(0, 0);
                 finish();
                 return true;
-            } else if (id == R.id.nav_profile && !isCurrentActivity(UsersFollowedActivity.class)) {
-                startActivity(new Intent(this, UsersFollowedActivity.class));
-                overridePendingTransition(0, 0);
+            } else if (id == R.id.nav_mood_map) {
+                startActivity(new Intent(this, MoodHistoryActivity.class));
+                overridePendingTransition(0,0);
+                finish();
+                return true;
+            } else if (id == R.id.nav_profile) {
+                startActivity(new Intent(this, MoodHistoryActivity.class));
+                overridePendingTransition(0,0);
                 finish();
                 return true;
             }
@@ -55,9 +59,5 @@ public class MainActivity extends AppCompatActivity {
     private boolean isUserLoggedIn() {
         SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
         return prefs.getBoolean("is_logged_in", false);
-    }
-
-    private boolean isCurrentActivity(Class<?> activityClass) {
-        return this.getClass().equals(activityClass);
     }
 }

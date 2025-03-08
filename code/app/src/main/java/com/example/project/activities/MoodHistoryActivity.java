@@ -1,14 +1,11 @@
 package com.example.project.activities;
 
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -24,6 +21,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * The "home" page: user sees their own mood history.
+ * The bottom nav has 'Common Space' -> CommonSpaceActivity
+ *                'Followed Moods' -> FollowedMoodsActivity, etc.
+ */
 public class MoodHistoryActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
@@ -32,158 +34,108 @@ public class MoodHistoryActivity extends AppCompatActivity {
     private List<MoodEvent> filteredList;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.mood_history);
 
-        recyclerView=findViewById(R.id.recyclerMoodHistory);
+        recyclerView = findViewById(R.id.recyclerMoodHistory);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        moodHistoryList=loadMoodHistory();
+        moodHistoryList = loadMoodHistory();
         filteredList = new ArrayList<>(moodHistoryList);
-        //set adapter
-        moodHistoryAdapter = new MoodHistoryAdapter(this,filteredList);
+
+        moodHistoryAdapter = new MoodHistoryAdapter(this, filteredList);
         recyclerView.setAdapter(moodHistoryAdapter);
 
+        BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
+        bottomNav.setSelectedItemId(R.id.nav_my_mood_history);
+        bottomNav.setOnItemSelectedListener(this::onBottomNavItemSelected);
 
-        // Setup Bottom Navigation
-        BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
-        bottomNavigationView.setSelectedItemId(R.id.nav_my_mood_history); // Highlight the correct tab
-
-        bottomNavigationView.setOnItemSelectedListener(item -> {
-            int id = item.getItemId();
-
-            if (id == R.id.nav_followees && !isCurrentActivity(FolloweesActivity.class)) {
-                startActivity(new Intent(this, FolloweesActivity.class));
-                overridePendingTransition(0, 0);
-                finish();
-                return true;
-            } else if (id == R.id.nav_followed_moods && !isCurrentActivity(FollowedMoodsActivity.class)) {
-                startActivity(new Intent(this, FollowedMoodsActivity.class));
-                overridePendingTransition(0, 0);
-                finish();
-                return true;
-            } else if (id == R.id.nav_my_mood_history) {
-                return true; // Already in MoodHistoryActivity
-            } else if (id == R.id.nav_profile && !isCurrentActivity(UsersFollowedActivity.class)) {
-                startActivity(new Intent(this, UsersFollowedActivity.class));
-                overridePendingTransition(0, 0);
-                finish();
-                return true;
-            }
-            return false;
-        });
         Button btnFilterByMood = findViewById(R.id.btnFilterByType);
         Button btnShowLastWeek = findViewById(R.id.btnShowLastMonth);
-        Button btnClearFilter = findViewById(R.id.btnClearFilters); // Add a clear filter button
-        FloatingActionButton btnAddMood = findViewById(R.id.floating_add_mood_button); // Floating Action Button
+        Button btnClearFilters = findViewById(R.id.btnClearFilters);
+        FloatingActionButton btnAddMood = findViewById(R.id.floating_add_mood_button);
 
-
-        btnFilterByMood.setOnClickListener(v -> showMoodFilterDialog());
+        btnFilterByMood.setOnClickListener(v -> filterByMood());
         btnShowLastWeek.setOnClickListener(v -> filterByLastWeek());
-        btnClearFilter.setOnClickListener(v -> clearFilters()); // Reset filtering
+        btnClearFilters.setOnClickListener(v -> clearFilters());
 
         btnAddMood.setOnClickListener(v -> {
-            Intent intent = new Intent(MoodHistoryActivity.this, AddingMoodActivity.class);
-            startActivityForResult(intent, 1); // ✅ Use requestCode 1
+            // Example: open an Add Mood screen
+            Toast.makeText(this, "Add new mood clicked", Toast.LENGTH_SHORT).show();
+            // startActivity(new Intent(this, AddingMoodActivity.class));
         });
-
     }
 
-    // dummy data
+    private boolean onBottomNavItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.nav_common_space) {
+            startActivity(new Intent(this, CommonSpaceActivity.class));
+            overridePendingTransition(0, 0);
+            finish();
+            return true;
+        } else if (id == R.id.nav_followed_moods) {
+            startActivity(new Intent(this, FollowedMoodsActivity.class));
+            overridePendingTransition(0, 0);
+            finish();
+            return true;
+        } else if (id == R.id.nav_my_mood_history) {
+            return true; // Already here
+        } else if (id == R.id.nav_mood_map) {
+            startActivity(new Intent(this, MoodHistoryActivity.class));
+            overridePendingTransition(0,0);
+            finish();
+            return true;
+        } else if (id == R.id.nav_profile) {
+            startActivity(new Intent(this, MoodHistoryActivity.class));
+            overridePendingTransition(0,0);
+            finish();
+            return true;
+        }
+        return false;
+    }
+
     private List<MoodEvent> loadMoodHistory() {
         List<MoodEvent> list = new ArrayList<>();
-        list.add(new MoodEvent(Emotion.HAPPINESS,new Date(), "get money", "home", "home"));
-        list.add(new MoodEvent(Emotion.SADNESS, new Date(System.currentTimeMillis() - 3 * 24 * 60 * 60 * 1000), "only 5 dollors", "alone","home"));
-        list.add(new MoodEvent(Emotion.CONFUSION, new Date(System.currentTimeMillis() - 10 * 24 * 60 * 60 * 1000), "lost my money", "alone", "home"));
-
+        // Example data
+        list.add(new MoodEvent(Emotion.HAPPINESS, new Date(), "Got money", "home", "home"));
+        list.add(new MoodEvent(Emotion.SADNESS, new Date(System.currentTimeMillis() - 3 * 86400000), "Only 5 dollars", "alone", "home"));
+        list.add(new MoodEvent(Emotion.CONFUSION, new Date(System.currentTimeMillis() - 10 * 86400000), "Lost money", "alone", "home"));
         return list;
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (EditMoodActivity.updatedMoodEvent != null) {
-            updateMoodItem(EditMoodActivity.updatedMoodEvent);
-            EditMoodActivity.updatedMoodEvent = null;
-        }
-    }
-
-    private void updateMoodItem(MoodEvent updatedMood) {
-        for (int i = 0; i < moodHistoryList.size(); i++) {
-            if (moodHistoryList.get(i).getId().equals(updatedMood.getId())) {
-                moodHistoryList.set(i, updatedMood);
-                moodHistoryAdapter.notifyItemChanged(i);
-                Toast.makeText(this, "Mood updated", Toast.LENGTH_SHORT).show();
-                return;
+    private void filterByMood() {
+        Toast.makeText(this, "Filtering by mood...", Toast.LENGTH_SHORT).show();
+        // Example: filter by "HAPPINESS" only
+        List<MoodEvent> newList = new ArrayList<>();
+        for (MoodEvent me : moodHistoryList) {
+            if (me.getEmotion() == Emotion.HAPPINESS) {
+                newList.add(me);
             }
         }
-    }
-    // ✅ Filter moods by user-selected emotion
-    private void showMoodFilterDialog() {
-        final String[] moods = {"HAPPINESS", "SADNESS", "CONFUSION","CLEAR FILTER"}; // Add more moods if needed
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Select Mood to Filter")
-                .setItems(moods, (dialog, which) -> {
-                    if (moods[which].equals("CLEAR FILTER")) {
-                        clearFilters();
-                    } else {
-                        filterByMood(Emotion.valueOf(moods[which]));
-                    }
-                })
-                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
-
-        builder.create().show();
-    }
-
-    private void filterByMood(Emotion selectedMood) {
         filteredList.clear();
-        for (MoodEvent mood : moodHistoryList) {
-            if (mood.getEmotion() == selectedMood) {
-                filteredList.add(mood);
-            }
-        }
+        filteredList.addAll(newList);
         moodHistoryAdapter.updateList(filteredList);
-        Toast.makeText(this, "Filtered by " + selectedMood.name(), Toast.LENGTH_SHORT).show();
     }
 
-    // ✅ Show only moods from the last 7 days
     private void filterByLastWeek() {
-        filteredList.clear();
-        long oneWeekAgo = System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000); // 7 days in milliseconds
-
-        for (MoodEvent mood : moodHistoryList) {
-            if (mood.getDate().getTime() >= oneWeekAgo) {
-                filteredList.add(mood);
+        Toast.makeText(this, "Filtering last week...", Toast.LENGTH_SHORT).show();
+        long cutoff = System.currentTimeMillis() - (7L * 86400000);
+        List<MoodEvent> newList = new ArrayList<>();
+        for (MoodEvent me : moodHistoryList) {
+            if (me.getDate().getTime() >= cutoff) {
+                newList.add(me);
             }
         }
-
+        filteredList.clear();
+        filteredList.addAll(newList);
         moodHistoryAdapter.updateList(filteredList);
-        Toast.makeText(this, "Showing last week's moods", Toast.LENGTH_SHORT).show();
     }
-    // ✅ Clear Filters
+
     private void clearFilters() {
         filteredList.clear();
-        filteredList.addAll(moodHistoryList); // Restore the original list
+        filteredList.addAll(moodHistoryList);
         moodHistoryAdapter.updateList(filteredList);
         Toast.makeText(this, "Filters cleared", Toast.LENGTH_SHORT).show();
-    }
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == 1 && resultCode == RESULT_OK) { // ✅ Check if it's from AddingMoodActivity
-            if (data != null && data.hasExtra("newMood")) {
-                MoodEvent newMood = (MoodEvent) data.getSerializableExtra("newMood");
-                moodHistoryAdapter.addMood(newMood); // ✅ Use the new method to update the list
-                recyclerView.smoothScrollToPosition(0); // Scroll to the top
-            }
-        }
-    }
-
-
-    private boolean isCurrentActivity(Class<?> activityClass) {
-        return this.getClass().equals(activityClass);
     }
 }

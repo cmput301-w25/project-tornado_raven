@@ -52,13 +52,13 @@ public class FollowersActivity extends AppCompatActivity {
         bottomNav.setOnNavigationItemSelectedListener(item -> onBottomNavItemSelected(item));
 
         // Optionally highlight the 'Followers' tab
-        bottomNav.setSelectedItemId(R.id.nav_followees);
+        bottomNav.setSelectedItemId(R.id.nav_common_space);
     }
 
     private boolean onBottomNavItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.nav_followees) {
+        if (id == R.id.nav_common_space) {
             // Already here
             return true;
         } else if (id == R.id.nav_followed_moods) {

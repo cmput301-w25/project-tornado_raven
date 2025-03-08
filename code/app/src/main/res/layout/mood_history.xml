@@ -56,7 +56,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:padding="8dp"
-            android:text="@string/clearfilter" />
+            android:text="@string/btn_clear_filters" />
     </LinearLayout>
 
     <!-- RecyclerView for Moods from Followees -->

@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_followed_moods"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools"
     android:padding="16dp">
 
-    <!-- Title: Followed Moods -->
     <TextView
         android:id="@+id/textFollowedMoodsTitle"
         android:layout_width="wrap_content"
@@ -18,13 +19,14 @@
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginBottom="16dp"/>
 
-    <!-- Filter Buttons (Horizontal) -->
-    <LinearLayout
+    <GridLayout
         android:id="@+id/layoutFilters"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
+        android:columnCount="2"
+        android:rowCount="2"
+        android:alignmentMode="alignMargins"
+        android:useDefaultMargins="true"
         app:layout_constraintTop_toBottomOf="@+id/textFollowedMoodsTitle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -33,31 +35,27 @@
             android:id="@+id/btnShowLastWeek"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/btn_show_last_week" />
+            android:text="@string/btn_show_last_week"/>
 
         <Button
             android:id="@+id/btnFilterByMood"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/btn_filter_by_mood"
-            android:layout_marginStart="8dp" />
+            android:text="@string/btn_filter_by_mood"/>
 
         <Button
             android:id="@+id/btnFilterByKeyword"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/btn_filter_by_keyword"
-            android:layout_marginStart="8dp" />
+            android:text="@string/btn_filter_by_keyword"/>
+
         <Button
             android:id="@+id/btnClearFilters"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="@string/clearfilter"
-            android:padding="8dp" />
-    </LinearLayout>
+            android:text="@string/btn_clear_filters"/>
+    </GridLayout>
 
-    <!-- RecyclerView for Moods from Followees -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerFollowedMoods"
         android:layout_width="0dp"
@@ -66,11 +64,10 @@
         app:layout_constraintBottom_toTopOf="@+id/bottomNavigation"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        tools:listitem="@layout/item_mood"
         android:clipToPadding="false"
-        android:paddingBottom="16dp"
-        tools:listitem="@layout/item_user_followed"/>
+        android:paddingBottom="16dp"/>
 
-    <!-- Bottom Navigation Toolbar (Anchored at Bottom) -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
@@ -79,6 +76,5 @@
         app:menu="@menu/menu_bottom_navigation"
         app:labelVisibilityMode="labeled"
         app:itemHorizontalTranslationEnabled="false"
-        app:layout_constraintBottom_toBottomOf="parent" />
-
+        app:layout_constraintBottom_toBottomOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
