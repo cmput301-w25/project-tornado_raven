@@ -1,6 +1,5 @@
 package com.example.project.adapters;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -46,8 +45,8 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         MoodEvent moodEvent = moodHistoryList.get(position);
         holder.emotion.setText(moodEvent.getEmotion().toString());
         holder.date.setText(moodEvent.getDate().toString());
-        holder.reason.setText(moodEvent.getTrigger());
-        holder.social.setText(moodEvent.getSocialSituation());
+        holder.reason.setText(moodEvent.getReason());
+        holder.social.setText(moodEvent.getSocialSituation().toString());
 
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, EditMoodActivity.class);
@@ -127,7 +126,7 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
 
         message.append("Emotion: ").append(moodEvent.getEmotion().toString()).append("\n")
                 .append("Date: ").append(moodEvent.getDate().toString()).append("\n")
-                .append("Reason: ").append(moodEvent.getTrigger()).append("\n")
+                .append("Reason: ").append(moodEvent.getReason()).append("\n")
                 .append("Social Situation: ").append(moodEvent.getSocialSituation());
 
         builder.setMessage(message.toString());

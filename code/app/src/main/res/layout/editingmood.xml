@@ -79,14 +79,12 @@
                 android:textSize="16sp"
                 android:layout_marginTop="10dp" />
 
-            <EditText
-                android:id="@+id/socialSituationEditText"
+            <Spinner
+                android:id="@+id/socialSituationSpinner"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Enter social situation"
-                android:inputType="text"
-                android:background="@android:drawable/edit_text"
-                android:padding="10dp"/>
+                android:background="@android:drawable/btn_dropdown"
+                android:padding="8dp" />
 
             <!-- Location -->
             <TextView
