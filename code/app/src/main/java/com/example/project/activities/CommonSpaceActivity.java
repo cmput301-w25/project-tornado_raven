@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.project.GlobalData;
+import com.example.project.MoodEvent;
 import com.example.project.R;
 import com.example.project.adapters.CommonSpaceAdapter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -38,7 +39,7 @@ public class CommonSpaceActivity extends AppCompatActivity {
 
         // Example data: "Emotion|Date|Reason|Social"
         originalList = new ArrayList<>();
-        originalList.add("Happy|2023-03-20|Got a new job|With a crowd");
+        originalList.add("Happy|2024-03-20|Got a new job|With a crowd");
         originalList.add("Sad|2023-03-19|Bad news|Alone");
         originalList.add("Angry|2023-03-18|Traffic jam|Two to several");
         originalList.add("Surprised|2023-03-17|Found $10|With one person");
@@ -85,7 +86,7 @@ public class CommonSpaceActivity extends AppCompatActivity {
             finish();
             return true;
         } else if (id == R.id.nav_profile) {
-            startActivity(new Intent(this, MoodHistoryActivity.class));
+            startActivity(new Intent(this, ProfileActivity.class));
             finish();
             return true;
         }
@@ -101,6 +102,8 @@ public class CommonSpaceActivity extends AppCompatActivity {
         }
         updateList(temp, "Filtered last week");
     }
+
+
 
     private void filterByMood() {
         List<String> temp = new ArrayList<>();
