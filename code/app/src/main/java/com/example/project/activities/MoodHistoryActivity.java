@@ -73,7 +73,7 @@ public class MoodHistoryActivity extends AppCompatActivity {
             } else if (id == R.id.nav_my_mood_history) {
                 return true; // Already in MoodHistoryActivity
             } else if (id == R.id.nav_profile && !isCurrentActivity(UsersFollowedActivity.class)) {
-                startActivity(new Intent(this, UsersFollowedActivity.class));
+                startActivity(new Intent(this, ProfileActivity.class));
                 overridePendingTransition(0, 0);
                 finish();
                 return true;
@@ -82,13 +82,13 @@ public class MoodHistoryActivity extends AppCompatActivity {
         });
         Button btnFilterByMood = findViewById(R.id.btnFilterByType);
         Button btnShowLastWeek = findViewById(R.id.btnShowLastMonth);
-        Button btnClearFilter = findViewById(R.id.btnClearFilters); // Add a clear filter button
+        //Button btnClearFilter = findViewById(R.id.btnClearFilters); // Add a clear filter button
         FloatingActionButton btnAddMood = findViewById(R.id.floating_add_mood_button); // Floating Action Button
 
 
         btnFilterByMood.setOnClickListener(v -> showMoodFilterDialog());
         btnShowLastWeek.setOnClickListener(v -> filterByLastWeek());
-        btnClearFilter.setOnClickListener(v -> clearFilters()); // Reset filtering
+        //btnClearFilter.setOnClickListener(v -> clearFilters()); // Reset filtering
 
         btnAddMood.setOnClickListener(v -> {
             Intent intent = new Intent(MoodHistoryActivity.this, AddingMoodActivity.class);
@@ -167,7 +167,7 @@ public class MoodHistoryActivity extends AppCompatActivity {
     }
     // ✅ Filter moods by user-selected emotion
     private void showMoodFilterDialog() {
-        final String[] moods = {"HAPPINESS", "SADNESS", "CONFUSION","CLEAR FILTER"}; // Add more moods if needed
+        final String[] moods = {"ANGER","CONFUSION","DISGUST","FEAR","HAPPINESS", "SADNESS","SHAME","SURPRISE","CLEAR FILTER"}; // Add more moods if needed
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Select Mood to Filter")

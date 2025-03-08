@@ -44,6 +44,9 @@
         <activity android:name=".activities.MoodHistoryActivity" />
         <activity android:name=".activities.AddingMoodActivity"/>
 
+        <activity android:name=".activities.ProfileActivity" />
+
+
 
         <!-- Common Space -->
         <activity android:name=".activities.CommonSpaceActivity" />
