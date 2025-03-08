@@ -21,7 +21,7 @@ public class EditMoodActivity extends AppCompatActivity {
 
     private Spinner moodSpinner;
     private EditText reasonEditText, socialSituationEditText, locationEditText;
-    private Button saveButton, cancelButton;
+    private Button saveButton, deleteButton;
     private Spinner socialSituationSpinner;
     private ImageButton backButton;
 
@@ -39,7 +39,7 @@ public class EditMoodActivity extends AppCompatActivity {
         socialSituationSpinner=findViewById(R.id.socialSituationSpinner);
         locationEditText = findViewById(R.id.locationEditText);
         saveButton = findViewById(R.id.saveButton);
-        cancelButton = findViewById(R.id.cancelButton);
+        deleteButton = findViewById(R.id.deleteButton);
         backButton = findViewById(R.id.backButton);
 
         setupSpinners();
@@ -55,7 +55,7 @@ public class EditMoodActivity extends AppCompatActivity {
         }
 
         backButton.setOnClickListener(v -> finish());
-        cancelButton.setOnClickListener(v -> cancelEdit());
+        deleteButton.setOnClickListener(v -> deleteMood());
         saveButton.setOnClickListener(v -> saveChanges());
     }
 
@@ -93,15 +93,12 @@ public class EditMoodActivity extends AppCompatActivity {
         }
     }
 
-    public static MoodEvent updatedMoodEvent = null;
-    public static int updatedPosition = -1;
-
     private void saveChanges() {
         String trigger = reasonEditText.getText().toString().trim();
-        String socialSituation = socialSituationEditText.getText().toString().trim();
+//        String socialSituation = socialSituationEditText.getText().toString().trim();
         String location = locationEditText.getText().toString().trim();
 
-        if (trigger.isEmpty() || socialSituation.isEmpty() || location.isEmpty()) {
+        if (trigger.isEmpty() || location.isEmpty()) {
             Toast.makeText(this, "errors! cannot be empty!", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -115,13 +112,19 @@ public class EditMoodActivity extends AppCompatActivity {
 
         SocialSituation selectedSocialSituation = (SocialSituation) socialSituationSpinner.getSelectedItem();
         currentMood.setSocialSituation(selectedSocialSituation);
-
-        updatedMoodEvent = currentMood;
-        updatedPosition = position;
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra("updatedMood", currentMood);
+        resultIntent.putExtra("position", position);
+        setResult(RESULT_OK, resultIntent);
+        finish();
 
         finish();
     }
-    private void cancelEdit() {
+    private void deleteMood() {
+        //return deleted id
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra("deleteMoodId", currentMood.getId());
+        setResult(RESULT_OK, resultIntent);
         finish();
     }
 }

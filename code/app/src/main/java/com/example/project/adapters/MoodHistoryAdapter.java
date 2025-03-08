@@ -1,5 +1,6 @@
 package com.example.project.adapters;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -51,9 +52,8 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, EditMoodActivity.class);
             intent.putExtra("moodEvent", moodEvent);
-            context.startActivity(intent);
+            ((Activity) context).startActivityForResult(intent, 2); //edit
         });
-
         holder.detailsButton.setOnClickListener(v -> showDetailsDialog(moodEvent));
     }
 
@@ -64,7 +64,7 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
     // updating event
     public void updateMood(MoodEvent updatedMood) {
         for (int i = 0; i < moodHistoryList.size(); i++) {
-            if (moodHistoryList.get(i).getDate().equals(updatedMood.getDate())) {
+            if (moodHistoryList.get(i).getId().equals(updatedMood.getId())) {
                 moodHistoryList.set(i, updatedMood);
                 notifyItemChanged(i);
                 break;
@@ -86,7 +86,7 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
     //deleting event
     public void deleteMood(MoodEvent deletedMood) {
         for (int i = 0; i < moodHistoryList.size(); i++) {
-            if (moodHistoryList.get(i).getDate().equals(deletedMood.getDate())) {
+            if (moodHistoryList.get(i).getId().equals(deletedMood.getId())) {
                 moodHistoryList.remove(i);
                 notifyItemRemoved(i);
                 break;

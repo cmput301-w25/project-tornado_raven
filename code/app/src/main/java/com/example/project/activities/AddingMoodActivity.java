@@ -206,7 +206,7 @@ public class AddingMoodActivity extends AppCompatActivity {
         // Create a map to store mood data
         Map<String, Object> moodData = new HashMap<>();
         moodData.put("emotion", moodEvent.getEmotion().toString());
-        moodData.put("date", moodEvent.getDate().toString());
+        moodData.put("date", moodEvent.getDate());
         moodData.put("reason", moodEvent.getReason());
 
         // Add optional fields if they are not null
