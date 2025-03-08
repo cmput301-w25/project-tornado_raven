@@ -11,11 +11,11 @@
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?android:attr/windowBackground"
         app:menu="@menu/menu_bottom_navigation"
         app:labelVisibilityMode="labeled"
-        android:layout_gravity="bottom"
-        app:itemHorizontalTranslationEnabled="false"/>
+        app:itemHorizontalTranslationEnabled="false"
+        android:layout_gravity="bottom"/>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
 
 
