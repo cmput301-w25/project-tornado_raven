@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <!-- 1) Followees -->
+    <!-- 1) Common Space -->
     <item
-        android:id="@+id/nav_followees"
-        android:title="@string/nav_followees"
+        android:id="@+id/nav_common_space"
+        android:title="@string/nav_common_space"
         android:icon="@drawable/ic_followees"
         app:showAsAction="always" />
 

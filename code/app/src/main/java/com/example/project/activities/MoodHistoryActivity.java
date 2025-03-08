@@ -60,8 +60,8 @@ public class MoodHistoryActivity extends AppCompatActivity {
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
 
-            if (id == R.id.nav_followees && !isCurrentActivity(FolloweesActivity.class)) {
-                startActivity(new Intent(this, FolloweesActivity.class));
+            if (id == R.id.nav_common_space && !isCurrentActivity(CommonSpaceActivity.class)) {
+                startActivity(new Intent(this, CommonSpaceActivity.class));
                 overridePendingTransition(0, 0);
                 finish();
                 return true;

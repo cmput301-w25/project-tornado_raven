@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -40,6 +41,7 @@ public class ProfileActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private TextView userName;
     private ImageView profileImage;
+    private Button addmood_btn;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -65,7 +67,11 @@ public class ProfileActivity extends AppCompatActivity {
         // read data from firebase
         loadMoodHistoryFromFirestore();
 
-
+        addmood_btn = findViewById(R.id.add_mood);
+        addmood_btn.setOnClickListener(v -> {
+            Intent intent = new Intent(this, AddingMoodActivity.class);
+            startActivityForResult(intent, 1); // ✅ Use requestCode 1
+        });
         // Setup Bottom Navigation
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
         bottomNavigationView.setSelectedItemId(R.id.nav_profile); // Highlight the correct tab
@@ -73,7 +79,7 @@ public class ProfileActivity extends AppCompatActivity {
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
 
-            if (id == R.id.nav_followees && !isCurrentActivity(FolloweesActivity.class)) {
+            if (id == R.id.nav_common_space && !isCurrentActivity(FolloweesActivity.class)) {
                 startActivity(new Intent(this, FolloweesActivity.class));
                 overridePendingTransition(0, 0);
                 finish();

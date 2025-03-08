@@ -12,46 +12,49 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.project.GlobalData;
 import com.example.project.R;
-import com.example.project.adapters.FollowedMoodsAdapter;
+import com.example.project.adapters.CommonSpaceAdapter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Shows only the moods user has specifically followed.
- * No references to "followed users" logic here.
+ * Displays public moods. Users can "Follow" individual moods.
  */
-public class FollowedMoodsActivity extends AppCompatActivity {
+public class CommonSpaceActivity extends AppCompatActivity {
 
-    private RecyclerView recyclerFollowedMoods;
-    private FollowedMoodsAdapter adapter;
-    private List<String> followedList;
-    private List<String> backupList;
+    private RecyclerView recyclerCommonSpace;
+    private CommonSpaceAdapter adapter;
+    private List<String> moodList;
+    private List<String> originalList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_followed_moods);
+        setContentView(R.layout.activity_common_space);
 
-        recyclerFollowedMoods = findViewById(R.id.recyclerFollowedMoods);
-        recyclerFollowedMoods.setLayoutManager(new LinearLayoutManager(this));
+        recyclerCommonSpace = findViewById(R.id.recyclerCommonSpace);
+        recyclerCommonSpace.setLayoutManager(new LinearLayoutManager(this));
 
-        // The user's stored followed moods
-        followedList = new ArrayList<>(GlobalData.followedMoods);
-        backupList = new ArrayList<>(followedList);
+        // Example data: "Emotion|Date|Reason|Social"
+        originalList = new ArrayList<>();
+        originalList.add("Happy|2023-03-20|Got a new job|With a crowd");
+        originalList.add("Sad|2023-03-19|Bad news|Alone");
+        originalList.add("Angry|2023-03-18|Traffic jam|Two to several");
+        originalList.add("Surprised|2023-03-17|Found $10|With one person");
 
-        adapter = new FollowedMoodsAdapter(followedList, position -> {
-            String moodData = followedList.get(position);
-            followedList.remove(position);
-            adapter.notifyItemRemoved(position);
-            GlobalData.followedMoods.remove(moodData);
-            Toast.makeText(this, "Unfollowed mood: " + moodData, Toast.LENGTH_SHORT).show();
+        moodList = new ArrayList<>(originalList);
+
+        adapter = new CommonSpaceAdapter(moodList, position -> {
+            // "Follow" logic
+            String selectedMood = moodList.get(position);
+            GlobalData.followedMoods.add(selectedMood);
+            Toast.makeText(this, "Followed mood: " + selectedMood, Toast.LENGTH_SHORT).show();
         });
-        recyclerFollowedMoods.setAdapter(adapter);
+        recyclerCommonSpace.setAdapter(adapter);
 
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
-        bottomNav.setSelectedItemId(R.id.nav_followed_moods);
+        bottomNav.setSelectedItemId(R.id.nav_common_space);
         bottomNav.setOnItemSelectedListener(this::onBottomNavItemSelected);
 
         Button btnShowLastWeek = findViewById(R.id.btnShowLastWeek);
@@ -68,10 +71,10 @@ public class FollowedMoodsActivity extends AppCompatActivity {
     private boolean onBottomNavItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.nav_common_space) {
-            startActivity(new Intent(this, CommonSpaceActivity.class));
-            finish();
-            return true;
+            return true; // Already here
         } else if (id == R.id.nav_followed_moods) {
+            startActivity(new Intent(this, FollowedMoodsActivity.class));
+            finish();
             return true;
         } else if (id == R.id.nav_my_mood_history) {
             startActivity(new Intent(this, MoodHistoryActivity.class));
@@ -90,45 +93,45 @@ public class FollowedMoodsActivity extends AppCompatActivity {
     }
 
     private void filterLastWeek() {
-        List<String> newList = new ArrayList<>();
-        for (String mood : backupList) {
-            if (mood.contains("2023-03-20") || mood.contains("2023-03-19")) {
-                newList.add(mood);
+        List<String> temp = new ArrayList<>();
+        for (String s : originalList) {
+            if (s.contains("2023-03-20") || s.contains("2023-03-19") || s.contains("2023-03-18")) {
+                temp.add(s);
             }
         }
-        updateList(newList, "Filtered: Last Week");
+        updateList(temp, "Filtered last week");
     }
 
     private void filterByMood() {
-        List<String> newList = new ArrayList<>();
-        for (String mood : backupList) {
-            if (mood.toLowerCase().contains("happy")) {
-                newList.add(mood);
+        List<String> temp = new ArrayList<>();
+        for (String s : originalList) {
+            if (s.toLowerCase().contains("happy")) {
+                temp.add(s);
             }
         }
-        updateList(newList, "Filtered by mood: happy");
+        updateList(temp, "Filtered: happy moods");
     }
 
     private void filterByKeyword() {
-        List<String> newList = new ArrayList<>();
-        for (String mood : backupList) {
-            if (mood.toLowerCase().contains("job") || mood.toLowerCase().contains("sunshine")) {
-                newList.add(mood);
+        List<String> temp = new ArrayList<>();
+        for (String s : originalList) {
+            if (s.toLowerCase().contains("job") || s.toLowerCase().contains("jam")) {
+                temp.add(s);
             }
         }
-        updateList(newList, "Filtered by keyword job/sunshine");
+        updateList(temp, "Filtered by keywords job/jam");
     }
 
     private void clearFilters() {
-        updateList(backupList, "Cleared filters");
+        updateList(originalList, "Cleared filters");
     }
 
     private void updateList(List<String> newList, String toast) {
-        followedList.clear();
-        followedList.addAll(newList);
+        moodList.clear();
+        moodList.addAll(newList);
         adapter.notifyDataSetChanged();
         Toast.makeText(this, toast, Toast.LENGTH_SHORT).show();
-        if (followedList.isEmpty()) {
+        if (moodList.isEmpty()) {
             Toast.makeText(this, "No results found", Toast.LENGTH_SHORT).show();
         }
     }

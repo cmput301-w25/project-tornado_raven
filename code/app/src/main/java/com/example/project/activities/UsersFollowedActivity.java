@@ -72,7 +72,7 @@ public class UsersFollowedActivity extends AppCompatActivity {
     private boolean onBottomNavItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.nav_followees) {
+        if (id == R.id.nav_common_space) {
             return true; // Already in FolloweesActivity
         } else if (id == R.id.nav_followed_moods) {
             startActivity(new Intent(this, FollowedMoodsActivity.class));
