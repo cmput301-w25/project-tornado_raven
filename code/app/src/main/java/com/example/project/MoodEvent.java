@@ -32,6 +32,14 @@ public class MoodEvent implements Serializable {
         this.location=location;
         this.id = UUID.randomUUID().toString();
     }
+    public MoodEvent(Emotion emotion, Date date, String reason, SocialSituation socialSituation, String location,String id) {
+        this.emotion = emotion;
+        this.date = date;
+        this.Reason = reason;
+        this.socialSituation = socialSituation;
+        this.location=location;
+        this.id = UUID.randomUUID().toString();
+    }
     public MoodEvent(Emotion emotion, Date date, String reason, SocialSituation socialSituation, String location, Uri photoUri) {
         this.emotion = emotion;
         this.date = date;

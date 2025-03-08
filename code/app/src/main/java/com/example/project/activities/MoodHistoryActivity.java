@@ -102,18 +102,36 @@ public class MoodHistoryActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (EditMoodActivity.updatedMoodEvent != null) {
-            updateMoodItem(EditMoodActivity.updatedMoodEvent);
-            EditMoodActivity.updatedMoodEvent = null;
-        }
     }
 
     private void updateMoodItem(MoodEvent updatedMood) {
         for (int i = 0; i < moodHistoryList.size(); i++) {
             if (moodHistoryList.get(i).getId().equals(updatedMood.getId())) {
                 moodHistoryList.set(i, updatedMood);
-                moodHistoryAdapter.notifyItemChanged(i);
+                for (int j = 0; j < filteredList.size(); j++) {
+                    if (filteredList.get(j).getId().equals(updatedMood.getId())) {
+                        filteredList.set(j, updatedMood);
+                        break;
+                    }
+                }
+                moodHistoryAdapter.updateMood(updatedMood);
                 Toast.makeText(this, "Mood updated", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+    }
+    private void deleteMood(String moodId) {
+        for (int i = 0; i < moodHistoryList.size(); i++) {
+            if (moodHistoryList.get(i).getId().equals(moodId)) {
+                moodHistoryList.remove(i);
+                for (int j = 0; j < filteredList.size(); j++) {
+                    if (filteredList.get(j).getId().equals(moodId)) {
+                        filteredList.remove(j);
+                        break;
+                    }
+                }
+                moodHistoryAdapter.notifyItemRemoved(i);
+                Toast.makeText(this, "Mood deleted", Toast.LENGTH_SHORT).show();
                 return;
             }
         }
@@ -177,6 +195,17 @@ public class MoodHistoryActivity extends AppCompatActivity {
                 MoodEvent newMood = (MoodEvent) data.getSerializableExtra("newMood");
                 moodHistoryAdapter.addMood(newMood); // ✅ Use the new method to update the list
                 recyclerView.smoothScrollToPosition(0); // Scroll to the top
+            }
+        }
+        if (requestCode == 2 && resultCode == RESULT_OK) {
+            if (data != null) {
+                if (data.hasExtra("updatedMood")) {
+                    MoodEvent updatedMood = (MoodEvent) data.getSerializableExtra("updatedMood");
+                    updateMoodItem(updatedMood);
+                } else if (data.hasExtra("deleteMoodId")) {
+                    String deleteMoodId = data.getStringExtra("deleteMoodId");
+                    deleteMood(deleteMoodId);
+                }
             }
         }
     }

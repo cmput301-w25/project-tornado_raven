@@ -28,13 +28,15 @@
 
     <!-- spinner item-->
     <string-array name="choices">
+        <item>ANGER</item>
+        <item>CONFUSION</item>
+        <item>DISGUST</item>
+        <item>FEAR</item>
         <item>HAPPINESS</item>
         <item>SADNESS</item>
-        <item>CONFUSION</item>
-        <item>ANGER</item>
-        <item>FEAR</item>
-        <item>DISGUST</item>
+        <item>SHAME</item>
         <item>SURPRISE</item>
+
     </string-array>
 
     <string-array name="social_situations">
