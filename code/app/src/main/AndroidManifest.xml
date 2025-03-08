@@ -57,6 +57,9 @@
         <activity android:name=".activities.MoodHistoryActivity" />
         <activity android:name=".activities.AddingMoodActivity"/>
 
+        <activity android:name=".activities.ProfileActivity" />
+
+
 
     </application>
 </manifest>

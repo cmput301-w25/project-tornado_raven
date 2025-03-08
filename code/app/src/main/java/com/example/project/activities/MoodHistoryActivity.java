@@ -73,7 +73,7 @@ public class MoodHistoryActivity extends AppCompatActivity {
             } else if (id == R.id.nav_my_mood_history) {
                 return true; // Already in MoodHistoryActivity
             } else if (id == R.id.nav_profile && !isCurrentActivity(UsersFollowedActivity.class)) {
-                startActivity(new Intent(this, UsersFollowedActivity.class));
+                startActivity(new Intent(this, ProfileActivity.class));
                 overridePendingTransition(0, 0);
                 finish();
                 return true;

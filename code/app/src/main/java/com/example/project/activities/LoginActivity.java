@@ -1,6 +1,7 @@
 package com.example.project.activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -160,6 +161,7 @@ public class LoginActivity extends AppCompatActivity {
      */
     private void validateLogin(String username, String password, LoginCallback callback) {
         if (username.equals("admin") && password.equals("1234")) {
+            saveUserIdLocally("admin");
             callback.onSuccess();
         }
         userRef.whereEqualTo("username",username)
@@ -167,7 +169,9 @@ public class LoginActivity extends AppCompatActivity {
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     if(!queryDocumentSnapshots.isEmpty()) {
                         String storedPassword = queryDocumentSnapshots.getDocuments().get(0).getString("password");
+                        String userId = queryDocumentSnapshots.getDocuments().get(0).getId(); // ✅ Get Firestore user ID
                         if (storedPassword != null && storedPassword.equals(password)) {
+                            saveUserIdLocally(userId); // ✅ Save user ID locally
                             callback.onSuccess();
                         } else {
                             callback.onFailure("Wrong password");
@@ -196,6 +200,13 @@ public class LoginActivity extends AppCompatActivity {
                 })
                 .addOnFailureListener(e -> callback.onFailure("Database Error: " + e.getMessage()));
     }
+    private void saveUserIdLocally(String userId) {
+        SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("userId", userId); // ✅ Store logged-in user's Firestore ID
+        editor.apply();
+    }
+
 
     /**
      * login callback interface to check the callback result
