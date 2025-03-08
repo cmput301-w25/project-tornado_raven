@@ -21,6 +21,7 @@ import java.util.Date;
 
 public class AddingMoodActivity extends AppCompatActivity {
 
+
     private Spinner emotionSpinner;
     private EditText reasonEditText;
     private EditText socialSituationEditText;
