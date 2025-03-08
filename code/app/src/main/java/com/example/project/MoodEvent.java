@@ -24,6 +24,7 @@ public class MoodEvent implements Serializable {
         this.documentId = documentId;
     }
 
+    public MoodEvent() {};
     public MoodEvent(Emotion emotion, Date date, String reason, SocialSituation socialSituation, String location) {
         this.emotion = emotion;
         this.date = date;
@@ -77,7 +78,6 @@ public class MoodEvent implements Serializable {
     public String getReason() {
         return Reason;
     }
-    public MoodEvent() {};
 
     public SocialSituation getSocialSituation() {
         return socialSituation;

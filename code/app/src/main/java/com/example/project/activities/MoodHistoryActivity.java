@@ -18,6 +18,8 @@ import com.example.project.SocialSituation;
 import com.example.project.adapters.MoodHistoryAdapter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -29,6 +31,7 @@ public class MoodHistoryActivity extends AppCompatActivity {
     private MoodHistoryAdapter moodHistoryAdapter;
     private List<MoodEvent> moodHistoryList;
     private List<MoodEvent> filteredList;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -38,11 +41,16 @@ public class MoodHistoryActivity extends AppCompatActivity {
         recyclerView=findViewById(R.id.recyclerMoodHistory);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        moodHistoryList=loadMoodHistory();
-        filteredList = new ArrayList<>(moodHistoryList);
+        moodHistoryList=new ArrayList<>();
+        filteredList = new ArrayList<>();
         //set adapter
         moodHistoryAdapter = new MoodHistoryAdapter(this,filteredList);
         recyclerView.setAdapter(moodHistoryAdapter);
+
+        db = FirebaseFirestore.getInstance();
+
+    // read data from firebase
+        loadMoodHistoryFromFirestore();
 
 
         // Setup Bottom Navigation
@@ -89,15 +97,35 @@ public class MoodHistoryActivity extends AppCompatActivity {
 
     }
 
-    // dummy data
-    private List<MoodEvent> loadMoodHistory() {
-        List<MoodEvent> list = new ArrayList<>();
-        list.add(new MoodEvent(Emotion.HAPPINESS,new Date(), "get money", SocialSituation.ALONE, "home"));
-        list.add(new MoodEvent(Emotion.SADNESS, new Date(System.currentTimeMillis() - 3 * 24 * 60 * 60 * 1000), "only 5 dollors", SocialSituation.ALONE,"home"));
-        list.add(new MoodEvent(Emotion.CONFUSION, new Date(System.currentTimeMillis() - 10 * 24 * 60 * 60 * 1000), "lost my money", SocialSituation.ALONE, "home"));
 
-        return list;
+    private void loadMoodHistoryFromFirestore() {
+        db.collection("MoodEvents")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    moodHistoryList.clear();
+                    for (DocumentSnapshot document : queryDocumentSnapshots) {
+                        MoodEvent mood = document.toObject(MoodEvent.class);
+                        moodHistoryList.add(mood);
+                    }
+                    filteredList.clear();
+                    filteredList.addAll(moodHistoryList);
+                    moodHistoryAdapter.updateList(filteredList); // update RecyclerView
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Upload mood data failed" + e.getMessage(), Toast.LENGTH_SHORT).show()
+                );
     }
+
+
+//    // dummy data
+//    private List<MoodEvent> loadMoodHistory() {
+//        List<MoodEvent> list = new ArrayList<>();
+//        list.add(new MoodEvent(Emotion.HAPPINESS,new Date(), "get money", SocialSituation.ALONE, "home"));
+//        list.add(new MoodEvent(Emotion.SADNESS, new Date(System.currentTimeMillis() - 3 * 24 * 60 * 60 * 1000), "only 5 dollors", SocialSituation.ALONE,"home"));
+//        list.add(new MoodEvent(Emotion.CONFUSION, new Date(System.currentTimeMillis() - 10 * 24 * 60 * 60 * 1000), "lost my money", SocialSituation.ALONE, "home"));
+//
+//        return list;
+//    }
 
     @Override
     protected void onResume() {
@@ -107,6 +135,7 @@ public class MoodHistoryActivity extends AppCompatActivity {
             EditMoodActivity.updatedMoodEvent = null;
         }
     }
+
 
     private void updateMoodItem(MoodEvent updatedMood) {
         for (int i = 0; i < moodHistoryList.size(); i++) {
@@ -173,11 +202,12 @@ public class MoodHistoryActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == 1 && resultCode == RESULT_OK) { // ✅ Check if it's from AddingMoodActivity
-            if (data != null && data.hasExtra("newMood")) {
-                MoodEvent newMood = (MoodEvent) data.getSerializableExtra("newMood");
-                moodHistoryAdapter.addMood(newMood); // ✅ Use the new method to update the list
-                recyclerView.smoothScrollToPosition(0); // Scroll to the top
-            }
+//            if (data != null && data.hasExtra("newMood")) {
+//                MoodEvent newMood = (MoodEvent) data.getSerializableExtra("newMood");
+//                moodHistoryAdapter.addMood(newMood); // ✅ Use the new method to update the list
+//                recyclerView.smoothScrollToPosition(0); // Scroll to the top
+//            }
+            loadMoodHistoryFromFirestore();
         }
     }
 
