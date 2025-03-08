@@ -1,11 +1,12 @@
 package com.example.project.activities;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.Toast;
-import androidx.annotation.NonNull;
+
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -13,129 +14,234 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.project.Emotion;
 import com.example.project.MoodEvent;
 import com.example.project.R;
+import com.example.project.SocialSituation;
 import com.example.project.adapters.MoodHistoryAdapter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-/**
- * The "home" page: user sees their own mood history.
- * The bottom nav has 'Common Space' -> CommonSpaceActivity
- *                'Followed Moods' -> FollowedMoodsActivity, etc.
- */
 public class MoodHistoryActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private MoodHistoryAdapter moodHistoryAdapter;
     private List<MoodEvent> moodHistoryList;
     private List<MoodEvent> filteredList;
+    private FirebaseFirestore db;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.mood_history);
 
-        recyclerView = findViewById(R.id.recyclerMoodHistory);
+        recyclerView=findViewById(R.id.recyclerMoodHistory);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        moodHistoryList = loadMoodHistory();
-        filteredList = new ArrayList<>(moodHistoryList);
-
-        moodHistoryAdapter = new MoodHistoryAdapter(this, filteredList);
+        moodHistoryList=new ArrayList<>();
+        filteredList = new ArrayList<>();
+        //set adapter
+        moodHistoryAdapter = new MoodHistoryAdapter(this,filteredList);
         recyclerView.setAdapter(moodHistoryAdapter);
 
-        BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
-        bottomNav.setSelectedItemId(R.id.nav_my_mood_history);
-        bottomNav.setOnItemSelectedListener(this::onBottomNavItemSelected);
+        db = FirebaseFirestore.getInstance();
 
+    // read data from firebase
+        loadMoodHistoryFromFirestore();
+
+
+        // Setup Bottom Navigation
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
+        bottomNavigationView.setSelectedItemId(R.id.nav_my_mood_history); // Highlight the correct tab
+
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+
+            if (id == R.id.nav_followees && !isCurrentActivity(FolloweesActivity.class)) {
+                startActivity(new Intent(this, FolloweesActivity.class));
+                overridePendingTransition(0, 0);
+                finish();
+                return true;
+            } else if (id == R.id.nav_followed_moods && !isCurrentActivity(FollowedMoodsActivity.class)) {
+                startActivity(new Intent(this, FollowedMoodsActivity.class));
+                overridePendingTransition(0, 0);
+                finish();
+                return true;
+            } else if (id == R.id.nav_my_mood_history) {
+                return true; // Already in MoodHistoryActivity
+            } else if (id == R.id.nav_profile && !isCurrentActivity(UsersFollowedActivity.class)) {
+                startActivity(new Intent(this, UsersFollowedActivity.class));
+                overridePendingTransition(0, 0);
+                finish();
+                return true;
+            }
+            return false;
+        });
         Button btnFilterByMood = findViewById(R.id.btnFilterByType);
         Button btnShowLastWeek = findViewById(R.id.btnShowLastMonth);
-        Button btnClearFilters = findViewById(R.id.btnClearFilters);
-        FloatingActionButton btnAddMood = findViewById(R.id.floating_add_mood_button);
+        Button btnClearFilter = findViewById(R.id.btnClearFilters); // Add a clear filter button
+        FloatingActionButton btnAddMood = findViewById(R.id.floating_add_mood_button); // Floating Action Button
 
-        btnFilterByMood.setOnClickListener(v -> filterByMood());
+
+        btnFilterByMood.setOnClickListener(v -> showMoodFilterDialog());
         btnShowLastWeek.setOnClickListener(v -> filterByLastWeek());
-        btnClearFilters.setOnClickListener(v -> clearFilters());
+        btnClearFilter.setOnClickListener(v -> clearFilters()); // Reset filtering
 
         btnAddMood.setOnClickListener(v -> {
-            // Example: open an Add Mood screen
-            Toast.makeText(this, "Add new mood clicked", Toast.LENGTH_SHORT).show();
-            // startActivity(new Intent(this, AddingMoodActivity.class));
+            Intent intent = new Intent(MoodHistoryActivity.this, AddingMoodActivity.class);
+            startActivityForResult(intent, 1); // ✅ Use requestCode 1
         });
+
     }
 
-    private boolean onBottomNavItemSelected(@NonNull MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.nav_common_space) {
-            startActivity(new Intent(this, CommonSpaceActivity.class));
-            overridePendingTransition(0, 0);
-            finish();
-            return true;
-        } else if (id == R.id.nav_followed_moods) {
-            startActivity(new Intent(this, FollowedMoodsActivity.class));
-            overridePendingTransition(0, 0);
-            finish();
-            return true;
-        } else if (id == R.id.nav_my_mood_history) {
-            return true; // Already here
-        } else if (id == R.id.nav_mood_map) {
-            startActivity(new Intent(this, MoodHistoryActivity.class));
-            overridePendingTransition(0,0);
-            finish();
-            return true;
-        } else if (id == R.id.nav_profile) {
-            startActivity(new Intent(this, MoodHistoryActivity.class));
-            overridePendingTransition(0,0);
-            finish();
-            return true;
-        }
-        return false;
+
+    private void loadMoodHistoryFromFirestore() {
+        db.collection("MoodEvents")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    moodHistoryList.clear();
+                    for (DocumentSnapshot document : queryDocumentSnapshots) {
+                        MoodEvent mood = document.toObject(MoodEvent.class);
+                        moodHistoryList.add(mood);
+                    }
+                    filteredList.clear();
+                    filteredList.addAll(moodHistoryList);
+                    moodHistoryAdapter.updateList(filteredList); // update RecyclerView
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Upload mood data failed" + e.getMessage(), Toast.LENGTH_SHORT).show()
+                );
     }
 
-    private List<MoodEvent> loadMoodHistory() {
-        List<MoodEvent> list = new ArrayList<>();
-        // Example data
-        list.add(new MoodEvent(Emotion.HAPPINESS, new Date(), "Got money", "home", "home"));
-        list.add(new MoodEvent(Emotion.SADNESS, new Date(System.currentTimeMillis() - 3 * 86400000), "Only 5 dollars", "alone", "home"));
-        list.add(new MoodEvent(Emotion.CONFUSION, new Date(System.currentTimeMillis() - 10 * 86400000), "Lost money", "alone", "home"));
-        return list;
+
+//    // dummy data
+//    private List<MoodEvent> loadMoodHistory() {
+//        List<MoodEvent> list = new ArrayList<>();
+//        list.add(new MoodEvent(Emotion.HAPPINESS,new Date(), "get money", SocialSituation.ALONE, "home"));
+//        list.add(new MoodEvent(Emotion.SADNESS, new Date(System.currentTimeMillis() - 3 * 24 * 60 * 60 * 1000), "only 5 dollors", SocialSituation.ALONE,"home"));
+//        list.add(new MoodEvent(Emotion.CONFUSION, new Date(System.currentTimeMillis() - 10 * 24 * 60 * 60 * 1000), "lost my money", SocialSituation.ALONE, "home"));
+//
+//        return list;
+//    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
     }
 
-    private void filterByMood() {
-        Toast.makeText(this, "Filtering by mood...", Toast.LENGTH_SHORT).show();
-        // Example: filter by "HAPPINESS" only
-        List<MoodEvent> newList = new ArrayList<>();
-        for (MoodEvent me : moodHistoryList) {
-            if (me.getEmotion() == Emotion.HAPPINESS) {
-                newList.add(me);
+
+    private void updateMoodItem(MoodEvent updatedMood) {
+        for (int i = 0; i < moodHistoryList.size(); i++) {
+            if (moodHistoryList.get(i).getId().equals(updatedMood.getId())) {
+                moodHistoryList.set(i, updatedMood);
+                for (int j = 0; j < filteredList.size(); j++) {
+                    if (filteredList.get(j).getId().equals(updatedMood.getId())) {
+                        filteredList.set(j, updatedMood);
+                        break;
+                    }
+                }
+                moodHistoryAdapter.updateMood(updatedMood);
+                Toast.makeText(this, "Mood updated", Toast.LENGTH_SHORT).show();
+                return;
             }
         }
-        filteredList.clear();
-        filteredList.addAll(newList);
-        moodHistoryAdapter.updateList(filteredList);
+    }
+    private void deleteMood(String moodId) {
+        for (int i = 0; i < moodHistoryList.size(); i++) {
+            if (moodHistoryList.get(i).getId().equals(moodId)) {
+                moodHistoryList.remove(i);
+                for (int j = 0; j < filteredList.size(); j++) {
+                    if (filteredList.get(j).getId().equals(moodId)) {
+                        filteredList.remove(j);
+                        break;
+                    }
+                }
+                moodHistoryAdapter.notifyItemRemoved(i);
+                Toast.makeText(this, "Mood deleted", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+    }
+    // ✅ Filter moods by user-selected emotion
+    private void showMoodFilterDialog() {
+        final String[] moods = {"HAPPINESS", "SADNESS", "CONFUSION","CLEAR FILTER"}; // Add more moods if needed
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Select Mood to Filter")
+                .setItems(moods, (dialog, which) -> {
+                    if (moods[which].equals("CLEAR FILTER")) {
+                        clearFilters();
+                    } else {
+                        filterByMood(Emotion.valueOf(moods[which]));
+                    }
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+
+        builder.create().show();
     }
 
+    private void filterByMood(Emotion selectedMood) {
+        filteredList.clear();
+        for (MoodEvent mood : moodHistoryList) {
+            if (mood.getEmotion() == selectedMood) {
+                filteredList.add(mood);
+            }
+        }
+        moodHistoryAdapter.updateList(filteredList);
+        Toast.makeText(this, "Filtered by " + selectedMood.name(), Toast.LENGTH_SHORT).show();
+    }
+
+    // ✅ Show only moods from the last 7 days
     private void filterByLastWeek() {
-        Toast.makeText(this, "Filtering last week...", Toast.LENGTH_SHORT).show();
-        long cutoff = System.currentTimeMillis() - (7L * 86400000);
-        List<MoodEvent> newList = new ArrayList<>();
-        for (MoodEvent me : moodHistoryList) {
-            if (me.getDate().getTime() >= cutoff) {
-                newList.add(me);
+        filteredList.clear();
+        long oneWeekAgo = System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000); // 7 days in milliseconds
+
+        for (MoodEvent mood : moodHistoryList) {
+            if (mood.getDate().getTime() >= oneWeekAgo) {
+                filteredList.add(mood);
             }
         }
-        filteredList.clear();
-        filteredList.addAll(newList);
-        moodHistoryAdapter.updateList(filteredList);
-    }
 
+        moodHistoryAdapter.updateList(filteredList);
+        Toast.makeText(this, "Showing last week's moods", Toast.LENGTH_SHORT).show();
+    }
+    // ✅ Clear Filters
     private void clearFilters() {
         filteredList.clear();
-        filteredList.addAll(moodHistoryList);
+        filteredList.addAll(moodHistoryList); // Restore the original list
         moodHistoryAdapter.updateList(filteredList);
         Toast.makeText(this, "Filters cleared", Toast.LENGTH_SHORT).show();
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 1 && resultCode == RESULT_OK) { // ✅ Check if it's from AddingMoodActivity
+//            if (data != null && data.hasExtra("newMood")) {
+//                MoodEvent newMood = (MoodEvent) data.getSerializableExtra("newMood");
+//                moodHistoryAdapter.addMood(newMood); // ✅ Use the new method to update the list
+//                recyclerView.smoothScrollToPosition(0); // Scroll to the top
+//            }
+            loadMoodHistoryFromFirestore();
+        }
+        if (requestCode == 2 && resultCode == RESULT_OK) {
+            if (data != null) {
+                if (data.hasExtra("updatedMood")) {
+                    MoodEvent updatedMood = (MoodEvent) data.getSerializableExtra("updatedMood");
+                    updateMoodItem(updatedMood);
+                } else if (data.hasExtra("deleteMoodId")) {
+                    String deleteMoodId = data.getStringExtra("deleteMoodId");
+                    deleteMood(deleteMoodId);
+                }
+            }
+        }
+    }
+
+
+    private boolean isCurrentActivity(Class<?> activityClass) {
+        return this.getClass().equals(activityClass);
     }
 }

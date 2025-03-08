@@ -79,14 +79,12 @@
                 android:textSize="16sp"
                 android:layout_marginTop="10dp" />
 
-            <EditText
-                android:id="@+id/socialSituationEditText"
+            <Spinner
+                android:id="@+id/socialSituationSpinner"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Enter social situation"
-                android:inputType="text"
-                android:background="@android:drawable/edit_text"
-                android:padding="10dp"/>
+                android:background="@android:drawable/btn_dropdown"
+                android:padding="8dp" />
 
             <!-- Location -->
             <TextView
@@ -105,17 +103,6 @@
                 android:background="@android:drawable/edit_text"
                 android:padding="10dp"/>
 
-            <!-- Delete Mood Button -->
-            <Button
-                android:id="@+id/deleteMoodButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Delete this Mood"
-                android:textColor="@android:color/holo_red_dark"
-                android:background="@android:color/transparent"
-                android:textStyle="bold"
-                android:layout_marginTop="20dp"/>
-
             <!-- Save and Cancel Buttons (Side by Side) -->
             <LinearLayout
                 android:layout_width="match_parent"
@@ -128,15 +115,15 @@
                     android:id="@+id/saveButton"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Save (Or store it offline upload later)"
+                    android:text="Save"
                     android:layout_weight="1"
                     android:layout_marginEnd="5dp"/>
 
                 <Button
-                    android:id="@+id/cancelButton"
+                    android:id="@+id/deleteButton"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Cancel"
+                    android:text="Delete"
                     android:layout_weight="1"
                     android:layout_marginStart="5dp"/>
             </LinearLayout>

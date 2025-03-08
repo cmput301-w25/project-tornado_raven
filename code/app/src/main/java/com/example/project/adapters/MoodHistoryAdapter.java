@@ -46,15 +46,14 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         MoodEvent moodEvent = moodHistoryList.get(position);
         holder.emotion.setText(moodEvent.getEmotion().toString());
         holder.date.setText(moodEvent.getDate().toString());
-        holder.reason.setText(moodEvent.getTrigger());
-        holder.social.setText(moodEvent.getSocialSituation());
+        holder.reason.setText(moodEvent.getReason());
+        holder.social.setText(moodEvent.getSocialSituation().toString());
 
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, EditMoodActivity.class);
             intent.putExtra("moodEvent", moodEvent);
-            context.startActivity(intent);
+            ((Activity) context).startActivityForResult(intent, 2); //edit
         });
-
         holder.detailsButton.setOnClickListener(v -> showDetailsDialog(moodEvent));
     }
 
@@ -65,7 +64,7 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
     // updating event
     public void updateMood(MoodEvent updatedMood) {
         for (int i = 0; i < moodHistoryList.size(); i++) {
-            if (moodHistoryList.get(i).getDate().equals(updatedMood.getDate())) {
+            if (moodHistoryList.get(i).getId().equals(updatedMood.getId())) {
                 moodHistoryList.set(i, updatedMood);
                 notifyItemChanged(i);
                 break;
@@ -87,7 +86,7 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
     //deleting event
     public void deleteMood(MoodEvent deletedMood) {
         for (int i = 0; i < moodHistoryList.size(); i++) {
-            if (moodHistoryList.get(i).getDate().equals(deletedMood.getDate())) {
+            if (moodHistoryList.get(i).getId().equals(deletedMood.getId())) {
                 moodHistoryList.remove(i);
                 notifyItemRemoved(i);
                 break;
@@ -127,7 +126,7 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
 
         message.append("Emotion: ").append(moodEvent.getEmotion().toString()).append("\n")
                 .append("Date: ").append(moodEvent.getDate().toString()).append("\n")
-                .append("Reason: ").append(moodEvent.getTrigger()).append("\n")
+                .append("Reason: ").append(moodEvent.getReason()).append("\n")
                 .append("Social Situation: ").append(moodEvent.getSocialSituation());
 
         builder.setMessage(message.toString());
