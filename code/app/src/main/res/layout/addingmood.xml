@@ -37,6 +37,12 @@
                 android:text="ADDING MOOD"
                 android:textSize="34sp"
                 android:textStyle="bold" />
+            <Button
+                android:id="@+id/submitButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Submit (Or store it offline upload later)" />
 
             <!-- Select Emotion (Dropdown) -->
             <TextView
@@ -78,13 +84,12 @@
                 android:textSize="16sp"
                 android:layout_marginTop="10dp" />
 
-            <EditText
-                android:id="@+id/socialSituationEditText"
+            <Spinner
+                android:id="@+id/socialSituationSpinner"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Enter social situation"
-                android:inputType="text"
-                android:background="@android:drawable/edit_text" />
+                android:background="@android:drawable/btn_dropdown"
+                android:padding="8dp" />
 
             <!-- Location -->
             <TextView
@@ -101,14 +106,33 @@
                 android:hint="Enter location"
                 android:inputType="text"
                 android:background="@android:drawable/edit_text" />
+            <!-- Photo Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp">
+
+                <!-- ImageView -->
+                <ImageView
+                    android:id="@+id/photoImageView"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:scaleType="centerCrop"
+                    android:background="@android:color/darker_gray"
+                    android:contentDescription="Photo preview"
+                    android:layout_marginEnd="10dp" />
+
+                <!-- Button -->
+                <Button
+                    android:id="@+id/addPhotoButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Take Photo" />
+            </LinearLayout>
 
             <!-- Submit Button -->
-            <Button
-                android:id="@+id/submitButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="Submit (Or store it offline upload later)" />
+
 
         </LinearLayout>
     </ScrollView>

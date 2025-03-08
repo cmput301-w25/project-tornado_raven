@@ -1,5 +1,7 @@
 package com.example.project;
 
+import android.net.Uri;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
@@ -8,17 +10,44 @@ public class MoodEvent implements Serializable {
     private Emotion emotion;
     private String id;
     private Date date;
-    private String trigger;
-    private String socialSituation;
+    private String Reason;
+    private SocialSituation socialSituation;
+    private String documentId;
     private String location;
+    private Uri photoUri;
 
-    public MoodEvent(Emotion emotion, Date date, String trigger, String socialSituation, String location) {
+    public String getDocumentId() {
+        return documentId;
+    }
+
+    public void setDocumentId(String documentId) {
+        this.documentId = documentId;
+    }
+
+    public MoodEvent(Emotion emotion, Date date, String reason, SocialSituation socialSituation, String location) {
         this.emotion = emotion;
         this.date = date;
-        this.trigger = trigger;
+        this.Reason = reason;
         this.socialSituation = socialSituation;
         this.location=location;
         this.id = UUID.randomUUID().toString();
+    }
+    public MoodEvent(Emotion emotion, Date date, String reason, SocialSituation socialSituation, String location, Uri photoUri) {
+        this.emotion = emotion;
+        this.date = date;
+        this.Reason = reason;
+        this.socialSituation = socialSituation;
+        this.location=location;
+        this.id = UUID.randomUUID().toString();
+        this.photoUri = photoUri;
+    }
+
+    public Uri getPhotoUri() {
+        return photoUri;
+    }
+
+    public void setPhotoUri(Uri photoUri) {
+        this.photoUri = photoUri;
     }
 
     public void setEmotion(Emotion emotion) {
@@ -29,12 +58,12 @@ public class MoodEvent implements Serializable {
         this.date = date;
     }
 
-    public void setSocialSituation(String socialSituation) {
+    public void setSocialSituation(SocialSituation socialSituation) {
         this.socialSituation = socialSituation;
     }
 
-    public void setTrigger(String trigger) {
-        this.trigger = trigger;
+    public void setReason(String reason) {
+        this.Reason = reason;
     }
 
     public Emotion getEmotion() {
@@ -45,11 +74,12 @@ public class MoodEvent implements Serializable {
         return date;
     }
 
-    public String getTrigger() {
-        return trigger;
+    public String getReason() {
+        return Reason;
     }
+    public MoodEvent() {};
 
-    public String getSocialSituation() {
+    public SocialSituation getSocialSituation() {
         return socialSituation;
     }
     public String getLocation() {
@@ -65,7 +95,7 @@ public class MoodEvent implements Serializable {
     public void update(MoodEvent newEvent) {
         this.emotion = newEvent.getEmotion();
         this.date = newEvent.getDate();
-        this.trigger = newEvent.getTrigger();
+        this.Reason = newEvent.getReason();
         this.socialSituation = newEvent.getSocialSituation();
     }
 

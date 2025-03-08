@@ -3,11 +3,9 @@ package com.example.project.activities;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -16,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.project.Emotion;
 import com.example.project.MoodEvent;
 import com.example.project.R;
+import com.example.project.SocialSituation;
 import com.example.project.adapters.MoodHistoryAdapter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -93,9 +92,9 @@ public class MoodHistoryActivity extends AppCompatActivity {
     // dummy data
     private List<MoodEvent> loadMoodHistory() {
         List<MoodEvent> list = new ArrayList<>();
-        list.add(new MoodEvent(Emotion.HAPPINESS,new Date(), "get money", "home", "home"));
-        list.add(new MoodEvent(Emotion.SADNESS, new Date(System.currentTimeMillis() - 3 * 24 * 60 * 60 * 1000), "only 5 dollors", "alone","home"));
-        list.add(new MoodEvent(Emotion.CONFUSION, new Date(System.currentTimeMillis() - 10 * 24 * 60 * 60 * 1000), "lost my money", "alone", "home"));
+        list.add(new MoodEvent(Emotion.HAPPINESS,new Date(), "get money", SocialSituation.ALONE, "home"));
+        list.add(new MoodEvent(Emotion.SADNESS, new Date(System.currentTimeMillis() - 3 * 24 * 60 * 60 * 1000), "only 5 dollors", SocialSituation.ALONE,"home"));
+        list.add(new MoodEvent(Emotion.CONFUSION, new Date(System.currentTimeMillis() - 10 * 24 * 60 * 60 * 1000), "lost my money", SocialSituation.ALONE, "home"));
 
         return list;
     }
