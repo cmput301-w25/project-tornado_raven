@@ -218,14 +218,13 @@ public class MoodHistoryActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
         if (requestCode == 1 && resultCode == RESULT_OK) { // ✅ Check if it's from AddingMoodActivity
 //            if (data != null && data.hasExtra("newMood")) {
 //                MoodEvent newMood = (MoodEvent) data.getSerializableExtra("newMood");
 //                moodHistoryAdapter.addMood(newMood); // ✅ Use the new method to update the list
 //                recyclerView.smoothScrollToPosition(0); // Scroll to the top
 //            }
-            loadMoodHistoryFromFirestore();
+              loadMoodHistoryFromFirestore();
         }
         if (requestCode == 2 && resultCode == RESULT_OK) {
             if (data != null) {
@@ -239,9 +238,9 @@ public class MoodHistoryActivity extends AppCompatActivity {
             }
         }
     }
-
-
+    
     private boolean isCurrentActivity(Class<?> activityClass) {
         return this.getClass().equals(activityClass);
     }
+
 }
