@@ -16,6 +16,9 @@ import com.example.project.Emotion;
 import com.example.project.MoodEvent;
 import com.example.project.R;
 import com.example.project.SocialSituation;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.io.FileReader;
 
 public class EditMoodActivity extends AppCompatActivity {
 
@@ -26,6 +29,7 @@ public class EditMoodActivity extends AppCompatActivity {
     private ImageButton backButton;
 
     private MoodEvent currentMood;
+    private FirebaseFirestore db;
     private int position;
 
     @Override
@@ -41,6 +45,7 @@ public class EditMoodActivity extends AppCompatActivity {
         saveButton = findViewById(R.id.saveButton);
         deleteButton = findViewById(R.id.deleteButton);
         backButton = findViewById(R.id.backButton);
+        db = FirebaseFirestore.getInstance();
 
         setupSpinners();
 
@@ -48,7 +53,6 @@ public class EditMoodActivity extends AppCompatActivity {
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra("moodEvent")) {
             currentMood = (MoodEvent) intent.getSerializableExtra("moodEvent");
-            position = intent.getIntExtra("position", -1);
             if (currentMood != null) {
                 initData(currentMood);
             }
@@ -112,12 +116,10 @@ public class EditMoodActivity extends AppCompatActivity {
 
         SocialSituation selectedSocialSituation = (SocialSituation) socialSituationSpinner.getSelectedItem();
         currentMood.setSocialSituation(selectedSocialSituation);
+
         Intent resultIntent = new Intent();
         resultIntent.putExtra("updatedMood", currentMood);
-        resultIntent.putExtra("position", position);
         setResult(RESULT_OK, resultIntent);
-        finish();
-
         finish();
     }
     private void deleteMood() {
