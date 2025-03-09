@@ -145,6 +145,27 @@ public class MoodHistoryActivity extends AppCompatActivity {
                 }
                 moodHistoryAdapter.updateMood(updatedMood);
                 Toast.makeText(this, "Mood updated", Toast.LENGTH_SHORT).show();
+                db.collection("MoodEvents")
+                        .whereEqualTo("id", updatedMood.getId())
+                        .get()
+                        .addOnSuccessListener(queryDocumentSnapshots -> {
+                            if (!queryDocumentSnapshots.isEmpty()) {
+                                String documentId = queryDocumentSnapshots.getDocuments().get(0).getId();
+                                db.collection("MoodEvents").document(documentId)
+                                        .set(updatedMood)
+                                        .addOnSuccessListener(aVoid -> {
+                                            Toast.makeText(this, "updated successfully", Toast.LENGTH_SHORT).show();
+                                        })
+                                        .addOnFailureListener(e ->
+                                                Toast.makeText(this, "updated failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                                        );
+                            } else {
+                                Toast.makeText(this, "No corresponding MoodEvent", Toast.LENGTH_SHORT).show();
+                            }
+                        })
+                        .addOnFailureListener(e ->
+                                Toast.makeText(this, "search failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                        );
                 return;
             }
         }
@@ -161,6 +182,29 @@ public class MoodHistoryActivity extends AppCompatActivity {
                 }
                 moodHistoryAdapter.notifyItemRemoved(i);
                 Toast.makeText(this, "Mood deleted", Toast.LENGTH_SHORT).show();
+
+                db.collection("MoodEvents")
+                        .whereEqualTo("id", moodId)
+                        .get()
+                        .addOnSuccessListener(queryDocumentSnapshots -> {
+                            if (!queryDocumentSnapshots.isEmpty()) {
+                                String documentId = queryDocumentSnapshots.getDocuments().get(0).getId();
+                                db.collection("MoodEvents").document(documentId)
+                                        .delete()
+                                        .addOnSuccessListener(aVoid -> {
+                                            Toast.makeText(this, "deleted successfully", Toast.LENGTH_SHORT).show();
+                                        })
+                                        .addOnFailureListener(e ->
+                                                Toast.makeText(this, "deleted failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                                        );
+                                loadMoodHistoryFromFirestore();
+                            } else {
+                                Toast.makeText(this, "No corresponding MoodEvent", Toast.LENGTH_SHORT).show();
+                            }
+                        })
+                        .addOnFailureListener(e ->
+                                Toast.makeText(this, "search failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                        );
                 return;
             }
         }
