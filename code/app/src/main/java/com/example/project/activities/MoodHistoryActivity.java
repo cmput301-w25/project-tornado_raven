@@ -216,7 +216,7 @@ public class MoodHistoryActivity extends AppCompatActivity {
         Toast.makeText(this, "Filters cleared", Toast.LENGTH_SHORT).show();
     }
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == 1 && resultCode == RESULT_OK) { // ✅ Check if it's from AddingMoodActivity
