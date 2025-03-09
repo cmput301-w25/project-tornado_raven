@@ -82,7 +82,7 @@ public class FollowedMoodsActivity extends AppCompatActivity {
             finish();
             return true;
         } else if (id == R.id.nav_profile) {
-            startActivity(new Intent(this, MoodHistoryActivity.class));
+            startActivity(new Intent(this, ProfileActivity.class));
             finish();
             return true;
         }

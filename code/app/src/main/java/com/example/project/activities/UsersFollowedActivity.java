@@ -85,7 +85,7 @@ public class UsersFollowedActivity extends AppCompatActivity {
             finish();
             return true;
         } else if (id == R.id.nav_profile) {
-            startActivity(new Intent(this, UsersFollowedActivity.class));
+            startActivity(new Intent(this, ProfileActivity.class));
             overridePendingTransition(0, 0);
             finish();
             return true;
