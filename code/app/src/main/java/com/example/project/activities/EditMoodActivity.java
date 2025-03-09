@@ -48,7 +48,6 @@ public class EditMoodActivity extends AppCompatActivity {
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra("moodEvent")) {
             currentMood = (MoodEvent) intent.getSerializableExtra("moodEvent");
-            position = intent.getIntExtra("position", -1);
             if (currentMood != null) {
                 initData(currentMood);
             }
@@ -114,11 +113,9 @@ public class EditMoodActivity extends AppCompatActivity {
         currentMood.setSocialSituation(selectedSocialSituation);
         Intent resultIntent = new Intent();
         resultIntent.putExtra("updatedMood", currentMood);
-        resultIntent.putExtra("position", position);
         setResult(RESULT_OK, resultIntent);
         finish();
 
-        finish();
     }
     private void deleteMood() {
         //return deleted id

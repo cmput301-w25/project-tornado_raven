@@ -208,6 +208,7 @@ public class AddingMoodActivity extends AppCompatActivity {
         moodData.put("emotion", moodEvent.getEmotion().toString());
         moodData.put("date", moodEvent.getDate());
         moodData.put("reason", moodEvent.getReason());
+        moodData.put("id",moodEvent.getId());
 
         // Add optional fields if they are not null
         if (moodEvent.getSocialSituation() != null) {
