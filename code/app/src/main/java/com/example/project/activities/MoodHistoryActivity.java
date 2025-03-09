@@ -238,6 +238,7 @@ public class MoodHistoryActivity extends AppCompatActivity {
                 }
             }
         }
+
     }
 
 
