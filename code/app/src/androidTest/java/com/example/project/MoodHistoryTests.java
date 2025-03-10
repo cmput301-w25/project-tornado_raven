@@ -1,5 +1,15 @@
 package com.example.project;
 
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
+import static androidx.test.espresso.action.ViewActions.typeText;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -9,7 +19,9 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class MoodHistoryFiltersTest {
+import androidx.test.espresso.contrib.RecyclerViewActions;
+
+public class MoodHistoryTests {
 
     private List<MoodEvent> moodHistoryList;
     private List<MoodEvent> filteredList;
@@ -108,6 +120,29 @@ public class MoodHistoryFiltersTest {
         // Assertions
         assertEquals(1, filteredList.size());  // Should find one mood with "Rough day"
         assertEquals("Rough day", filteredList.get(0).getReason());
+    }
+    @Test
+    public void testAddNewMoodEvent() {
+        int initialSize = moodHistoryList.size();
+
+        MoodEvent newMood = new MoodEvent(
+                Emotion.SURPRISE,
+                new Date(),
+                "JUnit Add Mood Test",
+                SocialSituation.ALONE,
+                "Mall"
+        );
+
+        moodHistoryList.add(newMood);
+
+        // Assert mood is added
+        assertEquals(initialSize + 1, moodHistoryList.size());
+
+        // Verify the last mood added is the one we expect
+        MoodEvent addedMood = moodHistoryList.get(moodHistoryList.size() - 1);
+        assertEquals("JUnit Add Mood Test", addedMood.getReason());
+        assertEquals(Emotion.SURPRISE, addedMood.getEmotion());
+        assertEquals(SocialSituation.ALONE, addedMood.getSocialSituation());
     }
 
 

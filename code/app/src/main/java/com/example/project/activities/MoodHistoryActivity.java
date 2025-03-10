@@ -257,7 +257,7 @@ public class MoodHistoryActivity extends AppCompatActivity {
         String lowerKeyword = keyword.trim().toLowerCase();
 
         for (MoodEvent mood : moodHistoryList) {
-            String reason = mood.getReason();  // Assuming getReason() exists in MoodEvent
+            String reason = mood.getReason();
             if (reason != null) {
                 String lowerReason = reason.toLowerCase();
 

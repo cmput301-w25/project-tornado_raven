@@ -46,6 +46,4 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.1")
 
-
-
 }
