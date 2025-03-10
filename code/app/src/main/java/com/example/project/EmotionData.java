@@ -4,9 +4,20 @@ import android.graphics.drawable.Drawable;
 import com.example.project.Emotion;
 import com.example.project.R;
 import androidx.core.content.ContextCompat;
+/**
+ * Utility class for retrieving emotion-related data.
+ * This class provides methods to get the color and icon associated with various emotions.
+ */
 public class EmotionData {
 
-    // Method to get the color for an emotion
+    /**
+     * Retrieves the color associated with a given emotion.
+     *
+     * @param context The application context, used to access resources.
+     * @param emotion The emotion for which the color is required.
+     * @return The color associated with the given emotion.
+     * @throws IllegalArgumentException if the emotion is unknown.
+     */
     public static int getEmotionColor(Context context, Emotion emotion) {
         switch (emotion) {
             case ANGER:
@@ -30,7 +41,14 @@ public class EmotionData {
         }
     }
 
-    // Method to get the icon for an emotion
+    /**
+     * Retrieves the icon (Drawable) associated with a given emotion.
+     *
+     * @param context The application context, used to access resources.
+     * @param emotion The emotion for which the icon is required.
+     * @return The icon associated with the given emotion.
+     * @throws IllegalArgumentException if the emotion is unknown.
+     */
     public static Drawable getEmotionIcon(Context context, Emotion emotion) {
         switch (emotion) {
             case ANGER:
