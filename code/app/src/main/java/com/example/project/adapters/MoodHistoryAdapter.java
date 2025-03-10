@@ -55,6 +55,7 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         holder.emotion.setTextColor(emotionColor);
         Drawable emojiDrawable = EmotionData.getEmotionIcon(context, moodEvent.getEmotion());
         holder.emoticon.setImageDrawable(emojiDrawable);
+        holder.location.setText(moodEvent.getLocation());
 
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, EditMoodActivity.class);
@@ -113,6 +114,8 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         public TextView date;
         public TextView reason;
         public TextView social;
+        private TextView location;
+
         public Button detailsButton;
         public ImageView emoticon;
 
@@ -124,6 +127,7 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
             emoticon=itemView.findViewById(R.id.emoticon);
             date = itemView.findViewById(R.id.date);
             social=itemView.findViewById(R.id.socialSituation);
+            location = itemView.findViewById(R.id.location);
             detailsButton = itemView.findViewById(R.id.btnDetails);
         }
     }
@@ -137,7 +141,9 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         message.append("Emotion: ").append(moodEvent.getEmotion().toString()).append("\n")
                 .append("Date: ").append(moodEvent.getDate().toString()).append("\n")
                 .append("Reason: ").append(moodEvent.getReason()).append("\n")
+                .append("Location:").append(moodEvent.getLocation()).append("\n")
                 .append("Social Situation: ").append(moodEvent.getSocialSituation());
+
 
         builder.setMessage(message.toString());
         builder.setPositiveButton("OK", (dialog, which) -> dialog.dismiss());
