@@ -24,8 +24,6 @@ import com.example.project.SocialSituation;
 import com.example.project.adapters.MoodHistoryAdapter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -34,6 +32,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * ProfileActivity displays the user's profile information along with recent mood events.
+ * Users can add new moods and navigate to different sections of the application.
+ */
 public class ProfileActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
@@ -44,6 +46,12 @@ public class ProfileActivity extends AppCompatActivity {
     private ImageView profileImage;
     private Button addmood_btn;
 
+    /**
+     * Initializes the activity. Loads the user profile and recent mood history,
+     * sets up the RecyclerView and bottom navigation menu.
+     *
+     * @param savedInstanceState The saved instance state, or null if there is none.
+     */
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,30 +60,28 @@ public class ProfileActivity extends AppCompatActivity {
         profileImage = findViewById(R.id.profileImage);
         profileImage.setImageResource(R.drawable.ic_profile);
 
-        recyclerView=findViewById(R.id.recyclerViewRecentMoods);
+        recyclerView = findViewById(R.id.recyclerViewRecentMoods);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        moodHistoryList=new ArrayList<>();
-        //set adapter
-        moodHistoryAdapter = new MoodHistoryAdapter(this,moodHistoryList);
+        moodHistoryList = new ArrayList<>();
+        moodHistoryAdapter = new MoodHistoryAdapter(this, moodHistoryList);
         recyclerView.setAdapter(moodHistoryAdapter);
         userName = findViewById(R.id.username);
 
         db = FirebaseFirestore.getInstance();
 
         loadUserProfile();
-
-        // read data from firebase
         loadMoodHistoryFromFirestore();
 
         addmood_btn = findViewById(R.id.add_mood);
         addmood_btn.setOnClickListener(v -> {
             Intent intent = new Intent(this, AddingMoodActivity.class);
-            startActivityForResult(intent, 1); // ✅ Use requestCode 1
+            startActivityForResult(intent, 1);
         });
+
         // Setup Bottom Navigation
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
-        bottomNavigationView.setSelectedItemId(R.id.nav_profile); // Highlight the correct tab
+        bottomNavigationView.setSelectedItemId(R.id.nav_profile);
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
@@ -101,7 +107,9 @@ public class ProfileActivity extends AppCompatActivity {
         });
     }
 
-
+    /**
+     * Loads the user's mood history from Firestore and updates the RecyclerView.
+     */
     private void loadMoodHistoryFromFirestore() {
         db.collection("MoodEvents")
                 .get()
@@ -112,16 +120,19 @@ public class ProfileActivity extends AppCompatActivity {
                         moodHistoryList.add(mood);
                     }
                     moodHistoryList.sort((m1, m2) -> m2.getDate().compareTo(m1.getDate()));
-
-                    moodHistoryAdapter.updateList(moodHistoryList); // update RecyclerView
+                    moodHistoryAdapter.updateList(moodHistoryList);
                 })
                 .addOnFailureListener(e ->
                         Toast.makeText(this, "Upload mood data failed" + e.getMessage(), Toast.LENGTH_SHORT).show()
                 );
     }
+
+    /**
+     * Loads the user's profile information from shared preferences and Firestore.
+     */
     private void loadUserProfile() {
         SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-        String userId = sharedPreferences.getString("userId", null); // ✅ Get stored user ID
+        String userId = sharedPreferences.getString("userId", null);
 
         if (userId == null) {
             userName.setText("No User Found");
@@ -148,12 +159,12 @@ public class ProfileActivity extends AppCompatActivity {
                 });
     }
 
-
-
-
-
-
-
+    /**
+     * Checks if the current activity matches the specified activity class.
+     *
+     * @param activityClass The activity class to check against.
+     * @return True if the current activity matches the specified class, false otherwise.
+     */
     private boolean isCurrentActivity(Class<?> activityClass) {
         return this.getClass().equals(activityClass);
     }

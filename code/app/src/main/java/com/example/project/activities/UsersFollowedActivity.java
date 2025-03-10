@@ -19,6 +19,10 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * UsersFollowedActivity manages the display of users that the current user follows.
+ * It allows users to unfollow people, apply filters, and navigate between sections of the app.
+ */
 public class UsersFollowedActivity extends AppCompatActivity {
 
     private RecyclerView recyclerUsersFollowed;
@@ -26,6 +30,12 @@ public class UsersFollowedActivity extends AppCompatActivity {
     private UsersFollowedAdapter usersFollowedAdapter;
     private List<String> followedUsersList;
 
+    /**
+     * Initializes the activity, sets up the RecyclerView and bottom navigation,
+     * and loads the list of followed users.
+     *
+     * @param savedInstanceState The saved instance state, or null if there is none.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,7 +52,7 @@ public class UsersFollowedActivity extends AppCompatActivity {
         followedUsersList.add("Ivan");
         followedUsersList.add("Jessica");
 
-        // Adapter
+        // Adapter setup
         usersFollowedAdapter = new UsersFollowedAdapter(followedUsersList, position -> {
             String userName = followedUsersList.get(position);
             followedUsersList.remove(position);
@@ -52,23 +62,26 @@ public class UsersFollowedActivity extends AppCompatActivity {
         recyclerUsersFollowed.setAdapter(usersFollowedAdapter);
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
-        bottomNavigationView.setSelectedItemId(R.id.nav_followed_moods); // Highlight correct tab
-
+        bottomNavigationView.setSelectedItemId(R.id.nav_followed_moods);
         bottomNavigationView.setOnItemSelectedListener(this::onBottomNavItemSelected);
 
-        // Filter button clicks
+        // Filter buttons
         findViewById(R.id.btnShowLastWeek).setOnClickListener(v -> showLastWeekFilter());
         findViewById(R.id.btnFilterByMood).setOnClickListener(v -> showMoodFilterDialog());
         findViewById(R.id.btnFilterByKeyword).setOnClickListener(v -> showKeywordFilterDialog());
 
-        // Pending requests
-        findViewById(R.id.btnShowPendingRequests).setOnClickListener(v -> {
-            // Example: show a Toast or navigate to a "Pending Requests" screen
-            Toast.makeText(this, "Showing pending follow requests...", Toast.LENGTH_SHORT).show();
-        });
-
+        // Pending requests button
+        findViewById(R.id.btnShowPendingRequests).setOnClickListener(v ->
+                Toast.makeText(this, "Showing pending follow requests...", Toast.LENGTH_SHORT).show()
+        );
     }
 
+    /**
+     * Handles bottom navigation item selection and switches between different activities.
+     *
+     * @param item The selected menu item.
+     * @return True if the navigation item selection is handled, false otherwise.
+     */
     private boolean onBottomNavItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
@@ -77,7 +90,7 @@ public class UsersFollowedActivity extends AppCompatActivity {
         } else if (id == R.id.nav_followed_moods) {
             startActivity(new Intent(this, FollowedMoodsActivity.class));
             overridePendingTransition(0, 0);
-            finish(); // Close current activity
+            finish();
             return true;
         } else if (id == R.id.nav_my_mood_history) {
             startActivity(new Intent(this, MoodHistoryActivity.class));
@@ -93,16 +106,24 @@ public class UsersFollowedActivity extends AppCompatActivity {
         return false;
     }
 
+    /**
+     * Displays a Toast message indicating that the data is filtered by the last week.
+     */
     private void showLastWeekFilter() {
-        // Example: filter data by last week's timeline
         Toast.makeText(this, "Filtering by last week...", Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Displays a dialog to filter moods by a selected emotion.
+     */
     private void showMoodFilterDialog() {
         DialogFragment dialog = new FilterMoodDialog();
         dialog.show(getSupportFragmentManager(), "FilterMoodDialog");
     }
 
+    /**
+     * Displays a dialog to filter moods by a keyword.
+     */
     private void showKeywordFilterDialog() {
         DialogFragment dialog = new FilterKeywordDialog();
         dialog.show(getSupportFragmentManager(), "FilterKeywordDialog");
