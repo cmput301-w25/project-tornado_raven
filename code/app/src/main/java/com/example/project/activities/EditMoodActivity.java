@@ -102,11 +102,6 @@ public class EditMoodActivity extends AppCompatActivity {
 //        String socialSituation = socialSituationEditText.getText().toString().trim();
         String location = locationEditText.getText().toString().trim();
 
-        if (trigger.isEmpty() || location.isEmpty()) {
-            Toast.makeText(this, "errors! cannot be empty!", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         // set data
         currentMood.setReason(trigger);
         currentMood.setLocation(location);
