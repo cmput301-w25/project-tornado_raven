@@ -19,17 +19,22 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-
+/**
+ * Unit tests for the MoodHistory functionality.
+ * This class includes tests for filtering, adding, and clearing mood events.
+ */
 public class MoodHistoryTests {
 
     private List<MoodEvent> moodHistoryList;
     private List<MoodEvent> filteredList;
-
+    /**
+     * Sets up the test environment by initializing moodHistoryList with sample data.
+     */
     @Before
     public void setup() {
         moodHistoryList = new ArrayList<>();
         filteredList = new ArrayList<>();
-
+        // Adding sample mood events to the history
         moodHistoryList.add(new MoodEvent(
                 Emotion.HAPPINESS,
                 new Date(),
@@ -54,7 +59,9 @@ public class MoodHistoryTests {
                 "Restaurant"
         ));
     }
-
+    /**
+     * Tests the filtering of mood events by the "ANGER" emotion.
+     */
     @Test
     public void testFilterByAnger() {
         filteredList.clear();
@@ -65,11 +72,13 @@ public class MoodHistoryTests {
             }
         }
 
-        // Assertions
+        // Assertions to ensure filtering is correct
         assertEquals(1, filteredList.size());
         assertEquals(Emotion.ANGER, filteredList.get(0).getEmotion());
     }
-
+    /**
+     * Tests the filtering of mood events from the past week.
+     */
     @Test
     public void testFilterByLastWeek() {
         filteredList.clear();
@@ -88,6 +97,9 @@ public class MoodHistoryTests {
             assert mood.getDate().getTime() >= oneWeekAgo;
         }
     }
+    /**
+     * Tests filtering by a keyword in the reason field of mood events.
+     */
     @Test
     public void testFilterByReasonKeyword() {
         filteredList.clear();
@@ -120,6 +132,9 @@ public class MoodHistoryTests {
         assertEquals(1, filteredList.size());  // Should find one mood with "Rough day"
         assertEquals("Rough day", filteredList.get(0).getReason());
     }
+    /**
+     * Tests adding a new mood event to the mood history list.
+     */
     @Test
     public void testAddNewMoodEvent() {
         int initialSize = moodHistoryList.size();
@@ -144,13 +159,15 @@ public class MoodHistoryTests {
         assertEquals(SocialSituation.ALONE, addedMood.getSocialSituation());
     }
 
-
+    /**
+     * Tests clearing the applied filters, restoring the full list of mood events.
+     */
     @Test
     public void testClearFilters() {
         // Simulate clear filter by resetting filteredList
         filteredList.clear();
         filteredList.addAll(moodHistoryList);
-
+        // Assert that the filtered list is restored to the full list
         assertEquals(moodHistoryList.size(), filteredList.size());
     }
 }
