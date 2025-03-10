@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -84,6 +85,8 @@ public class MoodHistoryActivity extends AppCompatActivity {
         Button btnShowLastWeek = findViewById(R.id.btnShowLastMonth);
         //Button btnClearFilter = findViewById(R.id.btnClearFilters); // Add a clear filter button
         FloatingActionButton btnAddMood = findViewById(R.id.floating_add_mood_button); // Floating Action Button
+        Button btnSearchKeyword = findViewById(R.id.btnSearchKeyword);
+        btnSearchKeyword.setOnClickListener(v -> showReasonFilterDialog());
 
 
         btnFilterByMood.setOnClickListener(v -> showMoodFilterDialog());
@@ -92,7 +95,7 @@ public class MoodHistoryActivity extends AppCompatActivity {
 
         btnAddMood.setOnClickListener(v -> {
             Intent intent = new Intent(MoodHistoryActivity.this, AddingMoodActivity.class);
-            startActivityForResult(intent, 1); // ✅ Use requestCode 1
+            startActivityForResult(intent, 1); //  Use requestCode 1
         });
 
     }
@@ -209,7 +212,7 @@ public class MoodHistoryActivity extends AppCompatActivity {
             }
         }
     }
-    // ✅ Filter moods by user-selected emotion
+    //  Filter moods by user-selected emotion
     private void showMoodFilterDialog() {
         final String[] moods = {"ANGER","CONFUSION","DISGUST","FEAR","HAPPINESS", "SADNESS","SHAME","SURPRISE","CLEAR FILTER"}; // Add more moods if needed
 
@@ -226,6 +229,62 @@ public class MoodHistoryActivity extends AppCompatActivity {
 
         builder.create().show();
     }
+    private void showReasonFilterDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Enter keyword to filter by reason");
+
+        final EditText input = new EditText(this);
+        builder.setView(input);
+
+        builder.setPositiveButton("Filter", (dialog, which) -> {
+            String keyword = input.getText().toString().trim();
+            if (!keyword.isEmpty()) {
+                filterByReasonKeyword(keyword);
+            } else {
+                Toast.makeText(this, "Please enter a keyword", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+
+        builder.show();
+    }
+    private void filterByReasonKeyword(String keyword) {
+        filteredList.clear();
+        String lowerKeyword = keyword.trim().toLowerCase();
+
+        for (MoodEvent mood : moodHistoryList) {
+            String reason = mood.getReason();  // Assuming getReason() exists in MoodEvent
+            if (reason != null) {
+                String lowerReason = reason.toLowerCase();
+
+                // Split the reason into words
+                String[] words = lowerReason.split("\\s+");
+
+                boolean matchFound = false;
+
+                for (String word : words) {
+                    if (word.startsWith(lowerKeyword) || word.contains(lowerKeyword) || word.endsWith(lowerKeyword)) {
+                        matchFound = true;
+                        break;
+                    }
+                }
+
+                if (matchFound) {
+                    filteredList.add(mood);
+                }
+            }
+        }
+
+        if (filteredList.isEmpty()) {
+            Toast.makeText(this, "No moods found with reason containing: " + keyword, Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Filtered by reason keyword: " + keyword, Toast.LENGTH_SHORT).show();
+        }
+
+        moodHistoryAdapter.updateList(filteredList);
+    }
+
 
     private void filterByMood(Emotion selectedMood) {
         filteredList.clear();
@@ -238,7 +297,7 @@ public class MoodHistoryActivity extends AppCompatActivity {
         Toast.makeText(this, "Filtered by " + selectedMood.name(), Toast.LENGTH_SHORT).show();
     }
 
-    // ✅ Show only moods from the last 7 days
+    // Show only moods from the last 7 days
     private void filterByLastWeek() {
         filteredList.clear();
         long oneWeekAgo = System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000); // 7 days in milliseconds
@@ -252,7 +311,7 @@ public class MoodHistoryActivity extends AppCompatActivity {
         moodHistoryAdapter.updateList(filteredList);
         Toast.makeText(this, "Showing last week's moods", Toast.LENGTH_SHORT).show();
     }
-    // ✅ Clear Filters
+    //  Clear Filters
     private void clearFilters() {
         filteredList.clear();
         filteredList.addAll(moodHistoryList); // Restore the original list
@@ -262,10 +321,10 @@ public class MoodHistoryActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1 && resultCode == RESULT_OK) { // ✅ Check if it's from AddingMoodActivity
+        if (requestCode == 1 && resultCode == RESULT_OK) { //  Check if it's from AddingMoodActivity
 //            if (data != null && data.hasExtra("newMood")) {
 //                MoodEvent newMood = (MoodEvent) data.getSerializableExtra("newMood");
-//                moodHistoryAdapter.addMood(newMood); // ✅ Use the new method to update the list
+//                moodHistoryAdapter.addMood(newMood); // Use the new method to update the list
 //                recyclerView.smoothScrollToPosition(0); // Scroll to the top
 //            }
               loadMoodHistoryFromFirestore();

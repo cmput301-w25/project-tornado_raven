@@ -71,13 +71,13 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
             }
         }
     }
-    // ✅ Add method to update list
+    //  Add method to update list
     public void updateList(List<MoodEvent> newList) {
         moodHistoryList.clear();
         moodHistoryList.addAll(newList);
         notifyDataSetChanged();
     }
-    // ✅ Restore full unfiltered list when needed
+    //  Restore full unfiltered list when needed
     public void resetList() {
         moodHistoryList.clear();
         moodHistoryList.addAll(originalList);
@@ -93,7 +93,7 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
             }
         }
     }
-    // ✅ Add new mood at the top of the list
+    //  Add new mood at the top of the list
     public void addMood(MoodEvent newMood) {
         moodHistoryList.add(0, newMood); // Add new mood at the top
         notifyItemInserted(0); // Notify RecyclerView to refresh UI
