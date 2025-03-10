@@ -107,4 +107,5 @@ public class MoodEvent implements Serializable {
         this.socialSituation = newEvent.getSocialSituation();
     }
 
+
 }

@@ -30,6 +30,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -80,7 +81,7 @@ public class ProfileActivity extends AppCompatActivity {
             int id = item.getItemId();
 
             if (id == R.id.nav_common_space && !isCurrentActivity(FolloweesActivity.class)) {
-                startActivity(new Intent(this, FolloweesActivity.class));
+                startActivity(new Intent(this, CommonSpaceActivity.class));
                 overridePendingTransition(0, 0);
                 finish();
                 return true;
@@ -110,6 +111,8 @@ public class ProfileActivity extends AppCompatActivity {
                         MoodEvent mood = document.toObject(MoodEvent.class);
                         moodHistoryList.add(mood);
                     }
+                    moodHistoryList.sort((m1, m2) -> m2.getDate().compareTo(m1.getDate()));
+
                     moodHistoryAdapter.updateList(moodHistoryList); // update RecyclerView
                 })
                 .addOnFailureListener(e ->
