@@ -4,15 +4,18 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.project.EmotionData;
 import com.example.project.MoodEvent;
 import com.example.project.R;
 import com.example.project.activities.EditMoodActivity;
@@ -48,6 +51,10 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         holder.date.setText(moodEvent.getDate().toString());
         holder.reason.setText(moodEvent.getReason());
         holder.social.setText(moodEvent.getSocialSituation().toString());
+        int emotionColor = EmotionData.getEmotionColor(context, moodEvent.getEmotion());
+        holder.emotion.setTextColor(emotionColor);
+        Drawable emojiDrawable = EmotionData.getEmotionIcon(context, moodEvent.getEmotion());
+        holder.emoticon.setImageDrawable(emojiDrawable);
 
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, EditMoodActivity.class);
@@ -107,11 +114,14 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         public TextView reason;
         public TextView social;
         public Button detailsButton;
+        public ImageView emoticon;
+
 
         public ViewHolder(View itemView) {
             super(itemView);
             emotion=itemView.findViewById(R.id.emotion);
             reason=itemView.findViewById(R.id.reason);
+            emoticon=itemView.findViewById(R.id.emoticon);
             date = itemView.findViewById(R.id.date);
             social=itemView.findViewById(R.id.socialSituation);
             detailsButton = itemView.findViewById(R.id.btnDetails);
