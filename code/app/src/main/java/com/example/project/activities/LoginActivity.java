@@ -133,7 +133,9 @@ public class LoginActivity extends AppCompatActivity {
                 .addOnSuccessListener(snap -> {
                     if (!snap.isEmpty()) {
                         String storedPassword = snap.getDocuments().get(0).getString("password");
+                        String userId = snap.getDocuments().get(0).getId();
                         if (storedPassword != null && storedPassword.equals(password)) {
+                            saveUserIdToPreferences(userId);
                             callback.onSuccess();
                         } else {
                             callback.onFailure("Wrong password");
@@ -185,4 +187,11 @@ public class LoginActivity extends AppCompatActivity {
         void onSuccess(String docId);
         void onFailure(String errorMessage);
     }
+    private void saveUserIdToPreferences(String userId) {
+        getSharedPreferences("UserPrefs", MODE_PRIVATE)
+                .edit()
+                .putString("userId", userId)
+                .apply();
+    }
+
 }
