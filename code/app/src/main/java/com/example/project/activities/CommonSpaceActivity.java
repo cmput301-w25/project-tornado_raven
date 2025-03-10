@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Displays public moods. Users can "Follow" individual moods.
+ * Activity that displays public moods. Users can view and "Follow" individual moods.
  */
 public class CommonSpaceActivity extends AppCompatActivity {
 
@@ -29,6 +29,12 @@ public class CommonSpaceActivity extends AppCompatActivity {
     private List<String> moodList;
     private List<String> originalList;
 
+    /**
+     * Initializes the activity, sets up UI components, and loads initial mood data.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after being shut down,
+     *                           this Bundle contains the most recent data.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,7 +43,7 @@ public class CommonSpaceActivity extends AppCompatActivity {
         recyclerCommonSpace = findViewById(R.id.recyclerCommonSpace);
         recyclerCommonSpace.setLayoutManager(new LinearLayoutManager(this));
 
-        // Example data: "Emotion|Date|Reason|Social"
+        // Example mood data: "Emotion|Date|Reason|Social"
         originalList = new ArrayList<>();
         originalList.add("Happy|2024-03-20|Got a new job|With a crowd");
         originalList.add("Sad|2023-03-19|Bad news|Alone");
@@ -69,30 +75,32 @@ public class CommonSpaceActivity extends AppCompatActivity {
         btnClearFilters.setOnClickListener(v -> clearFilters());
     }
 
+    /**
+     * Handles bottom navigation item selections.
+     *
+     * @param item The selected menu item.
+     * @return true if handled, false otherwise.
+     */
     private boolean onBottomNavItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.nav_common_space) {
-            return true; // Already here
+            return true; // Already in this activity
         } else if (id == R.id.nav_followed_moods) {
             startActivity(new Intent(this, FollowedMoodsActivity.class));
-            finish();
-            return true;
         } else if (id == R.id.nav_my_mood_history) {
             startActivity(new Intent(this, MoodHistoryActivity.class));
-            finish();
-            return true;
         } else if (id == R.id.nav_mood_map) {
             startActivity(new Intent(this, MoodHistoryActivity.class));
-            finish();
-            return true;
         } else if (id == R.id.nav_profile) {
             startActivity(new Intent(this, ProfileActivity.class));
-            finish();
-            return true;
         }
-        return false;
+        finish();
+        return true;
     }
 
+    /**
+     * Filters the mood list to display only moods from the last week.
+     */
     private void filterLastWeek() {
         List<String> temp = new ArrayList<>();
         for (String s : originalList) {
@@ -103,8 +111,9 @@ public class CommonSpaceActivity extends AppCompatActivity {
         updateList(temp, "Filtered last week");
     }
 
-
-
+    /**
+     * Filters the mood list to display only moods with "Happy".
+     */
     private void filterByMood() {
         List<String> temp = new ArrayList<>();
         for (String s : originalList) {
@@ -115,6 +124,9 @@ public class CommonSpaceActivity extends AppCompatActivity {
         updateList(temp, "Filtered: happy moods");
     }
 
+    /**
+     * Filters the mood list based on specific keywords (e.g., "job" or "jam").
+     */
     private void filterByKeyword() {
         List<String> temp = new ArrayList<>();
         for (String s : originalList) {
@@ -125,10 +137,19 @@ public class CommonSpaceActivity extends AppCompatActivity {
         updateList(temp, "Filtered by keywords job/jam");
     }
 
+    /**
+     * Clears all applied filters and restores the original mood list.
+     */
     private void clearFilters() {
         updateList(originalList, "Cleared filters");
     }
 
+    /**
+     * Updates the displayed mood list and shows a toast message.
+     *
+     * @param newList The new list of moods to display.
+     * @param toast   A message to be shown in a toast notification.
+     */
     private void updateList(List<String> newList, String toast) {
         moodList.clear();
         moodList.addAll(newList);

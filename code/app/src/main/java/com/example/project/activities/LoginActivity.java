@@ -2,7 +2,6 @@ package com.example.project.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.InputType;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -20,20 +19,23 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * LoginActivity handles user authentication, including login and registration.
+ */
 public class LoginActivity extends AppCompatActivity {
 
-    FirebaseFirestore db = FirebaseFirestore.getInstance();
-    CollectionReference userRef = db.collection("users");
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private CollectionReference userRef = db.collection("users");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main); // Reuse or rename "activity_main.xml" as your login layout
+        setContentView(R.layout.activity_main); // Ensure layout is properly referenced
         showLoginRegisterDialog();
     }
 
     /**
-     * Show a dialog for login or register.
+     * Displays a dialog allowing the user to login or register.
      */
     private void showLoginRegisterDialog() {
         View dialogView = getLayoutInflater().inflate(R.layout.login_register_dialog, null);
@@ -70,7 +72,7 @@ public class LoginActivity extends AppCompatActivity {
             loginLayout.setVisibility(View.VISIBLE);
         });
 
-        // Login
+        // Login functionality
         btnLogin.setOnClickListener(view -> {
             String username = etUsername.getText().toString().trim();
             String password = etPassword.getText().toString().trim();
@@ -79,9 +81,7 @@ public class LoginActivity extends AppCompatActivity {
                 public void onSuccess() {
                     Toast.makeText(LoginActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
-                    // Launch the home page: MoodHistoryActivity
-                    Intent intent = new Intent(LoginActivity.this, MoodHistoryActivity.class);
-                    startActivity(intent);
+                    startActivity(new Intent(LoginActivity.this, MoodHistoryActivity.class));
                     finish();
                 }
                 @Override
@@ -91,7 +91,7 @@ public class LoginActivity extends AppCompatActivity {
             });
         });
 
-        // Register
+        // Register functionality
         btnRegister.setOnClickListener(v -> {
             String newUsername = etRegisterUsername.getText().toString().trim();
             String newPassword = etRegisterPassword.getText().toString().trim();
@@ -102,7 +102,6 @@ public class LoginActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(String docId) {
                         Toast.makeText(LoginActivity.this, "Registered user: " + docId, Toast.LENGTH_SHORT).show();
-                        // Switch back to login
                         registerLayout.setVisibility(View.GONE);
                         loginLayout.setVisibility(View.VISIBLE);
                     }
@@ -117,6 +116,13 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Validates login credentials against Firebase Firestore.
+     *
+     * @param username The entered username.
+     * @param password The entered password.
+     * @param callback The callback to handle success or failure.
+     */
     private void validateLogin(String username, String password, LoginCallback callback) {
         if (username.equals("admin") && password.equals("1234")) {
             callback.onSuccess();
@@ -139,6 +145,13 @@ public class LoginActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> callback.onFailure("Database error: " + e.getMessage()));
     }
 
+    /**
+     * Registers a new user in Firebase Firestore.
+     *
+     * @param username The new user's username.
+     * @param password The new user's password.
+     * @param callback The callback to handle success or failure.
+     */
     private void registerUser(String username, String password, RegisterCallback callback) {
         userRef.whereEqualTo("username", username)
                 .get()
@@ -157,10 +170,17 @@ public class LoginActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> callback.onFailure("Database error: " + e.getMessage()));
     }
 
+    /**
+     * Callback interface for login validation.
+     */
     interface LoginCallback {
         void onSuccess();
         void onFailure(String errorMessage);
     }
+
+    /**
+     * Callback interface for user registration.
+     */
     interface RegisterCallback {
         void onSuccess(String docId);
         void onFailure(String errorMessage);

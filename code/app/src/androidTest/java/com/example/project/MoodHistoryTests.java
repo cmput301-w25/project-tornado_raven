@@ -19,7 +19,6 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-import androidx.test.espresso.contrib.RecyclerViewActions;
 
 public class MoodHistoryTests {
 

@@ -36,6 +36,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+
+/**
+ * Activity for adding a new mood event.
+ * Allows users to select an emotion, provide a reason, pick an image, and submit the mood event.
+ */
 public class AddingMoodActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private Spinner emotionSpinner;
@@ -49,6 +54,12 @@ public class AddingMoodActivity extends AppCompatActivity {
     private ActivityResultLauncher<Intent> resultLauncher;
     private Uri selectedImageUri; // Add this variable
 
+    /**
+     * Called when the activity is first created.
+     * Initializes UI elements and sets up event listeners.
+     *
+     * @param savedInstanceState The saved instance state.
+     */
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -95,11 +106,17 @@ public class AddingMoodActivity extends AppCompatActivity {
         submitButton.setOnClickListener(v -> saveMood());
     }
 
+    /**
+     * Opens the image picker to select an image.
+     */
     private void pickImage() {
         Intent intent = new Intent(MediaStore.ACTION_PICK_IMAGES);
         resultLauncher.launch(intent);
     }
 
+    /**
+     * Registers the activity result launcher for image selection.
+     */
     private void registerResult() {
         resultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
                 new ActivityResultCallback<ActivityResult>() {
@@ -114,6 +131,14 @@ public class AddingMoodActivity extends AppCompatActivity {
                     }
                 });
     }
+
+    /**
+     * Checks if the selected image is within the allowed size limit.
+     *
+     * @param imageUri The URI of the selected image.
+     * @param sizeLimit The size limit in bytes.
+     * @return True if the image is within the size limit, otherwise false.
+     */
     private boolean isImageUnderSizeLimit(Uri imageUri, long sizeLimit) {
         try {
             InputStream inputStream = getContentResolver().openInputStream(imageUri);
@@ -127,6 +152,12 @@ public class AddingMoodActivity extends AppCompatActivity {
     }
 
 
+    /**
+     * Compresses the selected image to reduce its size.
+     *
+     * @param imageUri The URI of the selected image.
+     * @return A compressed Bitmap image.
+     */
     private Bitmap compressImage(Uri imageUri) {
         try {
             InputStream inputStream = getContentResolver().openInputStream(imageUri);
@@ -145,6 +176,7 @@ public class AddingMoodActivity extends AppCompatActivity {
         }
     }
 
+
     private Uri saveCompressedImage(Bitmap compressedBitmap) {
         try {
             File file = new File(getFilesDir(), "compressed_image_" + System.currentTimeMillis() + ".jpg");
@@ -158,6 +190,9 @@ public class AddingMoodActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * saves the updated attributes of the mood and update the firebase
+     */
     private void saveMood() {
         // Get user inputs
         String selectedEmotion = emotionSpinner.getSelectedItem().toString();
@@ -202,6 +237,11 @@ public class AddingMoodActivity extends AppCompatActivity {
         finish(); // Close the activity
     }
 
+    /**
+     * Saves the mood event to Firestore.
+     *
+     * @param moodEvent The mood event to be saved.
+     */
     private void saveMoodToFirestore(MoodEvent moodEvent) {
         // Create a map to store mood data
         Map<String, Object> moodData = new HashMap<>();
