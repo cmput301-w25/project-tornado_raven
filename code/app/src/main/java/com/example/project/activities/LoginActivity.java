@@ -1,6 +1,7 @@
 package com.example.project.activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -79,9 +80,21 @@ public class LoginActivity extends AppCompatActivity {
             validateLogin(username, password, new LoginCallback() {
                 @Override
                 public void onSuccess() {
+                    // Store user profile by using SharedPreferences
+                    SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
+                    SharedPreferences.Editor editor = prefs.edit();
+                    editor.putBoolean("is_logged_in", true);
+                    editor.putString("username", username); // store username (unique)
+                    editor.putString("password", password); // store the password
+                    editor.apply(); // save changes
+
                     Toast.makeText(LoginActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
-                    startActivity(new Intent(LoginActivity.this, MoodHistoryActivity.class));
+
+                    // Launch the home page: MoodHistoryActivity
+                    Intent intent = new Intent(LoginActivity.this, MoodHistoryActivity.class);
+                    startActivity(intent);
+
                     finish();
                 }
                 @Override

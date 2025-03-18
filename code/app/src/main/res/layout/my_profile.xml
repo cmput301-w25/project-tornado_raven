@@ -25,12 +25,20 @@
 
         <TextView
             android:id="@+id/username"
-            android:layout_width="wrap_content"
+            android:layout_width="242dp"
             android:layout_height="wrap_content"
             android:text="MY NAME"
+            android:textColor="@android:color/black"
             android:textSize="20sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/black" />
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/logout_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="EXIT"
+            android:textSize="10sp" />
     </LinearLayout>
 
     <Button

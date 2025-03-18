@@ -71,8 +71,9 @@ public class MainActivity extends AppCompatActivity {
      * @return true if the user is logged in, false otherwise.
      */
     private boolean isUserLoggedIn() {
-        SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
-        return prefs.getBoolean("is_logged_in", false);
+//        SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
+//        return prefs.getBoolean("is_logged_in", false);
+        return false;
     }
 
     /**

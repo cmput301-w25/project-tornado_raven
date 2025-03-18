@@ -1,6 +1,7 @@
 package com.example.project.activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -202,6 +203,9 @@ public class AddingMoodActivity extends AppCompatActivity {
         String location = locationEditText.getText().toString().trim(); // Optional
         Uri photoUri = selectedImageUri; // Optional
 
+        SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        String username = prefs.getString("username","Unknown User");
+
         // Validate required fields
         if (selectedEmotion.isEmpty() || reason.isEmpty()) {
             Toast.makeText(this, "Emotion and Reason are required", Toast.LENGTH_SHORT).show();
@@ -219,6 +223,7 @@ public class AddingMoodActivity extends AppCompatActivity {
 
         // Create new MoodEvent with optional fields
         MoodEvent newMood = new MoodEvent(
+                username,
                 emotion,
                 new Date(),
                 reason,
@@ -245,6 +250,7 @@ public class AddingMoodActivity extends AppCompatActivity {
     private void saveMoodToFirestore(MoodEvent moodEvent) {
         // Create a map to store mood data
         Map<String, Object> moodData = new HashMap<>();
+        moodData.put("author",moodEvent.getAuthor());
         moodData.put("emotion", moodEvent.getEmotion().toString());
         moodData.put("date", moodEvent.getDate());
         moodData.put("reason", moodEvent.getReason());
