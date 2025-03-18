@@ -8,8 +8,18 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.example.project.R;
 import com.google.firebase.FirebaseApp;
 
+/**
+ * Main activity of the application. This activity is responsible for handling
+ * the bottom navigation menu and checking if the user is logged in.
+ */
 public class MainActivity extends AppCompatActivity {
 
+    /**
+     * Called when the activity is first created. Initializes Firebase, checks login status,
+     * and sets up the bottom navigation menu.
+     *
+     * @param savedInstanceState The saved state of the activity, if any.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -23,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        // Initialize and set up the BottomNavigationView
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
         bottomNavigationView.setSelectedItemId(R.id.nav_my_mood_history); // Highlight the correct tab
 
@@ -54,12 +65,23 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Checks if the user is logged in by reading the shared preferences.
+     *
+     * @return true if the user is logged in, false otherwise.
+     */
     private boolean isUserLoggedIn() {
 //        SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
 //        return prefs.getBoolean("is_logged_in", false);
         return false;
     }
 
+    /**
+     * Checks if the current activity is the specified activity class.
+     *
+     * @param activityClass The class of the activity to check.
+     * @return true if the current activity is of the specified class, false otherwise.
+     */
     private boolean isCurrentActivity(Class<?> activityClass) {
         return this.getClass().equals(activityClass);
     }

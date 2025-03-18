@@ -15,6 +15,12 @@ public class FollowersAdapter extends RecyclerView.Adapter<FollowersAdapter.Foll
     private List<String> followersList;
     private OnRemoveClickListener onRemoveClickListener;
 
+    /**
+     * Constructor for the FollowersAdapter.
+     *
+     * @param followersList The list of followers to be displayed.
+     * @param listener The listener to handle remove button clicks.
+     */
     public FollowersAdapter(List<String> followersList, OnRemoveClickListener listener) {
         this.followersList = followersList;
         this.onRemoveClickListener = listener;
@@ -52,6 +58,9 @@ public class FollowersAdapter extends RecyclerView.Adapter<FollowersAdapter.Foll
         TextView textFollowerName, textFollowerMood;
         Button btnRemoveFollower;
 
+        /**
+         * ViewHolder for each follower item. Binds views in the layout.
+         */
         public FollowerViewHolder(@NonNull View itemView) {
             super(itemView);
             textFollowerName = itemView.findViewById(R.id.textFollowerName);
@@ -60,6 +69,9 @@ public class FollowersAdapter extends RecyclerView.Adapter<FollowersAdapter.Foll
         }
     }
 
+    /**
+     * Listener interface for handling the removal of followers.
+     */
     public interface OnRemoveClickListener {
         void onRemoveClick(int position);
     }

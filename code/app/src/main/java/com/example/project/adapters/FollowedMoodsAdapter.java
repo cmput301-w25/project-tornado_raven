@@ -19,15 +19,31 @@ public class FollowedMoodsAdapter extends RecyclerView.Adapter<FollowedMoodsAdap
     private List<String> followedMoods;
     private OnUnfollowListener unfollowListener;
 
+    /**
+     * Interface to handle unfollow actions for a mood event.
+     */
     public interface OnUnfollowListener {
         void onUnfollow(int position);
     }
 
+    /**
+     * Constructor for the adapter.
+     *
+     * @param followedMoods List of followed mood data, each in the format "Emotion|Date|Reason|Social".
+     * @param unfollowListener Listener for unfollow button clicks.
+     */
     public FollowedMoodsAdapter(List<String> followedMoods, OnUnfollowListener unfollowListener) {
         this.followedMoods = followedMoods;
         this.unfollowListener = unfollowListener;
     }
 
+    /**
+     * Creates a new ViewHolder instance. This is called when a new view item is needed.
+     *
+     * @param parent The parent ViewGroup that the new item will be added to.
+     * @param viewType The view type of the new item.
+     * @return A new instance of MoodViewHolder.
+     */
     @NonNull
     @Override
     public MoodViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -36,6 +52,13 @@ public class FollowedMoodsAdapter extends RecyclerView.Adapter<FollowedMoodsAdap
         return new MoodViewHolder(view);
     }
 
+    /**
+     * Binds the data for the specific position to the corresponding ViewHolder.
+     * This is called for each item in the RecyclerView.
+     *
+     * @param holder The ViewHolder to bind the data to.
+     * @param position The position of the item in the followedMoods list.
+     */
     @Override
     public void onBindViewHolder(@NonNull MoodViewHolder holder, int position) {
         String data = followedMoods.get(position);
@@ -69,6 +92,11 @@ public class FollowedMoodsAdapter extends RecyclerView.Adapter<FollowedMoodsAdap
         TextView emotion, date, reason, socialSituation;
         Button btnDetails;
 
+        /**
+         * Constructor that initializes the views for each item.
+         *
+         * @param itemView The view of the item to be bound.
+         */
         public MoodViewHolder(@NonNull View itemView) {
             super(itemView);
             emotion = itemView.findViewById(R.id.emotion);

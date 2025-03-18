@@ -28,6 +28,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * This activity displays the user's mood history in a RecyclerView.
+ * It allows the user to filter moods by type, reason, or date, and also add, update, or delete moods.
+ */
 public class MoodHistoryActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
@@ -36,6 +40,12 @@ public class MoodHistoryActivity extends AppCompatActivity {
     private List<MoodEvent> filteredList;
     private FirebaseFirestore db;
 
+    /**
+     * Initializes the activity. Sets up the RecyclerView, bottom navigation, and event listeners.
+     * It also loads the mood history from Firestore.
+     *
+     * @param savedInstanceState The saved instance state, or null if there is none.
+     */
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -102,7 +112,9 @@ public class MoodHistoryActivity extends AppCompatActivity {
 
     }
 
-
+    /**
+     * Loads the mood history from Firestore and updates the RecyclerView.
+     */
     private void loadMoodHistoryFromFirestore() {
         String currentUserName = getCurrentUserName();
         if (currentUserName.isEmpty()) {
@@ -132,23 +144,16 @@ public class MoodHistoryActivity extends AppCompatActivity {
                 );
     }
 
-
-//    // dummy data
-//    private List<MoodEvent> loadMoodHistory() {
-//        List<MoodEvent> list = new ArrayList<>();
-//        list.add(new MoodEvent(Emotion.HAPPINESS,new Date(), "get money", SocialSituation.ALONE, "home"));
-//        list.add(new MoodEvent(Emotion.SADNESS, new Date(System.currentTimeMillis() - 3 * 24 * 60 * 60 * 1000), "only 5 dollors", SocialSituation.ALONE,"home"));
-//        list.add(new MoodEvent(Emotion.CONFUSION, new Date(System.currentTimeMillis() - 10 * 24 * 60 * 60 * 1000), "lost my money", SocialSituation.ALONE, "home"));
-//
-//        return list;
-//    }
-
     @Override
     protected void onResume() {
         super.onResume();
     }
 
-
+    /**
+     * Updates a mood item in both the local list and Firestore.
+     *
+     * @param updatedMood The updated mood object to replace the old one.
+     */
     private void updateMoodItem(MoodEvent updatedMood) {
         for (int i = 0; i < moodHistoryList.size(); i++) {
             if (moodHistoryList.get(i).getId().equals(updatedMood.getId())) {
@@ -186,6 +191,12 @@ public class MoodHistoryActivity extends AppCompatActivity {
             }
         }
     }
+
+    /**
+     * Deletes a mood item both from the local list and Firestore.
+     *
+     * @param moodId The ID of the mood event to delete.
+     */
     private void deleteMood(String moodId) {
         for (int i = 0; i < moodHistoryList.size(); i++) {
             if (moodHistoryList.get(i).getId().equals(moodId)) {
@@ -225,7 +236,10 @@ public class MoodHistoryActivity extends AppCompatActivity {
             }
         }
     }
-    //  Filter moods by user-selected emotion
+
+    /**
+     * Displays a dialog to filter moods by a selected emotion.
+     */
     private void showMoodFilterDialog() {
         final String[] moods = {"ANGER","CONFUSION","DISGUST","FEAR","HAPPINESS", "SADNESS","SHAME","SURPRISE","CLEAR FILTER"}; // Add more moods if needed
 
@@ -242,6 +256,10 @@ public class MoodHistoryActivity extends AppCompatActivity {
 
         builder.create().show();
     }
+
+    /**
+     * Displays a dialog to filter moods by a reason keyword.
+     */
     private void showReasonFilterDialog(){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Enter keyword to filter by reason");
@@ -262,6 +280,12 @@ public class MoodHistoryActivity extends AppCompatActivity {
 
         builder.show();
     }
+
+    /**
+     * Filters the mood history by a given reason keyword.
+     *
+     * @param keyword The keyword to filter the reasons by.
+     */
     private void filterByReasonKeyword(String keyword) {
         filteredList.clear();
         String lowerKeyword = keyword.trim().toLowerCase();
@@ -298,7 +322,11 @@ public class MoodHistoryActivity extends AppCompatActivity {
         moodHistoryAdapter.updateList(filteredList);
     }
 
-
+    /**
+     * Filters the mood history by a specific emotion.
+     *
+     * @param selectedMood The emotion to filter by.
+     */
     private void filterByMood(Emotion selectedMood) {
         filteredList.clear();
         for (MoodEvent mood : moodHistoryList) {
@@ -310,7 +338,9 @@ public class MoodHistoryActivity extends AppCompatActivity {
         Toast.makeText(this, "Filtered by " + selectedMood.name(), Toast.LENGTH_SHORT).show();
     }
 
-    // Show only moods from the last 7 days
+    /**
+     * Filters the mood history to show only the moods from the last 7 days.
+     */
     private void filterByLastWeek() {
         filteredList.clear();
         long oneWeekAgo = System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000); // 7 days in milliseconds
@@ -324,13 +354,24 @@ public class MoodHistoryActivity extends AppCompatActivity {
         moodHistoryAdapter.updateList(filteredList);
         Toast.makeText(this, "Showing last week's moods", Toast.LENGTH_SHORT).show();
     }
-    //  Clear Filters
+
+    /**
+     * Clears all applied filters and restores the original mood list.
+     */
     private void clearFilters() {
         filteredList.clear();
         filteredList.addAll(moodHistoryList); // Restore the original list
         moodHistoryAdapter.updateList(filteredList);
         Toast.makeText(this, "Filters cleared", Toast.LENGTH_SHORT).show();
     }
+
+    /**
+     * Handles the result from an activity when a new mood is added or an existing one is updated/deleted.
+     *
+     * @param requestCode The request code used to start the activity.
+     * @param resultCode The result code returned by the activity.
+     * @param data The intent containing any data returned from the activity.
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -361,7 +402,12 @@ public class MoodHistoryActivity extends AppCompatActivity {
         return prefs.getString("username", ""); // get the username
     }
 
-
+    /**
+     * Checks if the current activity is the specified activity.
+     *
+     * @param activityClass The activity class to check against.
+     * @return True if the current activity matches the specified activity, false otherwise.
+     */
     private boolean isCurrentActivity(Class<?> activityClass) {
         return this.getClass().equals(activityClass);
     }
