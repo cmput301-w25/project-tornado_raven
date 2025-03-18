@@ -55,8 +55,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean isUserLoggedIn() {
-        SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
-        return prefs.getBoolean("is_logged_in", false);
+//        SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
+//        return prefs.getBoolean("is_logged_in", false);
+        return false;
     }
 
     private boolean isCurrentActivity(Class<?> activityClass) {

@@ -2,6 +2,7 @@ package com.example.project.activities;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -103,7 +104,16 @@ public class MoodHistoryActivity extends AppCompatActivity {
 
 
     private void loadMoodHistoryFromFirestore() {
+        String currentUserName = getCurrentUserName();
+        if (currentUserName.isEmpty()) {
+            Toast.makeText(this, "User ID not found. Please log in again.", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+            return;
+        }
+
         db.collection("MoodEvents")
+                .whereEqualTo("author",currentUserName)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     moodHistoryList.clear();
@@ -345,7 +355,13 @@ public class MoodHistoryActivity extends AppCompatActivity {
         }
 
     }
-    
+
+    private String getCurrentUserName() {
+        SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        return prefs.getString("username", ""); // get the username
+    }
+
+
     private boolean isCurrentActivity(Class<?> activityClass) {
         return this.getClass().equals(activityClass);
     }

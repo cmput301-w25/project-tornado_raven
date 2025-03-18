@@ -15,6 +15,7 @@ public class MoodEvent implements Serializable {
     private String documentId;
     private String location;
     private Uri photoUri;
+    private String author;
 
     public String getDocumentId() {
         return documentId;
@@ -41,7 +42,8 @@ public class MoodEvent implements Serializable {
         this.location=location;
         this.id = UUID.randomUUID().toString();
     }
-    public MoodEvent(Emotion emotion, Date date, String reason, SocialSituation socialSituation, String location, Uri photoUri) {
+    public MoodEvent(String author, Emotion emotion, Date date, String reason, SocialSituation socialSituation, String location, Uri photoUri) {
+        this.author = author;
         this.emotion = emotion;
         this.date = date;
         this.Reason = reason;
@@ -49,6 +51,7 @@ public class MoodEvent implements Serializable {
         this.location=location;
         this.id = UUID.randomUUID().toString();
         this.photoUri = photoUri;
+
     }
 
     public Uri getPhotoUri() {
@@ -85,6 +88,14 @@ public class MoodEvent implements Serializable {
 
     public String getReason() {
         return Reason;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
     }
 
     public SocialSituation getSocialSituation() {
