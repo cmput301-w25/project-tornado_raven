@@ -216,9 +216,6 @@ public class AddingMoodActivity extends AppCompatActivity {
         String username = prefs.getString("username", "Unknown User");
 
 
-        SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
-        String username = prefs.getString("username","Unknown User");
-
         // Validate required fields
         if (selectedEmotion.isEmpty() || reason.isEmpty()) {
             Toast.makeText(this, "Emotion and Reason are required", Toast.LENGTH_SHORT).show();
