@@ -43,7 +43,6 @@ public class MoodEvent implements Serializable {
     private boolean isSynced = false;
     private String pendingOperation = "ADD"; // ADD, EDIT, DELETE
 
-    public MoodEvent() {};//for the firestore
 
     /**
      * Constructor to create a MoodEvent with required details: emotion, date, reason, social situation, and location.
