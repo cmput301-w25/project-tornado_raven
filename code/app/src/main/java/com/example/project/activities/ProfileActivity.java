@@ -121,25 +121,55 @@ public class ProfileActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Loads the user's mood history from Firestore and updates the RecyclerView.
-     */
-    private void loadMoodHistoryFromFirestore() {
-        db.collection("MoodEvents")
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    moodHistoryList.clear();
-                    for (DocumentSnapshot document : queryDocumentSnapshots) {
-                        MoodEvent mood = document.toObject(MoodEvent.class);
-                        moodHistoryList.add(mood);
-                    }
-                    moodHistoryList.sort((m1, m2) -> m2.getDate().compareTo(m1.getDate()));
-                    moodHistoryAdapter.updateList(moodHistoryList);
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Upload mood data failed" + e.getMessage(), Toast.LENGTH_SHORT).show()
-                );
+//    /**
+//     * Loads the user's mood history from Firestore and updates the RecyclerView.
+//     */
+//    private void loadMoodHistoryFromFirestore() {
+//        db.collection("MoodEvents")
+//                .get()
+//                .addOnSuccessListener(queryDocumentSnapshots -> {
+//                    moodHistoryList.clear();
+//                    for (DocumentSnapshot document : queryDocumentSnapshots) {
+//                        MoodEvent mood = document.toObject(MoodEvent.class);
+//                        moodHistoryList.add(mood);
+//                    }
+//                    moodHistoryList.sort((m1, m2) -> m2.getDate().compareTo(m1.getDate()));
+//                    moodHistoryAdapter.updateList(moodHistoryList);
+//                })
+//                .addOnFailureListener(e ->
+//                        Toast.makeText(this, "Upload mood data failed" + e.getMessage(), Toast.LENGTH_SHORT).show()
+//                );
+//    }
+private String getCurrentUserName() {
+    SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
+    return prefs.getString("username", ""); // get the username
+}
+private void loadMoodHistoryFromFirestore() {
+    String currentUserName = getCurrentUserName();
+    if (currentUserName.isEmpty()) {
+        Toast.makeText(this, "User ID not found. Please log in again.", Toast.LENGTH_SHORT).show();
+        startActivity(new Intent(this, LoginActivity.class));
+        finish();
+        return;
     }
+
+    db.collection("MoodEvents")
+            .whereEqualTo("author",currentUserName)
+            .get()
+            .addOnSuccessListener(queryDocumentSnapshots -> {
+                moodHistoryList.clear();
+                for (DocumentSnapshot document : queryDocumentSnapshots) {
+                    MoodEvent mood = document.toObject(MoodEvent.class);
+                    moodHistoryList.add(mood);
+                }
+                moodHistoryList.sort((m1, m2) -> m2.getDate().compareTo(m1.getDate()));
+
+                moodHistoryAdapter.updateList(moodHistoryList); // update RecyclerView
+            })
+            .addOnFailureListener(e ->
+                    Toast.makeText(this, "Upload mood data failed" + e.getMessage(), Toast.LENGTH_SHORT).show()
+            );
+}
 
     /**
      * Loads the user's profile information from shared preferences and Firestore.
@@ -181,5 +211,111 @@ public class ProfileActivity extends AppCompatActivity {
      */
     private boolean isCurrentActivity(Class<?> activityClass) {
         return this.getClass().equals(activityClass);
+    }
+    private void updateMoodItem(MoodEvent updatedMood) {
+        for (int i = 0; i < moodHistoryList.size(); i++) {
+            if (moodHistoryList.get(i).getId().equals(updatedMood.getId())) {
+                moodHistoryList.set(i, updatedMood);
+                for (int j = 0; j < moodHistoryList.size(); j++) {
+                    if (moodHistoryList.get(j).getId().equals(updatedMood.getId())) {
+                        moodHistoryList.set(j, updatedMood);
+                        break;
+                    }
+                }
+                moodHistoryAdapter.updateMood(updatedMood);
+                Toast.makeText(this, "Mood updated", Toast.LENGTH_SHORT).show();
+                db.collection("MoodEvents")
+                        .whereEqualTo("id", updatedMood.getId())
+                        .get()
+                        .addOnSuccessListener(queryDocumentSnapshots -> {
+                            if (!queryDocumentSnapshots.isEmpty()) {
+                                String documentId = queryDocumentSnapshots.getDocuments().get(0).getId();
+                                db.collection("MoodEvents").document(documentId)
+                                        .set(updatedMood)
+                                        .addOnSuccessListener(aVoid -> {
+                                            Toast.makeText(this, "updated successfully", Toast.LENGTH_SHORT).show();
+                                        })
+                                        .addOnFailureListener(e ->
+                                                Toast.makeText(this, "updated failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                                        );
+                            } else {
+                                Toast.makeText(this, "No corresponding MoodEvent", Toast.LENGTH_SHORT).show();
+                            }
+                        })
+                        .addOnFailureListener(e ->
+                                Toast.makeText(this, "search failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                        );
+                return;
+            }
+        }
+    }
+
+    /**
+     * Deletes a mood item both from the local list and Firestore.
+     *
+     * @param moodId The ID of the mood event to delete.
+     */
+    private void deleteMood(String moodId) {
+        for (int i = 0; i < moodHistoryList.size(); i++) {
+            if (moodHistoryList.get(i).getId().equals(moodId)) {
+                moodHistoryList.remove(i);
+                for (int j = 0; j < moodHistoryList.size(); j++) {
+                    if (moodHistoryList.get(j).getId().equals(moodId)) {
+                        moodHistoryList.remove(j);
+                        break;
+                    }
+                }
+                moodHistoryAdapter.notifyItemRemoved(i);
+                Toast.makeText(this, "Mood deleted", Toast.LENGTH_SHORT).show();
+
+                db.collection("MoodEvents")
+                        .whereEqualTo("id", moodId)
+                        .get()
+                        .addOnSuccessListener(queryDocumentSnapshots -> {
+                            if (!queryDocumentSnapshots.isEmpty()) {
+                                String documentId = queryDocumentSnapshots.getDocuments().get(0).getId();
+                                db.collection("MoodEvents").document(documentId)
+                                        .delete()
+                                        .addOnSuccessListener(aVoid -> {
+                                            Toast.makeText(this, "deleted successfully", Toast.LENGTH_SHORT).show();
+                                        })
+                                        .addOnFailureListener(e ->
+                                                Toast.makeText(this, "deleted failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                                        );
+                                loadMoodHistoryFromFirestore();
+                            } else {
+                                Toast.makeText(this, "No corresponding MoodEvent", Toast.LENGTH_SHORT).show();
+                            }
+                        })
+                        .addOnFailureListener(e ->
+                                Toast.makeText(this, "search failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                        );
+                return;
+            }
+        }
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1 && resultCode == RESULT_OK) { //  Check if it's from AddingMoodActivity
+//            if (data != null && data.hasExtra("newMood")) {
+//                MoodEvent newMood = (MoodEvent) data.getSerializableExtra("newMood");
+//                moodHistoryAdapter.addMood(newMood); // Use the new method to update the list
+//                recyclerView.smoothScrollToPosition(0); // Scroll to the top
+//            }
+            loadMoodHistoryFromFirestore();
+        }
+        if (requestCode == 2 && resultCode == RESULT_OK) {
+            if (data != null) {
+                if (data.hasExtra("updatedMood")) {
+                    MoodEvent updatedMood = (MoodEvent) data.getSerializableExtra("updatedMood");
+                    updateMoodItem(updatedMood);
+                } else if (data.hasExtra("deleteMoodId")) {
+                    String deleteMoodId = data.getStringExtra("deleteMoodId");
+                    deleteMood(deleteMoodId);
+                }
+            }
+        }
+
     }
 }
