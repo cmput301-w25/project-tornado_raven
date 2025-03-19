@@ -6,11 +6,16 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
 
+
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Represents a mood event that tracks an individual's emotional state and associated information.
  * This class stores details like emotion, date, reason, social situation, location, and optional photo URI.
  * It implements Serializable to allow easy storage and passing between components.
  */
+
 public class MoodEvent implements Serializable {
     private Emotion emotion;
     private String id;
@@ -33,6 +38,11 @@ public class MoodEvent implements Serializable {
     public void setDocumentId(String documentId) {
         this.documentId = documentId;
     }
+
+    // Offline fields
+    private boolean isSynced = false;
+    private String pendingOperation = "ADD"; // ADD, EDIT, DELETE
+
     public MoodEvent() {};//for the firestore
 
     /**
@@ -73,6 +83,7 @@ public class MoodEvent implements Serializable {
      * @param location The location where the mood event occurred.
      * @param photoUri The URI of the photo taken during the mood event, if any.
      */
+
     public MoodEvent(String author, Emotion emotion, Date date, String reason, SocialSituation socialSituation, String location, Uri photoUri) {
         this.author = author;
         this.emotion = emotion;
@@ -173,6 +184,7 @@ public class MoodEvent implements Serializable {
      * @return The social situation.
      */
 
+
     public SocialSituation getSocialSituation() {
         return socialSituation;
     }
@@ -213,4 +225,38 @@ public class MoodEvent implements Serializable {
     }
 
 
+    public boolean isSynced() {
+        return isSynced;
+    }
+
+    public void setSynced(boolean synced) {
+        isSynced = synced;
+    }
+
+    public String getPendingOperation() {
+        return pendingOperation;
+    }
+
+    public void setPendingOperation(String pendingOperation) {
+        this.pendingOperation = pendingOperation;
+    }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> moodData = new HashMap<>();
+        moodData.put("author", this.getAuthor());
+        moodData.put("emotion", this.getEmotion().toString());
+        moodData.put("date", this.getDate());
+        moodData.put("reason", this.getReason());
+        moodData.put("id", this.getId());
+        if (this.getSocialSituation() != null) {
+            moodData.put("socialSituation", this.getSocialSituation().toString());
+        }
+        if (this.getLocation() != null) {
+            moodData.put("location", this.getLocation());
+        }
+        if (this.getPhotoUri() != null) {
+            moodData.put("photoUrl", this.getPhotoUri().toString());
+        }
+        return moodData;
+    }
 }

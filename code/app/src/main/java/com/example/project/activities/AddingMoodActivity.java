@@ -1,9 +1,13 @@
 package com.example.project.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkRequest;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -14,6 +18,10 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import java.util.List;
+
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
@@ -35,6 +43,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -199,9 +208,13 @@ public class AddingMoodActivity extends AppCompatActivity {
         String selectedEmotion = emotionSpinner.getSelectedItem().toString();
         String reason = reasonEditText.getText().toString().trim();
         int socialSituationPosition = socialSituationSpinner.getSelectedItemPosition();
-        SocialSituation socialSituation = socialSituationPosition >= 0 ? SocialSituation.fromPosition(socialSituationPosition) : null; // Optional
-        String location = locationEditText.getText().toString().trim(); // Optional
-        Uri photoUri = selectedImageUri; // Optional
+        SocialSituation socialSituation = socialSituationPosition >= 0 ? SocialSituation.fromPosition(socialSituationPosition) : null;
+        String location = locationEditText.getText().toString().trim();
+        Uri photoUri = selectedImageUri;
+
+        SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        String username = prefs.getString("username", "Unknown User");
+
 
         SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
         String username = prefs.getString("username","Unknown User");
@@ -212,7 +225,7 @@ public class AddingMoodActivity extends AppCompatActivity {
             return;
         }
 
-        // Convert emotion string to Emotion enum
+        // Convert to enum
         Emotion emotion;
         try {
             emotion = Emotion.valueOf(selectedEmotion.toUpperCase());
@@ -221,26 +234,56 @@ public class AddingMoodActivity extends AppCompatActivity {
             return;
         }
 
-        // Create new MoodEvent with optional fields
+        // Create MoodEvent
         MoodEvent newMood = new MoodEvent(
                 username,
                 emotion,
                 new Date(),
                 reason,
-                socialSituation, // Optional
-                location.isEmpty() ? null : location, // Optional
-                photoUri // Optional
+                socialSituation,
+                location.isEmpty() ? null : location,
+                photoUri
         );
 
-        // Save to Firestore
-        saveMoodToFirestore(newMood);
 
-        // Send data back to MoodHistoryActivity
-        Intent resultIntent = new Intent();
-        resultIntent.putExtra("newMood", newMood);
-        setResult(RESULT_OK, resultIntent);
-        finish(); // Close the activity
+        // Connectivity Check
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        Network network = connectivityManager.getActiveNetwork();
+
+        if (network != null && connectivityManager.getNetworkCapabilities(network) != null &&
+                connectivityManager.getNetworkCapabilities(network).hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
+            // Online: Save to Firestore
+            saveMoodToFirestore(newMood);
+            newMood.setSynced(true);
+            finishActivityResult(newMood);
+        } else {
+            // Offline: Save locally
+            newMood.setSynced(false);
+            newMood.setPendingOperation("ADD");
+            saveMoodLocally(newMood);
+            Toast.makeText(this, "Offline! Mood saved locally.", Toast.LENGTH_SHORT).show();
+            finishActivityResult(newMood);
+        }
     }
+
+
+
+    private void saveMoodLocally(MoodEvent mood) {
+        SharedPreferences prefs = getSharedPreferences("OfflineMoods", MODE_PRIVATE);
+        String existing = prefs.getString("moods", "[]");
+        Gson gson = new Gson();
+        List<MoodEvent> moodList = gson.fromJson(existing, new TypeToken<List<MoodEvent>>(){}.getType());
+        moodList.add(mood);
+        prefs.edit().putString("moods", gson.toJson(moodList)).apply();
+    }
+
+    private void finishActivityResult(MoodEvent mood) {
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra("newMood", mood);
+        setResult(RESULT_OK, resultIntent);
+        finish();
+    }
+
 
     /**
      * Saves the mood event to Firestore.
