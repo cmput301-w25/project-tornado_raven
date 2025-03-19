@@ -11,7 +11,7 @@
         android:id="@+id/textFollowersTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/title_common_space"
+        android:text="@string/title_followees"
         android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
@@ -33,7 +33,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textFollowersTitle"
         app:layout_constraintVertical_bias="0.0"
-        tools:listitem="@layout/item_follower" />
+        tools:listitem="@layout/item_mood" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"

@@ -61,7 +61,7 @@ public class FolloweesMoodsAdapter extends RecyclerView.Adapter<FolloweesMoodsAd
             txtEmotion  = itemView.findViewById(R.id.date);
             txtDate     = itemView.findViewById(R.id.reason);
             txtReason   = itemView.findViewById(R.id.socialSituation);
-            txtSocial   = itemView.findViewById(R.id.location);
+            // implement when location is available: txtSocial   = itemView.findViewById(R.id.location);
         }
     }
 
