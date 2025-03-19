@@ -31,6 +31,14 @@ public class FolloweesAdapter extends RecyclerView.Adapter<FolloweesAdapter.Foll
 
     }
 
+    /**
+     * Creates a new ViewHolder for a followee item.
+     * This is called when a new item view is required for the RecyclerView.
+     *
+     * @param parent The parent ViewGroup that the new item will be added to.
+     * @param viewType The type of view for the new item.
+     * @return A new FolloweeViewHolder instance.
+     */
     @NonNull
     @Override
     public FolloweeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -40,6 +48,13 @@ public class FolloweesAdapter extends RecyclerView.Adapter<FolloweesAdapter.Foll
         return new FolloweeViewHolder(view);
     }
 
+    /**
+     * Binds the data of a followee to the corresponding ViewHolder.
+     * This is called for each item in the RecyclerView.
+     *
+     * @param holder The ViewHolder to bind data to.
+     * @param position The position of the item in the list.
+     */
     @Override
     public void onBindViewHolder(@NonNull FolloweeViewHolder holder, int position) {
         String data = originalList.get(position);
@@ -92,10 +107,19 @@ public class FolloweesAdapter extends RecyclerView.Adapter<FolloweesAdapter.Foll
         displayedList.addAll(originalList);
         notifyDataSetChanged();
     }
+
+    /**
+     * ViewHolder class for holding views related to each followee item.
+     */
     public static class FolloweeViewHolder extends RecyclerView.ViewHolder {
         TextView textFollowedUserName, textFollowedUserMood;
         Button btnUnfollow;
 
+        /**
+         * Constructor that initializes the views for each item in the RecyclerView.
+         *
+         * @param itemView The item view that contains the followee information.
+         */
         public FolloweeViewHolder(@NonNull View itemView) {
             super(itemView);
             textFollowedUserName = itemView.findViewById(R.id.textFollowedUserName);
@@ -104,6 +128,9 @@ public class FolloweesAdapter extends RecyclerView.Adapter<FolloweesAdapter.Foll
         }
     }
 
+    /**
+     * Interface to handle followed/unfollowed actions on an item in the list.
+     */
     public interface OnItemActionListener {
         void onItemAction(int position);
     }

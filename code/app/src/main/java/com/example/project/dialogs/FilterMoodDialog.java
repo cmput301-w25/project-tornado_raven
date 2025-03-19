@@ -7,11 +7,20 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import com.example.project.R;
-
+/**
+ * A DialogFragment that presents a dialog with a list of mood options for the user to select from.
+ * The user can choose a mood from the available list.
+ */
 public class FilterMoodDialog extends DialogFragment {
 
     private String[] moods;
-
+    /**
+     * Creates the dialog that contains a list of mood options for the user to select from.
+     * The dialog provides a list of moods, and the user can select one.
+     *
+     * @param savedInstanceState The saved state of the fragment, if any.
+     * @return The created dialog.
+     */
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {

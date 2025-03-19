@@ -19,15 +19,31 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
     private List<String> moodList;
     private OnFollowListener followListener;
 
+    /**
+     * Interface to handle follow actions for a mood event.
+     */
     public interface OnFollowListener {
         void onFollow(int position);
     }
 
+    /**
+     * Constructor for the adapter.
+     *
+     * @param moodList List of mood data
+     * @param followListener Listener for follow button clicks
+     */
     public CommonSpaceAdapter(List<String> moodList, OnFollowListener followListener) {
         this.moodList = moodList;
         this.followListener = followListener;
     }
 
+    /**
+     * Creates a new ViewHolder instance. This is called when a new view item is needed.
+     *
+     * @param parent The parent ViewGroup that the new item will be added to.
+     * @param viewType The view type of the new item.
+     * @return A new instance of MoodViewHolder.
+     */
     @NonNull
     @Override
     public MoodViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -36,6 +52,13 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
         return new MoodViewHolder(view);
     }
 
+    /**
+     * Binds the data for the specific position to the corresponding ViewHolder.
+     * This is called for each item in the RecyclerView.
+     *
+     * @param holder The ViewHolder to bind the data to.
+     * @param position The position of the item in the moodList.
+     */
     @Override
     public void onBindViewHolder(@NonNull MoodViewHolder holder, int position) {
         String data = moodList.get(position);
@@ -65,10 +88,18 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
         return moodList.size();
     }
 
+    /**
+     * ViewHolder class that holds references to the views for each item in the RecyclerView.
+     */
     static class MoodViewHolder extends RecyclerView.ViewHolder {
         TextView emotion, date, reason, socialSituation;
         Button btnDetails;
 
+        /**
+         * Constructor that initializes the views for each item.
+         *
+         * @param itemView The view of the item to be bound.
+         */
         public MoodViewHolder(@NonNull View itemView) {
             super(itemView);
             emotion = itemView.findViewById(R.id.emotion);

@@ -1,5 +1,8 @@
 package com.example.project;
-
+/**
+ * Enum representing different social situations that a person might experience during a mood event.
+ * This enum is used to categorize the environment in which the mood event occurs.
+ */
 public enum SocialSituation {
     None,
     ALONE,
@@ -7,7 +10,13 @@ public enum SocialSituation {
     WITH_TWO_TO_SEVERAL_PEOPLE,
     WITH_A_CROWD;
 
-    // Static method to get the enum value from a position
+    /**
+     * Static method to get the corresponding {@link SocialSituation} from a given position.
+     * This is useful for mapping an index (e.g., from a UI or data source) to the appropriate enum value.
+     *
+     * @param position The position representing a social situation.
+     * @return The corresponding {@link SocialSituation} based on the position. If no match is found, returns {@link SocialSituation#None}.
+     */
     public static SocialSituation fromPosition(int position) {
         switch (position) {
             case 1:
