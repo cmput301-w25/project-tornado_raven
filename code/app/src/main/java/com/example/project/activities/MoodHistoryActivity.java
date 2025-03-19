@@ -158,7 +158,7 @@ public class MoodHistoryActivity extends AppCompatActivity {
                             if (!queryDocumentSnapshots.isEmpty()) {
                                 String documentId = queryDocumentSnapshots.getDocuments().get(0).getId();
                                 db.collection("MoodEvents").document(documentId)
-                                        .set(updatedMood)
+                                        .set(updatedMood.toMap())
                                         .addOnSuccessListener(aVoid -> {
                                             Toast.makeText(this, "updated successfully", Toast.LENGTH_SHORT).show();
                                         })

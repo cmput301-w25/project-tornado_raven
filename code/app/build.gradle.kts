@@ -46,4 +46,5 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.1")
 
+    implementation("com.google.code.gson:gson:2.8.7")
 }
