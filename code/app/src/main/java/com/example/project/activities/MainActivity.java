@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
                 overridePendingTransition(0, 0);
                 finish();
                 return true;
-            } else if (id == R.id.nav_followed_moods && !isCurrentActivity(FollowedMoodsActivity.class)) {
+            } else if (id == R.id.nav_followees && !isCurrentActivity(FollowedMoodsActivity.class)) {
                 startActivity(new Intent(this, FollowedMoodsActivity.class));
                 overridePendingTransition(0, 0);
                 finish();

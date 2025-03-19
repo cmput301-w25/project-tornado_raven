@@ -33,6 +33,8 @@ android {
 }
 
 dependencies {
+    //implementation(files("${android.sdkDirectory}/platforms/${android.compileSdkVersion}/android.jar"))
+    //implementation(files("/Users/rosywang/Library/Android/sdk/platforms/android-35/android.jar"))
     implementation("com.google.firebase:firebase-auth:22.1.1")
     implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
     implementation("com.google.firebase:firebase-firestore")
@@ -44,6 +46,6 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
-
+    androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.1")
 
 }

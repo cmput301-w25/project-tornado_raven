@@ -51,7 +51,7 @@ public class FollowedMoodsActivity extends AppCompatActivity {
         recyclerFollowedMoods.setAdapter(adapter);
 
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
-        bottomNav.setSelectedItemId(R.id.nav_followed_moods);
+        bottomNav.setSelectedItemId(R.id.nav_followees);
         bottomNav.setOnItemSelectedListener(this::onBottomNavItemSelected);
 
         Button btnShowLastWeek = findViewById(R.id.btnShowLastWeek);
@@ -71,7 +71,7 @@ public class FollowedMoodsActivity extends AppCompatActivity {
             startActivity(new Intent(this, CommonSpaceActivity.class));
             finish();
             return true;
-        } else if (id == R.id.nav_followed_moods) {
+        } else if (id == R.id.nav_followees) {
             return true;
         } else if (id == R.id.nav_my_mood_history) {
             startActivity(new Intent(this, MoodHistoryActivity.class));

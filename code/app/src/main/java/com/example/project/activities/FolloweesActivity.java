@@ -10,62 +10,101 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.project.MoodEvent;
 import com.example.project.R;
-import com.example.project.adapters.FolloweesAdapter;
+import com.example.project.adapters.FolloweesMoodsAdapter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Displays a list of Followees (people the current user follows).
+ * Displays the three most recent moods of each user that the user follows.
  */
 public class FolloweesActivity extends AppCompatActivity {
 
     private RecyclerView recyclerFollowees;
     private BottomNavigationView bottomNav;
-    private FolloweesAdapter followeesAdapter;
-    private List<String> followeesList;
+    private FolloweesMoodsAdapter followeesMoodsAdapter;
+
+    // Example: we store the IDs of the users I follow
+    private List<String> followedUserIds;
+    // We'll combine all mood events from them
+    private List<FolloweesMoodsAdapter.UserMoodItem> userMoodItems = new ArrayList<>();
+
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_followees);
 
+        db = FirebaseFirestore.getInstance();
+
+        // Suppose you have a method or stored references. Hardcode for demonstration:
+        followedUserIds = new ArrayList<>();
+        followedUserIds.add("userIdAlice");
+        followedUserIds.add("userIdBob");
+        followedUserIds.add("userIdCarla");
+
         recyclerFollowees = findViewById(R.id.recyclerFollowees);
         recyclerFollowees.setLayoutManager(new LinearLayoutManager(this));
 
-        // Sample data
-        followeesList = new ArrayList<>();
-        followeesList.add("Alice");
-        followeesList.add("Bob");
-        followeesList.add("Carla");
+        // Our custom adapter that displays username + up to 3 moods
+        followeesMoodsAdapter = new FolloweesMoodsAdapter(userMoodItems);
+        recyclerFollowees.setAdapter(followeesMoodsAdapter);
 
-        // Setup adapter
-        followeesAdapter = new FolloweesAdapter(followeesList, position -> {
-            String userName = followeesList.get(position);
-            followeesList.remove(position);
-            followeesAdapter.notifyItemRemoved(position);
-            Toast.makeText(this, "Unfollowed " + userName, Toast.LENGTH_SHORT).show();
-        });
-        recyclerFollowees.setAdapter(followeesAdapter);
+        // Now load the 3 moods for each followee
+        loadFolloweesMoods();
 
-        BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
-        bottomNavigationView.setSelectedItemId(R.id.nav_common_space); // Highlight correct tab
+        bottomNav = findViewById(R.id.bottomNavigation);
+        bottomNav.setSelectedItemId(R.id.nav_common_space); // or whichever you prefer
+        bottomNav.setOnItemSelectedListener(this::onBottomNavItemSelected);
+    }
 
-        bottomNavigationView.setOnItemSelectedListener(this::onBottomNavItemSelected);
+    /**
+     * For each user ID we follow, fetch last 3 MoodEvents from Firestore and
+     * add them to the userMoodItems list for display.
+     */
+    private void loadFolloweesMoods() {
+        userMoodItems.clear();
 
+        for (String userId : followedUserIds) {
+            db.collection("MoodEvents")
+                    .whereEqualTo("ownerId", userId) // or however you store ownership
+                    .orderBy("date", Query.Direction.DESCENDING)
+                    .limit(3)
+                    .get()
+                    .addOnSuccessListener(querySnapshot -> {
+                        if (!querySnapshot.isEmpty()) {
+                            for (int i = 0; i < querySnapshot.size(); i++) {
+                                MoodEvent me = querySnapshot.getDocuments().get(i).toObject(MoodEvent.class);
+                                // Create an item that includes the userId and the mood
+                                userMoodItems.add(
+                                        new FolloweesMoodsAdapter.UserMoodItem(userId, me)
+                                );
+                            }
+                            followeesMoodsAdapter.notifyDataSetChanged();
+                        }
+                    })
+                    .addOnFailureListener(e ->
+                            Toast.makeText(this, "Error loading moods for " + userId + ": " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                    );
+        }
     }
 
     private boolean onBottomNavItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
-
         if (id == R.id.nav_common_space) {
-            return true; // Already in FolloweesActivity
-        } else if (id == R.id.nav_followed_moods) {
-            startActivity(new Intent(this, FollowedMoodsActivity.class));
-            overridePendingTransition(0, 0);
-            finish(); // Close current activity
+            startActivity(new Intent(this, CommonSpaceActivity.class));
+            overridePendingTransition(0,0);
+            finish();
+            return true;
+        } else if (id == R.id.nav_followees) {
+            // Not used, we can ignore or jump to some other
             return true;
         } else if (id == R.id.nav_my_mood_history) {
             startActivity(new Intent(this, MoodHistoryActivity.class));
@@ -80,6 +119,4 @@ public class FolloweesActivity extends AppCompatActivity {
         }
         return false;
     }
-
 }
-
