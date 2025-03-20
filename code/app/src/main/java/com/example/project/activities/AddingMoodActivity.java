@@ -243,24 +243,24 @@ public class AddingMoodActivity extends AppCompatActivity {
         );
 
 
-        // Connectivity Check
-        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        Network network = connectivityManager.getActiveNetwork();
+//        // Connectivity Check
+//        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+//        Network network = connectivityManager.getActiveNetwork();
 
-        if (network != null && connectivityManager.getNetworkCapabilities(network) != null &&
-                connectivityManager.getNetworkCapabilities(network).hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
+//        if (network != null && connectivityManager.getNetworkCapabilities(network) != null &&
+//                connectivityManager.getNetworkCapabilities(network).hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
             // Online: Save to Firestore
             saveMoodToFirestore(newMood);
             newMood.setSynced(true);
             finishActivityResult(newMood);
-        } else {
-            // Offline: Save locally
-            newMood.setSynced(false);
-            newMood.setPendingOperation("ADD");
-            saveMoodLocally(newMood);
-            Toast.makeText(this, "Offline! Mood saved locally.", Toast.LENGTH_SHORT).show();
-            finishActivityResult(newMood);
-        }
+//        } else {
+//            // Offline: Save locally
+//            newMood.setSynced(false);
+//            newMood.setPendingOperation("ADD");
+//            saveMoodLocally(newMood);
+//            Toast.makeText(this, "Offline! Mood saved locally.", Toast.LENGTH_SHORT).show();
+//            finishActivityResult(newMood);
+//        }
     }
 
 
