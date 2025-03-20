@@ -2,6 +2,7 @@ package com.example.project.activities;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -23,6 +24,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -49,19 +51,20 @@ public class MoodHistoryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.mood_history);
 
-        recyclerView = findViewById(R.id.recyclerMoodHistory);
+        recyclerView=findViewById(R.id.recyclerMoodHistory);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        moodHistoryList = new ArrayList<>();
+        moodHistoryList=new ArrayList<>();
         filteredList = new ArrayList<>();
-        // set adapter
-        moodHistoryAdapter = new MoodHistoryAdapter(this, filteredList);
+        //set adapter
+        moodHistoryAdapter = new MoodHistoryAdapter(this,filteredList);
         recyclerView.setAdapter(moodHistoryAdapter);
 
         db = FirebaseFirestore.getInstance();
 
-        // Read data from Firestore
+    // read data from firebase
         loadMoodHistoryFromFirestore();
+
 
         // Setup Bottom Navigation
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
@@ -75,24 +78,14 @@ public class MoodHistoryActivity extends AppCompatActivity {
                 overridePendingTransition(0, 0);
                 finish();
                 return true;
-
-            } else if (id == R.id.nav_followees && !isCurrentActivity(FolloweesActivity.class)) {
-                // Navigate to FolloweesActivity instead of the old FollowedMoodsActivity
-                startActivity(new Intent(this, FolloweesActivity.class));
+            } else if (id == R.id.nav_followed_moods && !isCurrentActivity(FollowedMoodsActivity.class)) {
+                startActivity(new Intent(this, FollowedMoodsActivity.class));
                 overridePendingTransition(0, 0);
                 finish();
                 return true;
-
             } else if (id == R.id.nav_my_mood_history) {
-                // Already here
-                return true;
-
-            } else if (id == R.id.nav_mood_map) {
-                // Placeholder if you have a MoodMapActivity
-                Toast.makeText(this, "Go to Mood Map", Toast.LENGTH_SHORT).show();
-                return true;
-
-            } else if (id == R.id.nav_profile && !isCurrentActivity(ProfileActivity.class)) {
+                return true; // Already in MoodHistoryActivity
+            } else if (id == R.id.nav_profile && !isCurrentActivity(UsersFollowedActivity.class)) {
                 startActivity(new Intent(this, ProfileActivity.class));
                 overridePendingTransition(0, 0);
                 finish();
@@ -100,29 +93,39 @@ public class MoodHistoryActivity extends AppCompatActivity {
             }
             return false;
         });
-
-        // Filter buttons, etc.
         Button btnFilterByMood = findViewById(R.id.btnFilterByType);
         Button btnShowLastWeek = findViewById(R.id.btnShowLastMonth);
-        FloatingActionButton btnAddMood = findViewById(R.id.floating_add_mood_button);
+        //Button btnClearFilter = findViewById(R.id.btnClearFilters); // Add a clear filter button
+        FloatingActionButton btnAddMood = findViewById(R.id.floating_add_mood_button); // Floating Action Button
         Button btnSearchKeyword = findViewById(R.id.btnSearchKeyword);
+        btnSearchKeyword.setOnClickListener(v -> showReasonFilterDialog());
+
 
         btnFilterByMood.setOnClickListener(v -> showMoodFilterDialog());
         btnShowLastWeek.setOnClickListener(v -> filterByLastWeek());
-        btnSearchKeyword.setOnClickListener(v -> showReasonFilterDialog());
+        //btnClearFilter.setOnClickListener(v -> clearFilters()); // Reset filtering
 
-        // Add new mood
         btnAddMood.setOnClickListener(v -> {
             Intent intent = new Intent(MoodHistoryActivity.this, AddingMoodActivity.class);
-            startActivityForResult(intent, 1); // use requestCode=1
+            startActivityForResult(intent, 1); //  Use requestCode 1
         });
+
     }
 
     /**
      * Loads the mood history from Firestore and updates the RecyclerView.
      */
     private void loadMoodHistoryFromFirestore() {
+        String currentUserName = getCurrentUserName();
+        if (currentUserName.isEmpty()) {
+            Toast.makeText(this, "User ID not found. Please log in again.", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+            return;
+        }
+
         db.collection("MoodEvents")
+                .whereEqualTo("author",currentUserName)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     moodHistoryList.clear();
@@ -130,7 +133,6 @@ public class MoodHistoryActivity extends AppCompatActivity {
                         MoodEvent mood = document.toObject(MoodEvent.class);
                         moodHistoryList.add(mood);
                     }
-                    // Sort by date descending
                     moodHistoryList.sort((m1, m2) -> m2.getDate().compareTo(m1.getDate()));
 
                     filteredList.clear();
@@ -138,7 +140,7 @@ public class MoodHistoryActivity extends AppCompatActivity {
                     moodHistoryAdapter.updateList(filteredList); // update RecyclerView
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(this, "Upload mood data failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Upload mood data failed" + e.getMessage(), Toast.LENGTH_SHORT).show()
                 );
     }
 
@@ -149,13 +151,13 @@ public class MoodHistoryActivity extends AppCompatActivity {
 
     /**
      * Updates a mood item in both the local list and Firestore.
+     *
      * @param updatedMood The updated mood object to replace the old one.
      */
     private void updateMoodItem(MoodEvent updatedMood) {
         for (int i = 0; i < moodHistoryList.size(); i++) {
             if (moodHistoryList.get(i).getId().equals(updatedMood.getId())) {
                 moodHistoryList.set(i, updatedMood);
-                // Also update filteredList if it's there
                 for (int j = 0; j < filteredList.size(); j++) {
                     if (filteredList.get(j).getId().equals(updatedMood.getId())) {
                         filteredList.set(j, updatedMood);
@@ -164,8 +166,6 @@ public class MoodHistoryActivity extends AppCompatActivity {
                 }
                 moodHistoryAdapter.updateMood(updatedMood);
                 Toast.makeText(this, "Mood updated", Toast.LENGTH_SHORT).show();
-
-                // Update Firestore
                 db.collection("MoodEvents")
                         .whereEqualTo("id", updatedMood.getId())
                         .get()
@@ -173,12 +173,12 @@ public class MoodHistoryActivity extends AppCompatActivity {
                             if (!queryDocumentSnapshots.isEmpty()) {
                                 String documentId = queryDocumentSnapshots.getDocuments().get(0).getId();
                                 db.collection("MoodEvents").document(documentId)
-                                        .set(updatedMood)
-                                        .addOnSuccessListener(aVoid ->
-                                                Toast.makeText(this, "updated successfully", Toast.LENGTH_SHORT).show()
-                                        )
+                                        .set(updatedMood.toMap())
+                                        .addOnSuccessListener(aVoid -> {
+                                            Toast.makeText(this, "updated successfully", Toast.LENGTH_SHORT).show();
+                                        })
                                         .addOnFailureListener(e ->
-                                                Toast.makeText(this, "update failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(this, "updated failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
                                         );
                             } else {
                                 Toast.makeText(this, "No corresponding MoodEvent", Toast.LENGTH_SHORT).show();
@@ -194,6 +194,7 @@ public class MoodHistoryActivity extends AppCompatActivity {
 
     /**
      * Deletes a mood item both from the local list and Firestore.
+     *
      * @param moodId The ID of the mood event to delete.
      */
     private void deleteMood(String moodId) {
@@ -209,7 +210,6 @@ public class MoodHistoryActivity extends AppCompatActivity {
                 moodHistoryAdapter.notifyItemRemoved(i);
                 Toast.makeText(this, "Mood deleted", Toast.LENGTH_SHORT).show();
 
-                // Delete from Firestore
                 db.collection("MoodEvents")
                         .whereEqualTo("id", moodId)
                         .get()
@@ -218,11 +218,11 @@ public class MoodHistoryActivity extends AppCompatActivity {
                                 String documentId = queryDocumentSnapshots.getDocuments().get(0).getId();
                                 db.collection("MoodEvents").document(documentId)
                                         .delete()
-                                        .addOnSuccessListener(aVoid ->
-                                                Toast.makeText(this, "deleted successfully", Toast.LENGTH_SHORT).show()
-                                        )
+                                        .addOnSuccessListener(aVoid -> {
+                                            Toast.makeText(this, "deleted successfully", Toast.LENGTH_SHORT).show();
+                                        })
                                         .addOnFailureListener(e ->
-                                                Toast.makeText(this, "delete failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(this, "deleted failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
                                         );
                                 loadMoodHistoryFromFirestore();
                             } else {
@@ -241,8 +241,7 @@ public class MoodHistoryActivity extends AppCompatActivity {
      * Displays a dialog to filter moods by a selected emotion.
      */
     private void showMoodFilterDialog() {
-        final String[] moods = {"ANGER","CONFUSION","DISGUST","FEAR","HAPPINESS",
-                "SADNESS","SHAME","SURPRISE","CLEAR FILTER"};
+        final String[] moods = {"ANGER","CONFUSION","DISGUST","FEAR","HAPPINESS", "SADNESS","SHAME","SURPRISE","CLEAR FILTER"}; // Add more moods if needed
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Select Mood to Filter")
@@ -254,6 +253,7 @@ public class MoodHistoryActivity extends AppCompatActivity {
                     }
                 })
                 .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+
         builder.create().show();
     }
 
@@ -275,24 +275,39 @@ public class MoodHistoryActivity extends AppCompatActivity {
                 Toast.makeText(this, "Please enter a keyword", Toast.LENGTH_SHORT).show();
             }
         });
+
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+
         builder.show();
     }
 
     /**
      * Filters the mood history by a given reason keyword.
+     *
      * @param keyword The keyword to filter the reasons by.
      */
     private void filterByReasonKeyword(String keyword) {
         filteredList.clear();
-        String lowerKeyword = keyword.toLowerCase();
+        String lowerKeyword = keyword.trim().toLowerCase();
 
         for (MoodEvent mood : moodHistoryList) {
             String reason = mood.getReason();
             if (reason != null) {
                 String lowerReason = reason.toLowerCase();
-                // We can do a simple substring check:
-                if (lowerReason.contains(lowerKeyword)) {
+
+                // Split the reason into words
+                String[] words = lowerReason.split("\\s+");
+
+                boolean matchFound = false;
+
+                for (String word : words) {
+                    if (word.startsWith(lowerKeyword) || word.contains(lowerKeyword) || word.endsWith(lowerKeyword)) {
+                        matchFound = true;
+                        break;
+                    }
+                }
+
+                if (matchFound) {
                     filteredList.add(mood);
                 }
             }
@@ -309,6 +324,7 @@ public class MoodHistoryActivity extends AppCompatActivity {
 
     /**
      * Filters the mood history by a specific emotion.
+     *
      * @param selectedMood The emotion to filter by.
      */
     private void filterByMood(Emotion selectedMood) {
@@ -327,13 +343,14 @@ public class MoodHistoryActivity extends AppCompatActivity {
      */
     private void filterByLastWeek() {
         filteredList.clear();
-        long oneWeekAgo = System.currentTimeMillis() - (7L * 24 * 60 * 60 * 1000);
+        long oneWeekAgo = System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000); // 7 days in milliseconds
 
         for (MoodEvent mood : moodHistoryList) {
             if (mood.getDate().getTime() >= oneWeekAgo) {
                 filteredList.add(mood);
             }
         }
+
         moodHistoryAdapter.updateList(filteredList);
         Toast.makeText(this, "Showing last week's moods", Toast.LENGTH_SHORT).show();
     }
@@ -343,40 +360,56 @@ public class MoodHistoryActivity extends AppCompatActivity {
      */
     private void clearFilters() {
         filteredList.clear();
-        filteredList.addAll(moodHistoryList);
+        filteredList.addAll(moodHistoryList); // Restore the original list
         moodHistoryAdapter.updateList(filteredList);
         Toast.makeText(this, "Filters cleared", Toast.LENGTH_SHORT).show();
     }
 
     /**
      * Handles the result from an activity when a new mood is added or an existing one is updated/deleted.
+     *
+     * @param requestCode The request code used to start the activity.
+     * @param resultCode The result code returned by the activity.
+     * @param data The intent containing any data returned from the activity.
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == 1 && resultCode == RESULT_OK) {
-            // Adding a new mood
-            loadMoodHistoryFromFirestore();
+        if (requestCode == 1 && resultCode == RESULT_OK) { //  Check if it's from AddingMoodActivity
+//            if (data != null && data.hasExtra("newMood")) {
+//                MoodEvent newMood = (MoodEvent) data.getSerializableExtra("newMood");
+//                moodHistoryAdapter.addMood(newMood); // Use the new method to update the list
+//                recyclerView.smoothScrollToPosition(0); // Scroll to the top
+//            }
+              loadMoodHistoryFromFirestore();
         }
-        if (requestCode == 2 && resultCode == RESULT_OK && data != null) {
-            // Editing or deleting a mood
-            if (data.hasExtra("updatedMood")) {
-                MoodEvent updatedMood = (MoodEvent) data.getSerializableExtra("updatedMood");
-                updateMoodItem(updatedMood);
-            } else if (data.hasExtra("deleteMoodId")) {
-                String deleteMoodId = data.getStringExtra("deleteMoodId");
-                deleteMood(deleteMoodId);
+        if (requestCode == 2 && resultCode == RESULT_OK) {
+            if (data != null) {
+                if (data.hasExtra("updatedMood")) {
+                    MoodEvent updatedMood = (MoodEvent) data.getSerializableExtra("updatedMood");
+                    updateMoodItem(updatedMood);
+                } else if (data.hasExtra("deleteMoodId")) {
+                    String deleteMoodId = data.getStringExtra("deleteMoodId");
+                    deleteMood(deleteMoodId);
+                }
             }
         }
+
+    }
+
+    private String getCurrentUserName() {
+        SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        return prefs.getString("username", ""); // get the username
     }
 
     /**
      * Checks if the current activity is the specified activity.
+     *
      * @param activityClass The activity class to check against.
      * @return True if the current activity matches the specified activity, false otherwise.
      */
     private boolean isCurrentActivity(Class<?> activityClass) {
         return this.getClass().equals(activityClass);
     }
+
 }
