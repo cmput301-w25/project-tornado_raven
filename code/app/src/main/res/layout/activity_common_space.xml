@@ -20,6 +20,27 @@
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginBottom="16dp"/>
 
+    <!-- Search Bar -->
+    <EditText
+        android:id="@+id/editSearchName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Enter username"
+        app:layout_constraintTop_toBottomOf="@+id/textCommonSpaceTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="8dp" />
+
+    <Button
+        android:id="@+id/btnSearch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Search"
+        app:layout_constraintTop_toBottomOf="@+id/editSearchName"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="16dp" />
+
     <!-- 2x2 Grid of Filter Buttons -->
     <GridLayout
         android:id="@+id/layoutFilters"
@@ -29,7 +50,7 @@
         android:rowCount="2"
         android:alignmentMode="alignMargins"
         android:useDefaultMargins="true"
-        app:layout_constraintTop_toBottomOf="@+id/textCommonSpaceTitle"
+        app:layout_constraintTop_toBottomOf="@+id/btnSearch"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -43,9 +64,9 @@
         <!-- 2) Filter by Mood -->
         <Button
             android:id="@+id/btnFilterByMood"
-            android:layout_width="wrap_content"
+            android:layout_width="162dp"
             android:layout_height="wrap_content"
-            android:text="@string/btn_filter_by_mood"/>
+            android:text="@string/btn_filter_by_mood" />
 
         <!-- 3) Filter by Keyword -->
         <Button
@@ -57,9 +78,9 @@
         <!-- 4) Clear Filters -->
         <Button
             android:id="@+id/btnClearFilters"
-            android:layout_width="wrap_content"
+            android:layout_width="162dp"
             android:layout_height="wrap_content"
-            android:text="@string/btn_clear_filters"/>
+            android:text="@string/btn_clear_filters" />
     </GridLayout>
 
     <!-- RecyclerView for Moods in Common Space -->
