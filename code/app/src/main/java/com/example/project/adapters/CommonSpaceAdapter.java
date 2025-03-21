@@ -1,86 +1,96 @@
 package com.example.project.adapters;
 
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.project.EmotionData;
+import com.example.project.MoodEvent;
 import com.example.project.R;
+
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 /**
- * For the "Common Space" screen.
- * Each mood can be "Follow"ed individually.
+ * Updated to handle "requested" state for authors in 'pendingAuthors'.
  */
-public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.MoodViewHolder> {
+public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.ViewHolder> {
 
-    private List<String> moodList;
-    private OnFollowListener followListener;
-
-    /**
-     * Interface to handle follow actions for a mood event.
-     */
-    public interface OnFollowListener {
-        void onFollow(int position);
+    public interface OnRequestFollowListener {
+        // We'll pass the MoodEvent + the button reference, so you can do logic
+        void onRequestFollow(MoodEvent mood, Button button);
     }
 
-    /**
-     * Constructor for the adapter.
-     *
-     * @param moodList List of mood data
-     * @param followListener Listener for follow button clicks
-     */
-    public CommonSpaceAdapter(List<String> moodList, OnFollowListener followListener) {
+    private List<MoodEvent> moodList;
+    private OnRequestFollowListener followListener;
+    // We'll store a set of authors for which a follow request is already sent
+    private Set<String> pendingAuthors;
+
+    public CommonSpaceAdapter(List<MoodEvent> moodList,
+                              OnRequestFollowListener followListener,
+                              Set<String> pendingAuthors) {
         this.moodList = moodList;
         this.followListener = followListener;
+        this.pendingAuthors = pendingAuthors;
     }
 
-    /**
-     * Creates a new ViewHolder instance. This is called when a new view item is needed.
-     *
-     * @param parent The parent ViewGroup that the new item will be added to.
-     * @param viewType The view type of the new item.
-     * @return A new instance of MoodViewHolder.
-     */
     @NonNull
     @Override
-    public MoodViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
+    public CommonSpaceAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_mood, parent, false);
-        return new MoodViewHolder(view);
+        return new ViewHolder(v);
     }
 
-    /**
-     * Binds the data for the specific position to the corresponding ViewHolder.
-     * This is called for each item in the RecyclerView.
-     *
-     * @param holder The ViewHolder to bind the data to.
-     * @param position The position of the item in the moodList.
-     */
     @Override
-    public void onBindViewHolder(@NonNull MoodViewHolder holder, int position) {
-        String data = moodList.get(position);
-        // Format: "Emotion|Date|Reason|Social"
-        String[] parts = data.split("\\|");
-        String emotion = parts.length > 0 ? parts[0].trim() : "Unknown";
-        String date = parts.length > 1 ? parts[1].trim() : "N/A";
-        String reason = parts.length > 2 ? parts[2].trim() : "No reason";
-        String social = parts.length > 3 ? parts[3].trim() : "No situation";
+    public void onBindViewHolder(@NonNull CommonSpaceAdapter.ViewHolder holder, int position) {
+        MoodEvent mood = moodList.get(position);
 
-        holder.emotion.setText(emotion);
-        holder.date.setText(date);
-        holder.reason.setText(reason);
-        holder.socialSituation.setText(social);
+        holder.tvEmotion.setText(mood.getEmotion().toString());
+        int color = EmotionData.getEmotionColor(holder.itemView.getContext(), mood.getEmotion());
+        holder.tvEmotion.setTextColor(color);
 
-        // Button says 'Follow'
-        holder.btnDetails.setText("Follow");
-        holder.btnDetails.setOnClickListener(v -> {
-            if (followListener != null) {
-                followListener.onFollow(position);
-            }
-        });
+        Drawable icon = EmotionData.getEmotionIcon(holder.itemView.getContext(), mood.getEmotion());
+        holder.ivEmoticon.setImageDrawable(icon);
+
+        if (mood.getReason() != null) {
+            holder.tvReason.setText(mood.getReason());
+        } else {
+            holder.tvReason.setText("");
+        }
+
+        if (mood.getDate() != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+            holder.tvDate.setText(sdf.format(mood.getDate()));
+        } else {
+            holder.tvDate.setText("");
+        }
+
+        String author = mood.getAuthor();
+        holder.tvSocial.setText("Posted by: " + (author == null ? "Unknown" : author));
+
+        // If we've already requested this author, show "Requested"
+        if (author != null && pendingAuthors.contains(author)) {
+            holder.btnFollow.setText("Requested");
+            holder.btnFollow.setEnabled(false);
+        } else {
+            holder.btnFollow.setText("Request Follow");
+            holder.btnFollow.setEnabled(true);
+            holder.btnFollow.setOnClickListener(v -> {
+                if (followListener != null) {
+                    followListener.onRequestFollow(mood, holder.btnFollow);
+                }
+            });
+        }
     }
 
     @Override
@@ -88,25 +98,21 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
         return moodList.size();
     }
 
-    /**
-     * ViewHolder class that holds references to the views for each item in the RecyclerView.
-     */
-    static class MoodViewHolder extends RecyclerView.ViewHolder {
-        TextView emotion, date, reason, socialSituation;
-        Button btnDetails;
+    static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView tvEmotion, tvDate, tvReason, tvSocial;
+        ImageView ivEmoticon;
+        Button btnFollow;
 
-        /**
-         * Constructor that initializes the views for each item.
-         *
-         * @param itemView The view of the item to be bound.
-         */
-        public MoodViewHolder(@NonNull View itemView) {
+        public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            emotion = itemView.findViewById(R.id.emotion);
-            date = itemView.findViewById(R.id.date);
-            reason = itemView.findViewById(R.id.reason);
-            socialSituation = itemView.findViewById(R.id.socialSituation);
-            btnDetails = itemView.findViewById(R.id.btnDetails);
+            tvEmotion  = itemView.findViewById(R.id.emotion);
+            tvDate     = itemView.findViewById(R.id.date);
+            tvReason   = itemView.findViewById(R.id.reason);
+            tvSocial   = itemView.findViewById(R.id.socialSituation);
+            ivEmoticon = itemView.findViewById(R.id.emoticon);
+
+            // Reuse the existing button ID or add a new one
+            btnFollow = itemView.findViewById(R.id.btnDetails);
         }
     }
 }

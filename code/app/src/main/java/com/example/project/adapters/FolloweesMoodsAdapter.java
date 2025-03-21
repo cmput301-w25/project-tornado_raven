@@ -1,23 +1,36 @@
 package com.example.project.adapters;
 
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.project.EmotionData;
 import com.example.project.MoodEvent;
 import com.example.project.R;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 
 /**
- * Shows a list of (username + a single mood).
- * We'll combine them so the user sees the 3 most recent moods for each followee.
+ * Adapter for displaying the up to 3 most recent moods for each user that I follow.
  */
 public class FolloweesMoodsAdapter extends RecyclerView.Adapter<FolloweesMoodsAdapter.ViewHolder> {
+
+    public static class UserMoodItem {
+        public String userName;     // The user who posted
+        public MoodEvent moodEvent; // The mood
+        public UserMoodItem(String userName, MoodEvent moodEvent) {
+            this.userName = userName;
+            this.moodEvent = moodEvent;
+        }
+    }
 
     private List<UserMoodItem> userMoodItems;
 
@@ -28,7 +41,6 @@ public class FolloweesMoodsAdapter extends RecyclerView.Adapter<FolloweesMoodsAd
     @NonNull
     @Override
     public FolloweesMoodsAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Reuse the same "item_mood" layout or your own
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_mood, parent, false);
         return new ViewHolder(view);
@@ -37,13 +49,41 @@ public class FolloweesMoodsAdapter extends RecyclerView.Adapter<FolloweesMoodsAd
     @Override
     public void onBindViewHolder(@NonNull FolloweesMoodsAdapter.ViewHolder holder, int position) {
         UserMoodItem item = userMoodItems.get(position);
-        // item.userId is the user who posted
-        // item.moodEvent is the mood
-        holder.txtUsername.setText("User: " + item.userId);  // or fetch user name if you have it
-        holder.txtEmotion.setText(item.moodEvent.getEmotion().toString());
-        holder.txtDate.setText(item.moodEvent.getDate().toString());
-        holder.txtReason.setText("Reason: " + item.moodEvent.getReason());
-        holder.txtSocial.setText("Social: " + item.moodEvent.getSocialSituation());
+        MoodEvent mood = item.moodEvent;
+
+        // Show the user who posted
+        holder.txtUsername.setText("User: " + item.userName);
+
+        // Show emotion
+        holder.txtEmotion.setText(mood.getEmotion().toString());
+        int color = EmotionData.getEmotionColor(holder.itemView.getContext(), mood.getEmotion());
+        holder.txtEmotion.setTextColor(color);
+
+        // Icon
+        Drawable icon = EmotionData.getEmotionIcon(holder.itemView.getContext(), mood.getEmotion());
+        holder.imgIcon.setImageDrawable(icon);
+
+        // Show date
+        if (mood.getDate() != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+            holder.txtDate.setText(sdf.format(mood.getDate()));
+        } else {
+            holder.txtDate.setText("");
+        }
+
+        // Show reason
+        if (mood.getReason() != null) {
+            holder.txtReason.setText("Reason: " + mood.getReason());
+        } else {
+            holder.txtReason.setText("");
+        }
+
+        // Show social situation
+        if (mood.getSocialSituation() != null) {
+            holder.txtSocial.setText("Social: " + mood.getSocialSituation());
+        } else {
+            holder.txtSocial.setText("");
+        }
     }
 
     @Override
@@ -53,28 +93,19 @@ public class FolloweesMoodsAdapter extends RecyclerView.Adapter<FolloweesMoodsAd
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView txtUsername, txtEmotion, txtDate, txtReason, txtSocial;
+        ImageView imgIcon;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            // We'll re-purpose "item_mood" but we need to find or add a username label
-            txtUsername = itemView.findViewById(R.id.emotion); // or create a new ID in the layout
+
+            // Because item_mood.xml has fields: emotion, date, reason, socialSituation, emoticon
+            txtUsername = itemView.findViewById(R.id.emotion);        // repurpose
             txtEmotion  = itemView.findViewById(R.id.date);
             txtDate     = itemView.findViewById(R.id.reason);
             txtReason   = itemView.findViewById(R.id.socialSituation);
-            // implement when location is available: txtSocial   = itemView.findViewById(R.id.location);
-        }
-    }
+            imgIcon     = itemView.findViewById(R.id.emoticon);
 
-    /**
-     * Simple struct for storing: which user posted + the MoodEvent itself
-     */
-    public static class UserMoodItem {
-        public String userId;
-        public MoodEvent moodEvent;
-        public UserMoodItem(String userId, MoodEvent moodEvent) {
-            this.userId = userId;
-            this.moodEvent = moodEvent;
+            // If you'd like a separate text field for username, just add it to item_mood.xml
         }
     }
 }
-
