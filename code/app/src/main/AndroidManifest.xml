@@ -45,6 +45,9 @@
 
         <activity android:name=".activities.ProfileActivity" />
 
+        <!-- Followees Activity -->
+        <activity android:name=".activities.FolloweesActivity" />
+
 
 
         <!-- Common Space -->

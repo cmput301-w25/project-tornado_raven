@@ -94,7 +94,7 @@ public class FollowManager {
 
     /**
      * Reject the follow request from user A to user B.
-     * Optionally, you can delete the doc entirely or set "status"="REJECTED".
+     * Set "status"="REJECTED".
      */
     public static void rejectFollowRequest(String fromUser, String toUser) {
         if (fromUser == null || toUser == null) return;
