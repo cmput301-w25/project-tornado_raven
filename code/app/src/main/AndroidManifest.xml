@@ -53,6 +53,9 @@
         <!-- Common Space -->
         <activity android:name=".activities.CommonSpaceActivity" />
 
+        <activity android:name=".activities.FollowRequest" />
+
+
 
     </application>
 </manifest>

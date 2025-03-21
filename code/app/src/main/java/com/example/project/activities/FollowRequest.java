@@ -50,7 +50,8 @@ public class FollowRequest extends AppCompatActivity {
                 String currentUser = getCurrentUsername();
                 FollowManager.acceptFollowRequest(fromUser, currentUser);
                 Toast.makeText(FollowRequest.this, "Accepted: " + fromUser, Toast.LENGTH_SHORT).show();
-                reloadRequests();
+//                reloadRequests();
+                removeRequest(fromUser);
             }
 
             @Override
@@ -58,7 +59,8 @@ public class FollowRequest extends AppCompatActivity {
                 String currentUser = getCurrentUsername();
                 FollowManager.rejectFollowRequest(fromUser, currentUser);
                 Toast.makeText(FollowRequest.this, "Rejected: " + fromUser, Toast.LENGTH_SHORT).show();
-                reloadRequests();
+//                reloadRequests();
+                removeRequest(fromUser);
             }
         });
         recyclerRequests.setAdapter(requestAdapter);
@@ -67,8 +69,50 @@ public class FollowRequest extends AppCompatActivity {
         reloadRequests();
 
         // If you have bottom nav here, set it up
-        BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
+        bottomNavigationView.setSelectedItemId(R.id.nav_profile);
 
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+
+            if (id == R.id.nav_common_space && !isCurrentActivity(FolloweesActivity.class)) {
+                startActivity(new Intent(this, CommonSpaceActivity.class));
+                overridePendingTransition(0, 0);
+                finish();
+                return true;
+            } else if (id == R.id.nav_followees && !isCurrentActivity(FolloweesActivity.class)) {
+                startActivity(new Intent(this, FolloweesActivity.class));
+                overridePendingTransition(0, 0);
+                finish();
+                return true;
+            } else if (id == R.id.nav_my_mood_history) {
+                startActivity(new Intent(this, MoodHistoryActivity.class));
+                overridePendingTransition(0, 0);
+                finish();
+                return true;
+            } else if (id == R.id.nav_profile) {
+                startActivity(new Intent(this, ProfileActivity.class));
+                overridePendingTransition(0, 0);
+                finish();
+                return true;
+            }
+            return false;
+        });
+    }
+
+    private void removeRequest(String fromUser) {
+        for (int i = 0; i < pendingRequests.size(); i++) {
+            if (pendingRequests.get(i).fromUser.equals(fromUser)) {
+                pendingRequests.remove(i);
+                requestAdapter.notifyItemRemoved(i);
+                return;
+            }
+        }
+    }
+
+
+    private boolean isCurrentActivity(Class<?> activityClass) {
+        return this.getClass().equals(activityClass);
     }
 
     private void reloadRequests() {
