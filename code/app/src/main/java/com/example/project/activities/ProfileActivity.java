@@ -93,6 +93,16 @@ public class ProfileActivity extends AppCompatActivity {
             startActivityForResult(intent, 1);
         });
 
+        Button followRequestBtn = findViewById(R.id.follow_request_button);
+        TextView followRequestBadge = findViewById(R.id.follow_request_badge);
+
+        followRequestBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(this, FollowRequest.class);
+            startActivity(intent);
+        });
+
+        loadPendingRequestCount();
+
         // Setup Bottom Navigation
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
         bottomNavigationView.setSelectedItemId(R.id.nav_profile);
@@ -114,6 +124,7 @@ public class ProfileActivity extends AppCompatActivity {
                 startActivity(new Intent(this, MoodHistoryActivity.class));
                 overridePendingTransition(0, 0);
                 finish();
+                return true;
             } else if (id == R.id.nav_profile) {
                 return true;
             }
@@ -121,29 +132,39 @@ public class ProfileActivity extends AppCompatActivity {
         });
     }
 
-//    /**
-//     * Loads the user's mood history from Firestore and updates the RecyclerView.
-//     */
-//    private void loadMoodHistoryFromFirestore() {
-//        db.collection("MoodEvents")
-//                .get()
-//                .addOnSuccessListener(queryDocumentSnapshots -> {
-//                    moodHistoryList.clear();
-//                    for (DocumentSnapshot document : queryDocumentSnapshots) {
-//                        MoodEvent mood = document.toObject(MoodEvent.class);
-//                        moodHistoryList.add(mood);
-//                    }
-//                    moodHistoryList.sort((m1, m2) -> m2.getDate().compareTo(m1.getDate()));
-//                    moodHistoryAdapter.updateList(moodHistoryList);
-//                })
-//                .addOnFailureListener(e ->
-//                        Toast.makeText(this, "Upload mood data failed" + e.getMessage(), Toast.LENGTH_SHORT).show()
-//                );
-//    }
-private String getCurrentUserName() {
-    SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
-    return prefs.getString("username", ""); // get the username
-}
+    private void loadPendingRequestCount() {
+        String currentUser = getCurrentUserName();
+        if (currentUser == null || currentUser.isEmpty()) return;
+
+        db.collection("FollowRequests")
+                .whereEqualTo("toUser", currentUser)
+                .whereEqualTo("status", "PENDING")
+                .get()
+                .addOnSuccessListener(query -> {
+                    int count = query.size();
+
+                    TextView badge = findViewById(R.id.follow_request_badge);
+                    if (count > 0) {
+                        badge.setVisibility(View.VISIBLE);
+                        badge.setText(String.valueOf(count));
+                    } else {
+                        badge.setVisibility(View.GONE);
+                    }
+                })
+                .addOnFailureListener(e -> Log.e("FollowRequest", "Failed to load request count", e));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadPendingRequestCount();
+    }
+
+
+    private String getCurrentUserName() {
+        SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        return prefs.getString("username", ""); // get the username
+    }
 private void loadMoodHistoryFromFirestore() {
     String currentUserName = getCurrentUserName();
     if (currentUserName.isEmpty()) {
