@@ -45,8 +45,8 @@ public class MainActivity extends AppCompatActivity {
                 overridePendingTransition(0, 0);
                 finish();
                 return true;
-            } else if (id == R.id.nav_followed_moods && !isCurrentActivity(FollowedMoodsActivity.class)) {
-                startActivity(new Intent(this, FollowedMoodsActivity.class));
+            } else if (id == R.id.nav_followees && !isCurrentActivity(FolloweesActivity.class)) {
+                startActivity(new Intent(this, FolloweesActivity.class));
                 overridePendingTransition(0, 0);
                 finish();
                 return true;
@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
                 overridePendingTransition(0, 0);
                 finish();
                 return true;
-            } else if (id == R.id.nav_profile && !isCurrentActivity(UsersFollowedActivity.class)) {
+            } else if (id == R.id.nav_profile && !isCurrentActivity(FolloweesActivity.class)) {
                 startActivity(new Intent(this, ProfileActivity.class));
                 overridePendingTransition(0, 0);
                 finish();

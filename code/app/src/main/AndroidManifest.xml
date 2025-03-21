@@ -38,14 +38,15 @@
             android:name=".activities.EditMoodActivity"
             android:exported="true" />
 
-        <!-- Followed Moods Activity -->
-        <activity android:name=".activities.FollowedMoodsActivity" />
 
         <!-- Mood History Activity -->
         <activity android:name=".activities.MoodHistoryActivity" />
         <activity android:name=".activities.AddingMoodActivity"/>
 
         <activity android:name=".activities.ProfileActivity" />
+
+        <!-- Followees Activity -->
+        <activity android:name=".activities.FolloweesActivity" />
 
 
 

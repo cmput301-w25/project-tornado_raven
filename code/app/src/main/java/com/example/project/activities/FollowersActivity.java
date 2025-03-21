@@ -61,8 +61,8 @@ public class FollowersActivity extends AppCompatActivity {
         if (id == R.id.nav_common_space) {
             // Already here
             return true;
-        } else if (id == R.id.nav_followed_moods) {
-            Intent intent = new Intent(this, UsersFollowedActivity.class);
+        } else if (id == R.id.nav_followees) {
+            Intent intent = new Intent(this, FolloweesActivity.class);
             startActivity(intent);
             return true;
         } else if (id == R.id.nav_my_mood_history) {

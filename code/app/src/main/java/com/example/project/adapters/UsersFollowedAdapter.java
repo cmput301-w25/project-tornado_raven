@@ -3,82 +3,67 @@ package com.example.project.adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Button;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import com.example.project.R;
-import java.util.List;
-/**
- * Adapter for displaying a list of users that the current user is following in a RecyclerView.
- * Each item represents a followed user with their name, mood, and an option to unfollow them.
- */
-public class UsersFollowedAdapter extends RecyclerView.Adapter<UsersFollowedAdapter.UserFollowedViewHolder> {
 
-    private List<String> followedUsersList;
-    private OnUnfollowClickListener onUnfollowClickListener;
-    /**
-     * Constructor for the UsersFollowedAdapter.
-     *
-     * @param followedUsersList The list of followed users to be displayed.
-     * @param listener The listener to handle unfollow actions.
-     */
-    public UsersFollowedAdapter(List<String> followedUsersList, OnUnfollowClickListener listener) {
-        this.followedUsersList = followedUsersList;
-        this.onUnfollowClickListener = listener;
+import com.example.project.R;
+
+import java.util.List;
+
+/**
+ * Adapter for listing the users that the current user follows.
+ * Each item has an "Unfollow" button.
+ */
+public class UsersFollowedAdapter extends RecyclerView.Adapter<UsersFollowedAdapter.ViewHolder> {
+
+    public interface OnUnfollowClick {
+        void onUnfollow(int position);
+    }
+
+    private List<String> followedUsers;
+    private OnUnfollowClick unfollowListener;
+
+    public UsersFollowedAdapter(List<String> followedUsers, OnUnfollowClick unfollowListener) {
+        this.followedUsers = followedUsers;
+        this.unfollowListener = unfollowListener;
     }
 
     @NonNull
     @Override
-    public UserFollowedViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Inflate the layout for each followed user item
-        View view = LayoutInflater.from(parent.getContext())
+    public UsersFollowedAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_user_followed, parent, false);
-        return new UserFollowedViewHolder(view);
+        return new ViewHolder(v);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull UserFollowedViewHolder holder, int position) {
-        String userName = followedUsersList.get(position);
-        // Set the user name and mood text
-        holder.textFollowedUserName.setText(userName);
-        holder.textFollowedUserMood.setText("Feeling Great!");
-        // Set the OnClickListener for the unfollow button
+    public void onBindViewHolder(@NonNull UsersFollowedAdapter.ViewHolder holder, int position) {
+        String username = followedUsers.get(position);
+        holder.TextUsername.setText(username);
+
         holder.btnUnfollow.setOnClickListener(v -> {
-            if (onUnfollowClickListener != null) {
-                onUnfollowClickListener.onUnfollowClick(position);
+            if (unfollowListener != null) {
+                unfollowListener.onUnfollow(position);
             }
         });
     }
 
     @Override
     public int getItemCount() {
-        return followedUsersList.size();
+        return followedUsers.size();
     }
-    /**
-     * ViewHolder for binding the views in each item of the RecyclerView.
-     */
-    public static class UserFollowedViewHolder extends RecyclerView.ViewHolder {
-        TextView textFollowedUserName, textFollowedUserMood;
+
+    static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView TextUsername;
         Button btnUnfollow;
 
-        public UserFollowedViewHolder(@NonNull View itemView) {
+        ViewHolder(@NonNull View itemView) {
             super(itemView);
-            textFollowedUserName = itemView.findViewById(R.id.textFollowedUserName);
-            textFollowedUserMood = itemView.findViewById(R.id.textFollowedUserMood);
+            TextUsername = itemView.findViewById(R.id.textFollowedUserName);
             btnUnfollow = itemView.findViewById(R.id.btnUnfollow);
         }
     }
-    /**
-     * Interface for handling the unfollow action when the user clicks the unfollow button.
-     */
-    public interface OnUnfollowClickListener {
-        /**
-         * Called when the unfollow button is clicked.
-         *
-         * @param position The position of the item in the list.
-         */
-        void onUnfollowClick(int position);
-    }
 }
-
