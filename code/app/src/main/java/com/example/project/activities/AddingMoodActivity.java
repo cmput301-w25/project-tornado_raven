@@ -342,4 +342,5 @@ public class AddingMoodActivity extends AppCompatActivity {
             }
         }
     }
+
 }
