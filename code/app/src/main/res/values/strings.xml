@@ -10,7 +10,10 @@
     <string name="nav_mood_map">Mood Map</string>
     <string name="nav_profile">Profile</string>
     <string name="nav_followees">Followees</string>
-
+    <string-array name="locationchoice">
+        <item>No</item>
+        <item>Yes</item>
+    </string-array>
     <!-- Screens / Titles -->
     <string name="title_common_space">Common Space</string>
     <string name="title_followed_moods">Followed Moods</string>
