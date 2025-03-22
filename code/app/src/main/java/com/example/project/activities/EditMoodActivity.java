@@ -25,6 +25,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 public class EditMoodActivity extends AppCompatActivity {
 
     private Spinner moodSpinner;
+    private Spinner privacySpinner;
     private EditText reasonEditText, locationEditText;
     private Button saveButton, deleteButton;
     private Spinner socialSituationSpinner;
@@ -45,6 +46,7 @@ public class EditMoodActivity extends AppCompatActivity {
         setContentView(R.layout.editingmood);
 
         // Initialize UI components
+        privacySpinner = findViewById(R.id.privacySpinner);
         moodSpinner = findViewById(R.id.moodSpinner);
         reasonEditText = findViewById(R.id.reasonEditText);
         socialSituationSpinner = findViewById(R.id.socialSituationSpinner);
@@ -89,6 +91,14 @@ public class EditMoodActivity extends AppCompatActivity {
         );
         socialSituationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         socialSituationSpinner.setAdapter(socialSituationAdapter);
+
+        ArrayAdapter<CharSequence> privacyAdapter = ArrayAdapter.createFromResource(
+                this,
+                R.array.privacy_levels,
+                android.R.layout.simple_spinner_item
+        );
+        privacyAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        privacySpinner.setAdapter(privacyAdapter);
     }
 
     /**
@@ -111,6 +121,19 @@ public class EditMoodActivity extends AppCompatActivity {
         if (socialSituation != null) {
             socialSituationSpinner.setSelection(socialSituation.ordinal());
         }
+
+        String moodPrivacy = mood.getPrivacyLevel();
+        if (moodPrivacy != null && !moodPrivacy.isEmpty()) {
+            // Match it by comparing with R.array.privacy_values internally:
+            // Notice we use privacy level to display toi users and privacy values to store internally.
+            String[] privacyValues = getResources().getStringArray(R.array.privacy_values);
+            for (int i = 0; i < privacyValues.length; i++) {
+                if (privacyValues[i].equalsIgnoreCase(moodPrivacy)) {
+                    privacySpinner.setSelection(i);
+                    break;
+                }
+            }
+        }
     }
 
     /**
@@ -129,6 +152,11 @@ public class EditMoodActivity extends AppCompatActivity {
 
         SocialSituation selectedSocialSituation = (SocialSituation) socialSituationSpinner.getSelectedItem();
         currentMood.setSocialSituation(selectedSocialSituation);
+
+        int privacyIndex = privacySpinner.getSelectedItemPosition();
+        String[] privacyValues = getResources().getStringArray(R.array.privacy_values);
+        String selectedPrivacyLevel = privacyValues[privacyIndex];
+        currentMood.setPrivacyLevel(selectedPrivacyLevel);
 
         Intent resultIntent = new Intent();
         resultIntent.putExtra("updatedMood", currentMood);

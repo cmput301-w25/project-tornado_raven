@@ -28,6 +28,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -43,16 +44,9 @@ public class CommonSpaceActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private RecyclerView recyclerCommonSpace;
     private CommonSpaceAdapter adapter;
-
-    // Full list of MoodEvents from Firestore
     private List<MoodEvent> allMoods;
-    // Currently displayed moods (after filters)
     private List<MoodEvent> filteredMoods;
-
-    // Tracks authors for which the user has already sent a follow request
-    // so we can show "Requested" instead of "Request Follow"
     private Set<String> pendingAuthors;
-
     // Filter buttons
     private Button btnShowLastWeek, btnFilterByMood, btnFilterByKeyword, btnClearFilters;
     // Searching authors
@@ -136,10 +130,12 @@ public class CommonSpaceActivity extends AppCompatActivity {
     }
 
     /**
-     * Load all MoodEvents from Firestore, store them in 'allMoods' and display them.
+     * Load all MoodEvents from Firestore where the privacy level is All Users,
+     * store them in 'allMoods' and display them.
      */
     private void loadAllMoodsFromFirestore() {
         db.collection("MoodEvents")
+                .whereEqualTo("privacyLevel", "ALL_USERS")
                 .get()
                 .addOnSuccessListener(snap -> {
                     allMoods.clear();
@@ -151,7 +147,7 @@ public class CommonSpaceActivity extends AppCompatActivity {
                             allMoods.add(mood);
                         }
                     }
-                    // By default, show them all
+
                     filteredMoods.addAll(allMoods);
                     adapter.notifyDataSetChanged();
                     Toast.makeText(this, "Loaded " + allMoods.size() + " mood events", Toast.LENGTH_SHORT).show();
@@ -188,9 +184,7 @@ public class CommonSpaceActivity extends AppCompatActivity {
         return false;
     }
 
-    // ------------------------------------------------------------------------
-    // Searching by author (username)
-    // ------------------------------------------------------------------------
+
     private void filterByAuthor(String query) {
         filteredMoods.clear();
         String lowerQ = query.toLowerCase();
@@ -204,9 +198,7 @@ public class CommonSpaceActivity extends AppCompatActivity {
         adapter.notifyDataSetChanged();
     }
 
-    // ------------------------------------------------------------------------
-    // MOOD FILTER (like MoodHistory)
-    // ------------------------------------------------------------------------
+
     private void showMoodFilterDialog() {
         final String[] moods = {"ANGER","CONFUSION","DISGUST","FEAR","HAPPINESS","SADNESS","SHAME","SURPRISE","CLEAR FILTER"};
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -234,9 +226,7 @@ public class CommonSpaceActivity extends AppCompatActivity {
         Toast.makeText(this, "Filtered by " + selectedMood.name(), Toast.LENGTH_SHORT).show();
     }
 
-    // ------------------------------------------------------------------------
-    // REASON KEYWORD FILTER
-    // ------------------------------------------------------------------------
+
     private void showReasonFilterDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Enter keyword to filter by reason");
@@ -256,6 +246,8 @@ public class CommonSpaceActivity extends AppCompatActivity {
         builder.show();
     }
 
+
+    //Filter by keyword
     private void filterByReasonKeyword(String keyword) {
         filteredMoods.clear();
         String lowerKeyword = keyword.toLowerCase();
@@ -274,9 +266,8 @@ public class CommonSpaceActivity extends AppCompatActivity {
         adapter.notifyDataSetChanged();
     }
 
-    // ------------------------------------------------------------------------
-    // LAST-WEEK FILTER
-    // ------------------------------------------------------------------------
+
+    //Filter by last week
     private void filterByLastWeek() {
         filteredMoods.clear();
         long oneWeekAgo = System.currentTimeMillis() - (7L * 24 * 60 * 60 * 1000);
@@ -290,9 +281,7 @@ public class CommonSpaceActivity extends AppCompatActivity {
         Toast.makeText(this, "Showing last week's moods", Toast.LENGTH_SHORT).show();
     }
 
-    // ------------------------------------------------------------------------
-    // CLEAR FILTERS
-    // ------------------------------------------------------------------------
+//Clear Filter
     private void clearFilters() {
         filteredMoods.clear();
         filteredMoods.addAll(allMoods);

@@ -19,6 +19,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -79,6 +80,7 @@ public class FolloweesActivity extends AppCompatActivity {
                                 // Now load that user's last 3 moods
                                 db.collection("MoodEvents")
                                         .whereEqualTo("author", followedUser)
+                                        .whereIn("privacyLevel", Arrays.asList("ALL_USERS", "FOLLOWERS_ONLY"))
                                         .orderBy("date", Query.Direction.DESCENDING)
                                         .limit(3)
                                         .get()

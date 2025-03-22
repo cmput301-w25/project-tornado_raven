@@ -26,6 +26,7 @@ public class MoodEvent implements Serializable {
     private String location;
     private Uri photoUri;
     private String author;
+    private String privacyLevel;
 
     public String getDocumentId() {
         return documentId;
@@ -82,9 +83,10 @@ public class MoodEvent implements Serializable {
      * @param socialSituation The social situation at the time of the mood event.
      * @param location The location where the mood event occurred.
      * @param photoUri The URI of the photo taken during the mood event, if any.
+     * @param privacyLevel The privacy level of the mood event.
      */
 
-    public MoodEvent(String author, Emotion emotion, Date date, String reason, SocialSituation socialSituation, String location, Uri photoUri) {
+    public MoodEvent(String author, Emotion emotion, Date date, String reason, SocialSituation socialSituation, String location, Uri photoUri, String privacyLevel) {
         this.author = author;
         this.emotion = emotion;
         this.date = date;
@@ -93,6 +95,7 @@ public class MoodEvent implements Serializable {
         this.location=location;
         this.id = UUID.randomUUID().toString();
         this.photoUri = photoUri;
+        this.privacyLevel = privacyLevel;
 
     }
     /**
@@ -212,6 +215,23 @@ public class MoodEvent implements Serializable {
     public String getId() {
         return id;
     }
+
+
+    /**
+     * Sets the privacy level for this mood event.
+     *
+     * @return privacy level.
+     */
+    public String getPrivacyLevel() { return privacyLevel; }
+
+    /**
+     * Sets the privacy level for this mood event.
+     *
+     * @param privacyLevel to the mood.
+     */
+    public void setPrivacyLevel(String privacyLevel) { this.privacyLevel = privacyLevel; }
+
+
     /**
      * Updates the current mood event with the details of a new mood event.
      *
@@ -222,6 +242,7 @@ public class MoodEvent implements Serializable {
         this.date = newEvent.getDate();
         this.Reason = newEvent.getReason();
         this.socialSituation = newEvent.getSocialSituation();
+        this.privacyLevel = newEvent.getPrivacyLevel();
     }
 
 
@@ -248,6 +269,8 @@ public class MoodEvent implements Serializable {
         moodData.put("date", this.getDate());
         moodData.put("reason", this.getReason());
         moodData.put("id", this.getId());
+        moodData.put("privacyLevel", this.getPrivacyLevel());
+
         if (this.getSocialSituation() != null) {
             moodData.put("socialSituation", this.getSocialSituation().toString());
         }
