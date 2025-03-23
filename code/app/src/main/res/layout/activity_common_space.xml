@@ -64,8 +64,8 @@
     </GridLayout>
 
     <!-- Search Bar for Usernames -->
-    <EditText
-        android:id="@+id/editTextSearchUser"
+    <AutoCompleteTextView
+        android:id="@+id/editTextSearchUserName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="Search user by username..."
@@ -81,7 +81,7 @@
         android:id="@+id/recyclerCommonSpace"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@+id/editTextSearchUser"
+        app:layout_constraintTop_toBottomOf="@+id/editTextSearchUserName"
         app:layout_constraintBottom_toTopOf="@+id/bottomNavigation"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

@@ -1,7 +1,6 @@
 package com.example.project.activities;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -35,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialize and set up the BottomNavigationView
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
-        bottomNavigationView.setSelectedItemId(R.id.nav_my_mood_history); // Highlight the correct tab
+        bottomNavigationView.setSelectedItemId(R.id.nav_following_users); // Highlight the correct tab
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
@@ -45,17 +44,17 @@ public class MainActivity extends AppCompatActivity {
                 overridePendingTransition(0, 0);
                 finish();
                 return true;
-            } else if (id == R.id.nav_followees && !isCurrentActivity(FolloweesActivity.class)) {
-                startActivity(new Intent(this, FolloweesActivity.class));
+            } else if (id == R.id.nav_followees_moods && !isCurrentActivity(FolloweesMoodsActivity.class)) {
+                startActivity(new Intent(this, FolloweesMoodsActivity.class));
                 overridePendingTransition(0, 0);
                 finish();
                 return true;
-            } else if (id == R.id.nav_my_mood_history && !isCurrentActivity(MoodHistoryActivity.class)) {
-                startActivity(new Intent(this, MoodHistoryActivity.class));
+            } else if (id == R.id.nav_following_users && !isCurrentActivity(FollowingUsersActivity.class)) {
+                startActivity(new Intent(this, FollowingUsersActivity.class));
                 overridePendingTransition(0, 0);
                 finish();
                 return true;
-            } else if (id == R.id.nav_profile && !isCurrentActivity(FolloweesActivity.class)) {
+            } else if (id == R.id.nav_profile && !isCurrentActivity(FolloweesMoodsActivity.class)) {
                 startActivity(new Intent(this, ProfileActivity.class));
                 overridePendingTransition(0, 0);
                 finish();

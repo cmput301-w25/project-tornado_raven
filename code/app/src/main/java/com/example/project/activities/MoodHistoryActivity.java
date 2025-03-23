@@ -16,7 +16,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.project.Emotion;
 import com.example.project.MoodEvent;
 import com.example.project.R;
-import com.example.project.SocialSituation;
 import com.example.project.adapters.MoodHistoryAdapter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -24,8 +23,6 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -68,7 +65,7 @@ public class MoodHistoryActivity extends AppCompatActivity {
 
         // Setup Bottom Navigation
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
-        bottomNavigationView.setSelectedItemId(R.id.nav_my_mood_history); // Highlight the correct tab
+        bottomNavigationView.setSelectedItemId(R.id.nav_following_users); // Highlight the correct tab
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
@@ -78,18 +75,14 @@ public class MoodHistoryActivity extends AppCompatActivity {
                 overridePendingTransition(0, 0);
                 finish();
                 return true;
-            } else if (id == R.id.nav_followees && !isCurrentActivity(FolloweesActivity.class)) {
-                startActivity(new Intent(this, FolloweesActivity.class));
+            } else if (id == R.id.nav_followees_moods && !isCurrentActivity(FolloweesMoodsActivity.class)) {
+                startActivity(new Intent(this, FolloweesMoodsActivity.class));
                 overridePendingTransition(0, 0);
                 finish();
                 return true;
-            } else if (id == R.id.nav_my_mood_history) {
+            } else if (id == R.id.nav_following_users) {
                 return true; // Already in MoodHistoryActivity
-            }else if (id == R.id.nav_mood_map) {
-                startActivity(new Intent(this,mood_map.class));
-                finish();
-                return true;
-            } else if (id == R.id.nav_profile && !isCurrentActivity(FolloweesActivity.class)) {
+            } else if (id == R.id.nav_profile && !isCurrentActivity(FolloweesMoodsActivity.class)) {
                 startActivity(new Intent(this, ProfileActivity.class));
                 overridePendingTransition(0, 0);
                 finish();
