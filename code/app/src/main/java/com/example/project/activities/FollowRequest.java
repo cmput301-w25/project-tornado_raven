@@ -75,17 +75,17 @@ public class FollowRequest extends AppCompatActivity {
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
 
-            if (id == R.id.nav_common_space && !isCurrentActivity(FolloweesActivity.class)) {
+            if (id == R.id.nav_common_space && !isCurrentActivity(FolloweesMoodsActivity.class)) {
                 startActivity(new Intent(this, CommonSpaceActivity.class));
                 overridePendingTransition(0, 0);
                 finish();
                 return true;
-            } else if (id == R.id.nav_followees && !isCurrentActivity(FolloweesActivity.class)) {
-                startActivity(new Intent(this, FolloweesActivity.class));
+            } else if (id == R.id.nav_followees_moods && !isCurrentActivity(FolloweesMoodsActivity.class)) {
+                startActivity(new Intent(this, FolloweesMoodsActivity.class));
                 overridePendingTransition(0, 0);
                 finish();
                 return true;
-            } else if (id == R.id.nav_my_mood_history) {
+            } else if (id == R.id.nav_following_users) {
                 startActivity(new Intent(this, MoodHistoryActivity.class));
                 overridePendingTransition(0, 0);
                 finish();
@@ -154,14 +154,14 @@ public class FollowRequest extends AppCompatActivity {
 
     private boolean onBottomNavItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.nav_followees) {
+        if (id == R.id.nav_followees_moods) {
             return true;
         } else if (id == R.id.nav_common_space) {
             startActivity(new Intent(this, CommonSpaceActivity.class));
             finish();
             return true;
-        } else if (id == R.id.nav_my_mood_history) {
-            startActivity(new Intent(this, MoodHistoryActivity.class));
+        } else if (id == R.id.nav_following_users) {
+            startActivity(new Intent(this, FollowingUsersActivity.class));
             finish();
             return true;
         } else if (id == R.id.nav_mood_map) {

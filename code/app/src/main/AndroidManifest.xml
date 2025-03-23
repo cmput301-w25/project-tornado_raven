@@ -45,10 +45,12 @@
 
         <activity android:name=".activities.ProfileActivity" />
 
-        <!-- Followees Activity -->
-        <activity android:name=".activities.FolloweesActivity" />
+        <!-- FolloweesMoods Activity -->
+        <activity android:name=".activities.FolloweesMoodsActivity" />
 
 
+        <!-- FollowingUsers Activity -->
+        <activity android:name=".activities.FollowingUsersActivity" />
 
         <!-- Common Space -->
         <activity android:name=".activities.CommonSpaceActivity" />

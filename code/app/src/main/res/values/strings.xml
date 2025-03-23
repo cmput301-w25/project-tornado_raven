@@ -5,15 +5,15 @@
 
     <!-- Bottom Navigation Items (Left to Right) -->
     <string name="nav_common_space">Common Space</string>
-    <string name="nav_my_mood_history">Mood History</string>
+    <string name="nav_following_users">Followings</string>
     <string name="nav_mood_map">Mood Map</string>
     <string name="nav_profile">Profile</string>
-    <string name="nav_followees">Followees</string>
+    <string name="nav_followees_moods">Followees Moods</string>
 
     <!-- Screens / Titles -->
     <string name="title_common_space">Common Space</string>
     <string name="mood_history">Mood History</string>
-    <string name="title_followees">Users you are following...</string>
+    <string name="title_followees_moods">Moods from users you are following...</string>
 
     <!-- Filter Buttons / Actions -->
     <string name="btn_show_last_week">Show Last Week</string>
