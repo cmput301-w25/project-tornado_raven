@@ -6,12 +6,10 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AutoCompleteTextView;
 
@@ -31,7 +29,6 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -212,12 +209,12 @@ public class CommonSpaceActivity extends AppCompatActivity {
         int id = item.getItemId();
         if (id == R.id.nav_common_space) {
             return true;
-        } else if (id == R.id.nav_followees) {
-            startActivity(new Intent(this, FolloweesActivity.class));
+        } else if (id == R.id.nav_followees_moods) {
+            startActivity(new Intent(this, FolloweesMoodsActivity.class));
             finish();
             return true;
-        } else if (id == R.id.nav_my_mood_history) {
-            startActivity(new Intent(this, MoodHistoryActivity.class));
+        } else if (id == R.id.nav_following_users) {
+            startActivity(new Intent(this, FollowingUsersActivity.class));
             finish();
             return true;
         } else if (id == R.id.nav_mood_map) {
