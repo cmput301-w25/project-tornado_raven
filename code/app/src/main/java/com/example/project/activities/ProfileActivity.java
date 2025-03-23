@@ -19,97 +19,116 @@ import com.example.project.MoodEvent;
 import com.example.project.R;
 import com.example.project.adapters.MoodHistoryAdapter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
- * ProfileActivity displays the user's profile information along with recent mood events.
- * Users can add new moods and navigate to different sections of the application.
+ * ProfileActivity can show:
+ *  - Your own profile (with buttons to logout, add mood, see follow-requests)
+ *  - Another user's profile (hide those buttons).
  */
 public class ProfileActivity extends AppCompatActivity {
 
+    private FirebaseFirestore db;
     private RecyclerView recyclerView;
     private MoodHistoryAdapter moodHistoryAdapter;
     private List<MoodEvent> moodHistoryList;
-    private FirebaseFirestore db;
-    private TextView userNameTextView;
+
     private ImageView profileImage;
+    private TextView userNameTextView;
+
+    // Buttons from my_profile.xml
     private Button addmood_btn;
     private Button logout_btn;
+    private Button followRequestBtn;
+    private TextView followRequestBadge;
 
-    /**
-     * Initializes the activity. Loads the user profile and recent mood history,
-     * sets up the RecyclerView and bottom navigation menu.
-     *
-     * @param savedInstanceState The saved instance state, or null if there is none.
-     */
+    // The username we are displaying
+    private String displayedUsername;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.my_profile);
 
-        profileImage = findViewById(R.id.profileImage);
+        // 1) Initialize Firestore and other fields
+        db = FirebaseFirestore.getInstance();
+        moodHistoryList = new ArrayList<>();
+
+        // 2) Get references to layout elements
+        profileImage     = findViewById(R.id.profileImage);
         profileImage.setImageResource(R.drawable.ic_profile);
 
+        userNameTextView = findViewById(R.id.username);
 
         recyclerView = findViewById(R.id.recyclerViewRecentMoods);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        moodHistoryList = new ArrayList<>();
+        // Setup the adapter
         moodHistoryAdapter = new MoodHistoryAdapter(this, moodHistoryList);
         recyclerView.setAdapter(moodHistoryAdapter);
-        userNameTextView = findViewById(R.id.username);
 
-        db = FirebaseFirestore.getInstance();
+        // Buttons
+        addmood_btn       = findViewById(R.id.add_mood);
+        logout_btn        = findViewById(R.id.logout_button);
+        followRequestBtn  = findViewById(R.id.follow_request_button);
+        followRequestBadge= findViewById(R.id.follow_request_badge);
 
-        loadUserProfile();
-        loadMoodHistoryFromFirestore();
+        // 3) Decide if we’re viewing our own or another user's profile
+        // userNameFromIntent is the target username we want to view.
+        Intent intent = getIntent();
+        String userNameFromIntent = intent.getStringExtra("userName"); // Could be null
+        String currentUserName    = getCurrentUserName();
 
-        logout_btn = findViewById(R.id.logout_button);
-        logout_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.clear(); // clear all user msg
-                editor.apply();
+        // If userNameFromIntent is non-null, not empty, and not the same as current => it's "someone else's" profile
+        if (userNameFromIntent != null && !userNameFromIntent.isEmpty() && !userNameFromIntent.equals(currentUserName)) {
+            displayedUsername = userNameFromIntent;
+            // Hide the "Add Mood," "Logout," "Requests" for another user's profile
+            addmood_btn.setVisibility(View.GONE);
+            logout_btn.setVisibility(View.GONE);
+            followRequestBtn.setVisibility(View.GONE);
+            followRequestBadge.setVisibility(View.GONE);
 
-                Intent intent = new Intent(ProfileActivity.this, MainActivity.class);
-                startActivity(intent);
-                finish(); // close current Activity
+        } else {
+            // It's your own profile
+            displayedUsername = currentUserName;
+        }
 
-            }
-        });
+        // If we have no username => can't load
+        if (displayedUsername == null || displayedUsername.isEmpty()) {
+            userNameTextView.setText("No user found");
+        } else {
+            userNameTextView.setText(displayedUsername);
+        }
 
-        addmood_btn = findViewById(R.id.add_mood);
+        // 4) Load moods
+        loadMoodHistoryForUser(displayedUsername, displayedUsername.equals(currentUserName));
+
+        // 5) If it's your own profile, set up those button clicks (Logout, Add Mood, FollowRequests)
+        logout_btn.setOnClickListener(v -> logoutAndExit());
         addmood_btn.setOnClickListener(v -> {
-            Intent intent = new Intent(this, AddingMoodActivity.class);
-            startActivityForResult(intent, 1);
+            Intent addIntent = new Intent(this, AddingMoodActivity.class);
+            startActivityForResult(addIntent, 1);
         });
-
-        Button followRequestBtn = findViewById(R.id.follow_request_button);
-        TextView followRequestBadge = findViewById(R.id.follow_request_badge);
-
         followRequestBtn.setOnClickListener(v -> {
-            Intent intent = new Intent(this, FollowRequest.class);
-            startActivity(intent);
+            Intent reqIntent = new Intent(this, FollowRequest.class);
+            startActivity(reqIntent);
         });
 
-        loadPendingRequestCount();
+        // If it's your own profile => load follow requests count
+        if (displayedUsername.equals(currentUserName)) {
+            loadPendingRequestCount();
+        }
 
-        // Setup Bottom Navigation
+        // 6) Setup bottom navigation
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
         bottomNavigationView.setSelectedItemId(R.id.nav_profile);
-
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
-
             if (id == R.id.nav_common_space && !isCurrentActivity(FolloweesActivity.class)) {
                 startActivity(new Intent(this, CommonSpaceActivity.class));
                 overridePendingTransition(0, 0);
@@ -132,6 +151,103 @@ public class ProfileActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * If displaying moods for user themselves, display all moods
+     * If displaying moods for another user,
+     * display it based on there following relationship
+     */
+    private void loadMoodHistoryForUser(String username, boolean isSelf) {
+        if (username == null || username.isEmpty()) {
+            Toast.makeText(this, "No user found", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (isSelf) {
+            db.collection("MoodEvents")
+                    .whereEqualTo("author", username)
+                    .get()
+                    .addOnSuccessListener(snap -> {
+                        moodHistoryList.clear();
+                        for (DocumentSnapshot doc : snap) {
+                            MoodEvent me = doc.toObject(MoodEvent.class);
+                            if (me != null) {
+                                moodHistoryList.add(me);
+                            }
+                        }
+                        // Sort by date desc
+                        moodHistoryList.sort((a, b) -> b.getDate().compareTo(a.getDate()));
+                        moodHistoryAdapter.updateList(moodHistoryList);
+                    })
+                    .addOnFailureListener(e ->
+                            Toast.makeText(this, "Error loading your moods: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                    );
+
+        } else {
+            // 2) Another user's profile => check if currentUser follows them
+            String currentUser = getCurrentUserName();
+
+            // Step A: Query "Follows" to see if we have a doc where (followerUsername=currentUser, followedUsername=displayedUsername)
+            db.collection("Follows")
+                    .whereEqualTo("followerUsername", currentUser)
+                    .whereEqualTo("followedUsername", username)
+                    .get()
+                    .addOnSuccessListener(followSnap -> {
+                        boolean isFollowing = !followSnap.isEmpty();  // If doc found => isFollowing = true
+
+                        // Step B: Then decide which privacy levels to load from "MoodEvents"
+                        if (isFollowing) {
+                            // If following => load "ALL_USERS" + "FOLLOWERS_ONLY"
+                            db.collection("MoodEvents")
+                                    .whereEqualTo("author", username)
+                                    .whereIn("privacyLevel", Arrays.asList("ALL_USERS", "FOLLOWERS_ONLY"))
+                                    .get()
+                                    .addOnSuccessListener(moodSnap -> {
+                                        moodHistoryList.clear();
+                                        for (DocumentSnapshot doc : moodSnap) {
+                                            MoodEvent me = doc.toObject(MoodEvent.class);
+                                            if (me != null) {
+                                                moodHistoryList.add(me);
+                                            }
+                                        }
+                                        moodHistoryList.sort((a, b) -> b.getDate().compareTo(a.getDate()));
+                                        moodHistoryAdapter.updateList(moodHistoryList);
+                                    })
+                                    .addOnFailureListener(e ->
+                                            Toast.makeText(this, "Error loading follow-only moods: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                                    );
+
+                        } else {
+                            // If NOT following => load only "ALL_USERS"
+                            db.collection("MoodEvents")
+                                    .whereEqualTo("author", username)
+                                    .whereEqualTo("privacyLevel", "ALL_USERS")
+                                    .get()
+                                    .addOnSuccessListener(moodSnap -> {
+                                        moodHistoryList.clear();
+                                        for (DocumentSnapshot doc : moodSnap) {
+                                            MoodEvent me = doc.toObject(MoodEvent.class);
+                                            if (me != null) {
+                                                moodHistoryList.add(me);
+                                            }
+                                        }
+                                        moodHistoryList.sort((a, b) -> b.getDate().compareTo(a.getDate()));
+                                        moodHistoryAdapter.updateList(moodHistoryList);
+                                    })
+                                    .addOnFailureListener(e ->
+                                            Toast.makeText(this, "Error loading public moods: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                                    );
+                        }
+                    })
+                    .addOnFailureListener(e ->
+                            Toast.makeText(this, "Error checking follow status: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                    );
+        }
+    }
+
+
+    /**
+     * Show how many pending follow requests you have if you're looking at your own profile.
+     */
     private void loadPendingRequestCount() {
         String currentUser = getCurrentUserName();
         if (currentUser == null || currentUser.isEmpty()) return;
@@ -142,201 +258,64 @@ public class ProfileActivity extends AppCompatActivity {
                 .get()
                 .addOnSuccessListener(query -> {
                     int count = query.size();
-
-                    TextView badge = findViewById(R.id.follow_request_badge);
                     if (count > 0) {
-                        badge.setVisibility(View.VISIBLE);
-                        badge.setText(String.valueOf(count));
+                        followRequestBadge.setVisibility(View.VISIBLE);
+                        followRequestBadge.setText(String.valueOf(count));
                     } else {
-                        badge.setVisibility(View.GONE);
+                        followRequestBadge.setVisibility(View.GONE);
                     }
                 })
-                .addOnFailureListener(e -> Log.e("FollowRequest", "Failed to load request count", e));
+                .addOnFailureListener(e ->
+                        Log.e("FollowRequest", "Failed to load request count", e)
+                );
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        loadPendingRequestCount();
+        // If it’s your own profile, reload request count in case something changed
+        if (displayedUsername != null && displayedUsername.equals(getCurrentUserName())) {
+            loadPendingRequestCount();
+        }
     }
 
-
+    /**
+     * Return the name of the logged-in user from SharedPreferences.
+     */
     private String getCurrentUserName() {
         SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
-        return prefs.getString("username", ""); // get the username
+        return prefs.getString("username", "");
     }
-private void loadMoodHistoryFromFirestore() {
-    String currentUserName = getCurrentUserName();
-    if (currentUserName.isEmpty()) {
-        Toast.makeText(this, "User ID not found. Please log in again.", Toast.LENGTH_SHORT).show();
-        startActivity(new Intent(this, LoginActivity.class));
-        finish();
-        return;
-    }
-
-    db.collection("MoodEvents")
-            .whereEqualTo("author",currentUserName)
-            .get()
-            .addOnSuccessListener(queryDocumentSnapshots -> {
-                moodHistoryList.clear();
-                for (DocumentSnapshot document : queryDocumentSnapshots) {
-                    MoodEvent mood = document.toObject(MoodEvent.class);
-                    moodHistoryList.add(mood);
-                }
-                moodHistoryList.sort((m1, m2) -> m2.getDate().compareTo(m1.getDate()));
-
-                moodHistoryAdapter.updateList(moodHistoryList); // update RecyclerView
-            })
-            .addOnFailureListener(e ->
-                    Toast.makeText(this, "Upload mood data failed" + e.getMessage(), Toast.LENGTH_SHORT).show()
-            );
-}
 
     /**
-     * Loads the user's profile information from shared preferences and Firestore.
+     * Logs the current user out, clearing SharedPreferences, and returns to MainActivity.
      */
-    private void loadUserProfile() {
-        SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
-        String userName = sharedPreferences.getString("username", null);
-        if (userName == null) {
-            userNameTextView.setText("No User Found");
-            return;
-        }
+    private void logoutAndExit() {
+        SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.clear();
+        editor.apply();
 
-        userNameTextView.setText(userName);
-//        db.collection("users").document(userName)
-//                .get()
-//                .addOnSuccessListener(documentSnapshot -> {
-//                    if (documentSnapshot.exists()) {
-//                        String username = documentSnapshot.getString("username");
-//                        if (username != null && !username.isEmpty()) {
-//                            userNameTextView.setText(username);
-//                        } else {
-//                            userNameTextView.setText("Unknown User");
-//                        }
-//                    } else {
-//                        userNameTextView.setText("No Profile Found");
-//                    }
-//                })
-//                .addOnFailureListener(e -> {
-//                    userNameTextView.setText("Error Loading Name");
-//                    Log.e("FirestoreError", "Failed to load user profile", e);
-//                });
+        startActivity(new Intent(this, MainActivity.class));
+        finish();
     }
 
     /**
-     * Checks if the current activity matches the specified activity class.
-     *
-     * @param activityClass The activity class to check against.
-     * @return True if the current activity matches the specified class, false otherwise.
+     * Checks if the current activity is the specified activity class.
      */
     private boolean isCurrentActivity(Class<?> activityClass) {
         return this.getClass().equals(activityClass);
     }
-    private void updateMoodItem(MoodEvent updatedMood) {
-        for (int i = 0; i < moodHistoryList.size(); i++) {
-            if (moodHistoryList.get(i).getId().equals(updatedMood.getId())) {
-                moodHistoryList.set(i, updatedMood);
-                for (int j = 0; j < moodHistoryList.size(); j++) {
-                    if (moodHistoryList.get(j).getId().equals(updatedMood.getId())) {
-                        moodHistoryList.set(j, updatedMood);
-                        break;
-                    }
-                }
-                moodHistoryAdapter.updateMood(updatedMood);
-                Toast.makeText(this, "Mood updated", Toast.LENGTH_SHORT).show();
-                db.collection("MoodEvents")
-                        .whereEqualTo("id", updatedMood.getId())
-                        .get()
-                        .addOnSuccessListener(queryDocumentSnapshots -> {
-                            if (!queryDocumentSnapshots.isEmpty()) {
-                                String documentId = queryDocumentSnapshots.getDocuments().get(0).getId();
-                                db.collection("MoodEvents").document(documentId)
-                                        .set(updatedMood)
-                                        .addOnSuccessListener(aVoid -> {
-                                            Toast.makeText(this, "updated successfully", Toast.LENGTH_SHORT).show();
-                                        })
-                                        .addOnFailureListener(e ->
-                                                Toast.makeText(this, "updated failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                                        );
-                            } else {
-                                Toast.makeText(this, "No corresponding MoodEvent", Toast.LENGTH_SHORT).show();
-                            }
-                        })
-                        .addOnFailureListener(e ->
-                                Toast.makeText(this, "search failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                        );
-                return;
-            }
-        }
-    }
 
-    /**
-     * Deletes a mood item both from the local list and Firestore.
-     *
-     * @param moodId The ID of the mood event to delete.
-     */
-    private void deleteMood(String moodId) {
-        for (int i = 0; i < moodHistoryList.size(); i++) {
-            if (moodHistoryList.get(i).getId().equals(moodId)) {
-                moodHistoryList.remove(i);
-                for (int j = 0; j < moodHistoryList.size(); j++) {
-                    if (moodHistoryList.get(j).getId().equals(moodId)) {
-                        moodHistoryList.remove(j);
-                        break;
-                    }
-                }
-                moodHistoryAdapter.notifyItemRemoved(i);
-                Toast.makeText(this, "Mood deleted", Toast.LENGTH_SHORT).show();
-
-                db.collection("MoodEvents")
-                        .whereEqualTo("id", moodId)
-                        .get()
-                        .addOnSuccessListener(queryDocumentSnapshots -> {
-                            if (!queryDocumentSnapshots.isEmpty()) {
-                                String documentId = queryDocumentSnapshots.getDocuments().get(0).getId();
-                                db.collection("MoodEvents").document(documentId)
-                                        .delete()
-                                        .addOnSuccessListener(aVoid -> {
-                                            Toast.makeText(this, "deleted successfully", Toast.LENGTH_SHORT).show();
-                                        })
-                                        .addOnFailureListener(e ->
-                                                Toast.makeText(this, "deleted failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                                        );
-                                loadMoodHistoryFromFirestore();
-                            } else {
-                                Toast.makeText(this, "No corresponding MoodEvent", Toast.LENGTH_SHORT).show();
-                            }
-                        })
-                        .addOnFailureListener(e ->
-                                Toast.makeText(this, "search failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                        );
-                return;
-            }
-        }
-    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1 && resultCode == RESULT_OK) { //  Check if it's from AddingMoodActivity
-//            if (data != null && data.hasExtra("newMood")) {
-//                MoodEvent newMood = (MoodEvent) data.getSerializableExtra("newMood");
-//                moodHistoryAdapter.addMood(newMood); // Use the new method to update the list
-//                recyclerView.smoothScrollToPosition(0); // Scroll to the top
-//            }
-            loadMoodHistoryFromFirestore();
+        // If we added a mood, reload
+        if (requestCode == 1 && resultCode == RESULT_OK) {
+            // reload after adding a new mood
+            loadMoodHistoryForUser(displayedUsername, displayedUsername.equals(getCurrentUserName()));
         }
-        if (requestCode == 2 && resultCode == RESULT_OK) {
-            if (data != null) {
-                if (data.hasExtra("updatedMood")) {
-                    MoodEvent updatedMood = (MoodEvent) data.getSerializableExtra("updatedMood");
-                    updateMoodItem(updatedMood);
-                } else if (data.hasExtra("deleteMoodId")) {
-                    String deleteMoodId = data.getStringExtra("deleteMoodId");
-                    deleteMood(deleteMoodId);
-                }
-            }
-        }
-
     }
+
+
 }
