@@ -8,6 +8,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -39,6 +40,14 @@ public class FollowRequest extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
 
+        Toolbar toolbar = findViewById(R.id.follow_toolbar);
+        setSupportActionBar(toolbar);
+
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+        }
+
         recyclerRequests = findViewById(R.id.recyclerFollowRequests);
         recyclerRequests.setLayoutManager(new LinearLayoutManager(this));
 
@@ -68,7 +77,7 @@ public class FollowRequest extends AppCompatActivity {
         // Initial load
         reloadRequests();
 
-        // If you have bottom nav here, set it up
+        // set nav up
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
         bottomNavigationView.setSelectedItemId(R.id.nav_profile);
 
@@ -99,6 +108,20 @@ public class FollowRequest extends AppCompatActivity {
             return false;
         });
     }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            // go back
+            Intent intent = new Intent(this, ProfileActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // clear top Activity
+            startActivity(intent);
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
 
     private void removeRequest(String fromUser) {
         for (int i = 0; i < pendingRequests.size(); i++) {

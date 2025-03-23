@@ -48,6 +48,8 @@ public class CommonSpaceActivity extends AppCompatActivity {
     private List<String> allUsernames;
     private List<MoodEvent> filteredMoods;
     private Set<String> pendingAuthors;
+    private Set<String> followedAuthors = new HashSet<>(); // the current following users of this user
+
     // Filter buttons
     private Button btnShowLastWeek, btnFilterByMood, btnFilterByKeyword, btnClearFilters;
     // Searching authors
@@ -66,6 +68,30 @@ public class CommonSpaceActivity extends AppCompatActivity {
         filteredMoods = new ArrayList<>();
         pendingAuthors= new HashSet<>();
         allUsernames = new ArrayList<>();
+
+
+        String currentUser1 = getSharedPreferences("user_prefs", MODE_PRIVATE)
+                .getString("username", null);
+        if (currentUser1 != null) {
+            db.collection("Follows")
+                    .whereEqualTo("followerUsername", currentUser1)
+                    .get()
+                    .addOnSuccessListener(snapshot -> {
+                        for (DocumentSnapshot doc : snapshot) {
+                            String followed = doc.getString("followedUsername");
+                            if (followed != null) {
+                                followedAuthors.add(followed);
+                            }
+                        }
+                        adapter.setFollowedAuthors(followedAuthors); // send this list to adapter
+                        adapter.notifyDataSetChanged(); // refresh
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(this, "Failed to load followed users", Toast.LENGTH_SHORT).show();
+                    });
+        }
+
+
 
         // Set up RecyclerView
         recyclerCommonSpace = findViewById(R.id.recyclerCommonSpace);
@@ -326,7 +352,7 @@ public class CommonSpaceActivity extends AppCompatActivity {
         Toast.makeText(this, "Showing last week's moods", Toast.LENGTH_SHORT).show();
     }
 
-//Clear Filter
+    //Clear Filter
     private void clearFilters() {
         filteredMoods.clear();
         filteredMoods.addAll(allMoods);
@@ -344,14 +370,14 @@ public class CommonSpaceActivity extends AppCompatActivity {
                 .whereEqualTo("username", userSelected)
                 .get()
                 .addOnSuccessListener(snap -> {
-                        DocumentSnapshot doc = snap.getDocuments().get(0);
-                        String uName = doc.getString("username");
-                        Toast.makeText(this, "Found user: " + uName, Toast.LENGTH_SHORT).show();
+                    DocumentSnapshot doc = snap.getDocuments().get(0);
+                    String uName = doc.getString("username");
+                    Toast.makeText(this, "Found user: " + uName, Toast.LENGTH_SHORT).show();
 
-                        // Pass the username field to the ProfileActivity
-                        Intent intent = new Intent(this, ProfileActivity.class);
-                        intent.putExtra("userName", uName);
-                        startActivity(intent);
+                    // Pass the username field to the ProfileActivity
+                    Intent intent = new Intent(this, ProfileActivity.class);
+                    intent.putExtra("userName", uName);
+                    startActivity(intent);
                 })
                 .addOnFailureListener(e ->
                         Toast.makeText(this, "Error searching user: " + e.getMessage(), Toast.LENGTH_SHORT).show()
@@ -360,4 +386,3 @@ public class CommonSpaceActivity extends AppCompatActivity {
 
 
 }
-
