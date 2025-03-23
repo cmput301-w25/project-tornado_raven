@@ -68,7 +68,7 @@ public class FollowRequest extends AppCompatActivity {
         // Initial load
         reloadRequests();
 
-        // If you have bottom nav here, set it up
+        // set nav up
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
         bottomNavigationView.setSelectedItemId(R.id.nav_profile);
 
