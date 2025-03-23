@@ -317,25 +317,8 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
 
-    db.collection("MoodEvents")
-            .whereEqualTo("author",currentUserName)
-            .get()
-            .addOnSuccessListener(queryDocumentSnapshots -> {
-                moodHistoryList.clear();
-                for (DocumentSnapshot document : queryDocumentSnapshots) {
-                    MoodEvent mood = document.toObject(MoodEvent.class);
-                    moodHistoryList.add(mood);
-                }
-                moodHistoryList.sort((m1, m2) -> m2.getDate().compareTo(m1.getDate()));
 
-                filteredList.clear();
-                filteredList.addAll(moodHistoryList);
-                moodHistoryAdapter.updateList(filteredList); // update RecyclerView
-            })
-            .addOnFailureListener(e ->
-                    Toast.makeText(this, "Upload mood data failed" + e.getMessage(), Toast.LENGTH_SHORT).show()
-            );
-}
+
 
     /**
      * Logs the current user out, clearing SharedPreferences, and returns to MainActivity.
@@ -432,7 +415,7 @@ public class ProfileActivity extends AppCompatActivity {
                                         .addOnFailureListener(e ->
                                                 Toast.makeText(this, "deleted failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
                                         );
-                                loadMoodHistoryFromFirestore();
+//                                loadMoodHistoryFromFirestore();
                             } else {
                                 Toast.makeText(this, "No corresponding MoodEvent", Toast.LENGTH_SHORT).show();
                             }
