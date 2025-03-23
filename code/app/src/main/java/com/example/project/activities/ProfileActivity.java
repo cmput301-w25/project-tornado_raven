@@ -125,7 +125,11 @@ public class ProfileActivity extends AppCompatActivity {
                 overridePendingTransition(0, 0);
                 finish();
                 return true;
-            } else if (id == R.id.nav_profile) {
+            }else if (id == R.id.nav_mood_map) {
+                startActivity(new Intent(this, mood_map.class));
+                finish();
+                return true;
+            }else if (id == R.id.nav_profile) {
                 return true;
             }
             return false;

@@ -85,6 +85,10 @@ public class MoodHistoryActivity extends AppCompatActivity {
                 return true;
             } else if (id == R.id.nav_my_mood_history) {
                 return true; // Already in MoodHistoryActivity
+            }else if (id == R.id.nav_mood_map) {
+                startActivity(new Intent(this,mood_map.class));
+                finish();
+                return true;
             } else if (id == R.id.nav_profile && !isCurrentActivity(FolloweesActivity.class)) {
                 startActivity(new Intent(this, ProfileActivity.class));
                 overridePendingTransition(0, 0);

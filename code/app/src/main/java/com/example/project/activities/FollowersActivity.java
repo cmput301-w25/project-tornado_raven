@@ -71,7 +71,7 @@ public class FollowersActivity extends AppCompatActivity {
             return true;
         } else if (id == R.id.nav_mood_map) {
             // Example: navigate to MoodMapActivity
-            Toast.makeText(this, "Go to Mood Map screen", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this,mood_map.class));
             return true;
         } else if (id == R.id.nav_profile) {
             // Example: navigate to ProfileActivity
