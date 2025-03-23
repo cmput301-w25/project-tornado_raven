@@ -7,9 +7,11 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+import android.widget.AutoCompleteTextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,6 +23,7 @@ import com.example.project.Emotion;
 import com.example.project.MoodEvent;
 import com.example.project.R;
 import com.example.project.adapters.CommonSpaceAdapter;
+import com.example.project.adapters.FollowRequestAdapter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -42,12 +45,13 @@ public class CommonSpaceActivity extends AppCompatActivity {
     private RecyclerView recyclerCommonSpace;
     private CommonSpaceAdapter adapter;
     private List<MoodEvent> allMoods;
+    private List<String> allUsernames;
     private List<MoodEvent> filteredMoods;
     private Set<String> pendingAuthors;
     // Filter buttons
     private Button btnShowLastWeek, btnFilterByMood, btnFilterByKeyword, btnClearFilters;
     // Searching authors
-    private EditText editSearchName;
+    private AutoCompleteTextView editSearchUserName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +65,7 @@ public class CommonSpaceActivity extends AppCompatActivity {
         allMoods      = new ArrayList<>();
         filteredMoods = new ArrayList<>();
         pendingAuthors= new HashSet<>();
+        allUsernames = new ArrayList<>();
 
         // Set up RecyclerView
         recyclerCommonSpace = findViewById(R.id.recyclerCommonSpace);
@@ -95,6 +100,8 @@ public class CommonSpaceActivity extends AppCompatActivity {
 
         // Load all moods
         loadAllMoodsFromFirestore();
+        //Load all users form Firebase for searching
+        loadAllUsersFromFirestore();
 
         // Set up bottom nav
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
@@ -112,19 +119,58 @@ public class CommonSpaceActivity extends AppCompatActivity {
         btnFilterByKeyword.setOnClickListener(v -> showReasonFilterDialog());
         btnClearFilters.setOnClickListener(v -> clearFilters());
 
-        // Text-based author search
-        editSearchName = findViewById(R.id.editTextSearchUser);
-        editSearchName.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                filterByAuthor(s.toString());
+        // Text-based user search
+        editSearchUserName = findViewById(R.id.editTextSearchUserName);
+        // Making sure we'll show suggestions after typing 1 character
+        editSearchUserName.setThreshold(1);
+
+        //Implemented auto complete suggestion so that user can pick and select from the
+        //drop down list.
+        editSearchUserName.setOnItemClickListener((parent, view, position, id) -> {
+            // User picked a username from the dropdown
+            String pickedUser = (String) parent.getItemAtPosition(position);
+            if (pickedUser != null && !pickedUser.isEmpty()) {
+                Toast.makeText(this, "Selected user: " + pickedUser,
+                        Toast.LENGTH_SHORT).show();
+                // e.g., you can jump directly to their profile, or do something else
+                // For instance:
+                searchUserByUsername(pickedUser);
             }
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
-            @Override
-            public void afterTextChanged(Editable s) { }
         });
+
     }
+
+
+    /**
+     * ADDED: Load *all* user docs from Firestore into 'allUsernames', so we can auto-complete them.
+     */
+    private void loadAllUsersFromFirestore() {
+        db.collection("users")
+                .get()
+                .addOnSuccessListener(snap -> {
+                    allUsernames.clear();
+                    for (DocumentSnapshot doc : snap) {
+                        if (doc.exists()) {
+                            String name = doc.getString("username");
+                            if (name != null && !name.isEmpty()) {
+                                allUsernames.add(name);
+                            }
+                        }
+                    }
+                    // Provide a dropdown suggestion
+                    ArrayAdapter<String> userAdapter = new ArrayAdapter<>(
+                            this,
+                            android.R.layout.simple_spinner_dropdown_item,
+                            allUsernames
+                    );
+                    // We set the adapter for the AutoComplete
+                    editSearchUserName.setAdapter(userAdapter);
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Failed to load users: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                );
+    }
+
 
     /**
      * Load all MoodEvents from Firestore where the privacy level is All Users,
@@ -153,6 +199,8 @@ public class CommonSpaceActivity extends AppCompatActivity {
                         Toast.makeText(this, "Failed to load moods: " + e.getMessage(), Toast.LENGTH_SHORT).show()
                 );
     }
+
+
 
     /**
      * Bottom navigation
@@ -285,5 +333,31 @@ public class CommonSpaceActivity extends AppCompatActivity {
         adapter.notifyDataSetChanged();
         Toast.makeText(this, "Filters cleared", Toast.LENGTH_SHORT).show();
     }
+
+
+    /**
+     * If the user picks from the auto-complete or types something,
+     * we can look them up in Firestore.
+     */
+    private void searchUserByUsername(String userSelected) {
+        db.collection("users")
+                .whereEqualTo("username", userSelected)
+                .get()
+                .addOnSuccessListener(snap -> {
+                        DocumentSnapshot doc = snap.getDocuments().get(0);
+                        String uName = doc.getString("username");
+                        Toast.makeText(this, "Found user: " + uName, Toast.LENGTH_SHORT).show();
+
+                        // Pass the username field to the ProfileActivity
+                        Intent intent = new Intent(this, ProfileActivity.class);
+                        intent.putExtra("userName", uName);
+                        startActivity(intent);
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Error searching user: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                );
+    }
+
+
 }
 
