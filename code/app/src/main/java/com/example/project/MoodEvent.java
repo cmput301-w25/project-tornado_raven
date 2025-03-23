@@ -24,7 +24,7 @@ public class MoodEvent implements Serializable {
     private SocialSituation socialSituation;
     private String documentId;
     private String location;
-    private Uri photoUri;
+    private String photoUri;
     private String author;
     private String privacyLevel;
 
@@ -86,6 +86,7 @@ public class MoodEvent implements Serializable {
      * @param privacyLevel The privacy level of the mood event.
      */
 
+
     public MoodEvent(String author, Emotion emotion, Date date, String reason, SocialSituation socialSituation, String location, Uri photoUri, String privacyLevel) {
         this.author = author;
         this.emotion = emotion;
@@ -103,7 +104,7 @@ public class MoodEvent implements Serializable {
      *
      * @return The photo URI.
      */
-    public Uri getPhotoUri() {
+    public String getPhotoUri() {
         return photoUri;
     }
     /**
@@ -111,7 +112,7 @@ public class MoodEvent implements Serializable {
      *
      * @param photoUri The URI to set.
      */
-    public void setPhotoUri(Uri photoUri) {
+    public void setPhotoUri(String photoUri) {
         this.photoUri = photoUri;
     }
     /**
