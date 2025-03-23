@@ -91,8 +91,8 @@ public class LoginActivity extends AppCompatActivity {
                     Toast.makeText(LoginActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
 
-                    // Launch the home page: MoodHistoryActivity
-                    Intent intent = new Intent(LoginActivity.this, MoodHistoryActivity.class);
+                    // Launch the home page: CommonSpace
+                    Intent intent = new Intent(LoginActivity.this, CommonSpaceActivity.class);
                     startActivity(intent);
 
                     finish();

@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,6 +17,7 @@ import com.example.project.MoodEvent;
 import com.example.project.R;
 
 import java.text.SimpleDateFormat;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -34,6 +36,7 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
     private OnRequestFollowListener followListener;
     // We'll store a set of authors for which a follow request is already sent
     private Set<String> pendingAuthors;
+    private Set<String> followedAuthors = new HashSet<>();
 
     public CommonSpaceAdapter(List<MoodEvent> moodList,
                               OnRequestFollowListener followListener,
@@ -78,11 +81,26 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
         String author = mood.getAuthor();
         holder.tvSocial.setText("Posted by: " + (author == null ? "Unknown" : author));
 
-        // If we've already requested this author, show "Requested"
-        if (author != null && pendingAuthors.contains(author)) {
+        // check button situation：
+        if (author == null) {
+            holder.btnFollow.setVisibility(View.GONE);
+            return;
+        }
+
+        if (followedAuthors.contains(author)) {
+            // following
+            holder.btnFollow.setText("Following");
+            holder.btnFollow.setEnabled(true);
+            holder.btnFollow.setOnClickListener(v -> {
+                Toast.makeText(holder.itemView.getContext(),
+                        "You are following this user!", Toast.LENGTH_SHORT).show();
+            });
+        } else if (pendingAuthors.contains(author)) {
+            // requested
             holder.btnFollow.setText("Requested");
             holder.btnFollow.setEnabled(false);
         } else {
+            // can request
             holder.btnFollow.setText("Request Follow");
             holder.btnFollow.setEnabled(true);
             holder.btnFollow.setOnClickListener(v -> {
@@ -97,6 +115,11 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
     public int getItemCount() {
         return moodList.size();
     }
+
+    public void setFollowedAuthors(Set<String> followedAuthors) {
+        this.followedAuthors = followedAuthors;
+    }
+
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvEmotion, tvDate, tvReason, tvSocial;

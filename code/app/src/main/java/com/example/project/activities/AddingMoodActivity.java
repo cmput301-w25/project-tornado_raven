@@ -48,7 +48,11 @@ public class AddingMoodActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private Spinner emotionSpinner;
     private Spinner socialSituationSpinner;
+
     private Spinner locationSpinner;
+
+    private Spinner privacySpinner;
+
     private EditText reasonEditText;
     private EditText locationEditText;
     private Button submitButton;
@@ -72,7 +76,30 @@ public class AddingMoodActivity extends AppCompatActivity {
         emotionSpinner = findViewById(R.id.emotionSpinner);
         reasonEditText = findViewById(R.id.reasonEditText);
         socialSituationSpinner = findViewById(R.id.socialSituationSpinner);
+
         locationSpinner = findViewById(R.id.locationspinner);
+
+        privacySpinner = findViewById(R.id.privacySpinner);
+
+        // Populate the social situation Spinner
+        ArrayAdapter<CharSequence> socialSituationAdapter = ArrayAdapter.createFromResource(
+                this,
+                R.array.social_situations, // Reference to the string array
+                android.R.layout.simple_spinner_item
+        );
+        socialSituationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        socialSituationSpinner.setAdapter(socialSituationAdapter);
+
+        // Population the privacy level spinner.
+        ArrayAdapter<CharSequence> privacyAdapter = ArrayAdapter.createFromResource(
+                this,
+                R.array.privacy_levels,
+                android.R.layout.simple_spinner_item
+        );
+        privacyAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        privacySpinner.setAdapter(privacyAdapter);
+
+
         locationEditText = findViewById(R.id.locationEditText);
         submitButton = findViewById(R.id.submitButton);
         ImageButton backButton = findViewById(R.id.backButton);
@@ -150,13 +177,27 @@ public class AddingMoodActivity extends AppCompatActivity {
         SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
         String username = prefs.getString("username", "Unknown User");
 
+
+        //Get the selected privacy type.
+        int privacyPosition = privacySpinner.getSelectedItemPosition();
+        String[] privacyValues = getResources().getStringArray(R.array.privacy_values); // Get STORAGE values
+        String selectedPrivacyValue = privacyValues[privacyPosition];
+
+
         // Validate required fields
         if (selectedEmotion.isEmpty()) {
             Toast.makeText(this, "Emotion is required", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Convert emotion string to Emotion enum
+        if (selectedPrivacyValue.isEmpty()){
+            Toast.makeText(this, "Please choose a privacy level.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+
+        // Convert to enum
+
         Emotion emotion;
         try {
             emotion = Emotion.valueOf(selectedEmotion.toUpperCase());
@@ -172,8 +213,11 @@ public class AddingMoodActivity extends AppCompatActivity {
                 new Date(),
                 reason,
                 socialSituation,
-                null, // Location will be updated later
+
+              
+                location.isEmpty() ? null : location,
                 selectedImageUri != null ? selectedImageUri.toString() : null
+                selectedPrivacyValue
         );
 
         if (choice == 1) { // Location is required
@@ -291,7 +335,9 @@ public class AddingMoodActivity extends AppCompatActivity {
         moodData.put("emotion", moodEvent.getEmotion().toString());
         moodData.put("date", moodEvent.getDate());
         moodData.put("reason", moodEvent.getReason());
-        moodData.put("id", moodEvent.getId());
+
+        moodData.put("id",moodEvent.getId());
+        moodData.put("privacyLevel", moodEvent.getPrivacyLevel());
 
         // Add optional fields if they are not null
         if (moodEvent.getSocialSituation() != null) {

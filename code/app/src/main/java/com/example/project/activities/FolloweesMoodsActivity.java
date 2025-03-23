@@ -19,13 +19,14 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
  * Displays up to three most recent moods of each user that the current user follows,
  * reading from the "Follows" collection (where 'followerUsername' == current user).
  */
-public class FolloweesActivity extends AppCompatActivity {
+public class FolloweesMoodsActivity extends AppCompatActivity {
 
     private RecyclerView recyclerFollowees;
     private FolloweesMoodsAdapter followeesMoodsAdapter;
@@ -36,7 +37,7 @@ public class FolloweesActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_followees);
+        setContentView(R.layout.activity_followees_moods);
 
         db = FirebaseFirestore.getInstance();
 
@@ -50,7 +51,7 @@ public class FolloweesActivity extends AppCompatActivity {
         loadFolloweesMoods();
 
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
-        bottomNav.setSelectedItemId(R.id.nav_followees);
+        bottomNav.setSelectedItemId(R.id.nav_followees_moods);
         bottomNav.setOnItemSelectedListener(this::onBottomNavItemSelected);
     }
 
@@ -79,6 +80,7 @@ public class FolloweesActivity extends AppCompatActivity {
                                 // Now load that user's last 3 moods
                                 db.collection("MoodEvents")
                                         .whereEqualTo("author", followedUser)
+                                        .whereIn("privacyLevel", Arrays.asList("ALL_USERS", "FOLLOWERS_ONLY"))
                                         .orderBy("date", Query.Direction.DESCENDING)
                                         .limit(3)
                                         .get()
@@ -116,11 +118,11 @@ public class FolloweesActivity extends AppCompatActivity {
             startActivity(new Intent(this, CommonSpaceActivity.class));
             finish();
             return true;
-        } else if (id == R.id.nav_followees) {
+        } else if (id == R.id.nav_followees_moods) {
             // Already here
             return true;
-        } else if (id == R.id.nav_my_mood_history) {
-            startActivity(new Intent(this, MoodHistoryActivity.class));
+        } else if (id == R.id.nav_following_users) {
+            startActivity(new Intent(this, FollowingUsersActivity.class));
             finish();
             return true;
         } else if (id == R.id.nav_profile) {
