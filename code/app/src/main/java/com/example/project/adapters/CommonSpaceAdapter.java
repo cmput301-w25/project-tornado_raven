@@ -1,5 +1,6 @@
 package com.example.project.adapters;
 
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +11,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.project.EmotionData;
@@ -31,7 +33,7 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
         // We'll pass the MoodEvent + the button reference, so you can do logic
         void onRequestFollow(MoodEvent mood, Button button);
     }
-
+    private String currentUsername;
     private List<MoodEvent> moodList;
     private OnRequestFollowListener followListener;
     // We'll store a set of authors for which a follow request is already sent
@@ -44,6 +46,10 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
         this.moodList = moodList;
         this.followListener = followListener;
         this.pendingAuthors = pendingAuthors;
+    }
+
+    public void setCurrentUsername(String username) {
+        this.currentUsername = username;
     }
 
     @NonNull
@@ -81,6 +87,11 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
         String author = mood.getAuthor();
         holder.tvSocial.setText("Posted by: " + (author == null ? "Unknown" : author));
 
+        if (author == null || author.equals(currentUsername)) {
+            holder.btnFollow.setVisibility(View.GONE);
+            return;
+        }
+
         // check button situation：
         if (author == null) {
             holder.btnFollow.setVisibility(View.GONE);
@@ -109,7 +120,29 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
                 }
             });
         }
+
+        // click the item to show details
+        holder.itemView.setOnClickListener(v -> showDetailsDialog(v.getContext(), mood));
+
     }
+
+    private void showDetailsDialog(Context context, MoodEvent moodEvent) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Mood Details");
+
+        StringBuilder message = new StringBuilder();
+        message.append("Emotion: ").append(moodEvent.getEmotion().toString()).append("\n")
+                .append("Date: ").append(moodEvent.getDate()).append("\n")
+                .append("Reason: ").append(moodEvent.getReason()).append("\n")
+                .append("Location: ").append(moodEvent.getLocation()).append("\n")
+                .append("Social Situation: ").append(moodEvent.getSocialSituation());
+
+        builder.setMessage(message.toString());
+        builder.setPositiveButton("OK", (dialog, which) -> dialog.dismiss());
+
+        builder.create().show();
+    }
+
 
     @Override
     public int getItemCount() {
