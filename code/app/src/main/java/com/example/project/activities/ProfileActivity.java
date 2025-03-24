@@ -216,6 +216,8 @@ public class ProfileActivity extends AppCompatActivity {
                     .addOnFailureListener(e ->
                             Toast.makeText(this, "Error loading your moods: " + e.getMessage(), Toast.LENGTH_SHORT).show()
                     );
+            SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
+            swipeRefreshLayout.setRefreshing(false);
 
         } else {
             // 2) Another user's profile => check if currentUser follows them
@@ -276,6 +278,8 @@ public class ProfileActivity extends AppCompatActivity {
                     .addOnFailureListener(e ->
                             Toast.makeText(this, "Error checking follow status: " + e.getMessage(), Toast.LENGTH_SHORT).show()
                     );
+            SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
+            swipeRefreshLayout.setRefreshing(false);
         }
     }
 
