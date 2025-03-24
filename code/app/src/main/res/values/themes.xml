@@ -6,4 +6,6 @@
     </style>
 
     <style name="Theme.Project" parent="Base.Theme.Project" />
+<!--    <style name="Theme.Project" parent="Theme.MaterialComponents.DayNight.NoActionBar"></style>-->
+
 </resources>

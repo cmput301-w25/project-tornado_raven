@@ -1,6 +1,8 @@
 package com.example.project.adapters;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.project.EmotionData;
 import com.example.project.MoodEvent;
 import com.example.project.R;
+import com.example.project.activities.EditMoodActivity;
 
 import java.text.SimpleDateFormat;
 import java.util.HashSet;
@@ -109,6 +112,16 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
         }
         // details if click on item
         holder.itemView.setOnClickListener(v -> showDetailsDialog(v.getContext(), mood));
+        holder.itemView.setOnLongClickListener(v -> {
+            if (author != null && author.equals(currentUsername)) {
+                Intent intent = new Intent(holder.itemView.getContext(), EditMoodActivity.class);
+                intent.putExtra("moodEvent", mood);
+                ((Activity) holder.itemView.getContext()).startActivityForResult(intent, 100);
+            }
+            return true;
+        });
+
+
     }
 
 

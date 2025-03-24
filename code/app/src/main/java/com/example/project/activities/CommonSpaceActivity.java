@@ -13,10 +13,14 @@ import android.widget.EditText;
 import android.widget.Toast;
 import android.widget.AutoCompleteTextView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.project.Emotion;
 
@@ -25,6 +29,7 @@ import com.example.project.R;
 import com.example.project.adapters.CommonSpaceAdapter;
 import com.example.project.adapters.FollowRequestAdapter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -54,6 +59,8 @@ public class CommonSpaceActivity extends AppCompatActivity {
     private Button btnShowLastWeek, btnFilterByMood, btnFilterByKeyword, btnClearFilters;
     // Searching authors
     private AutoCompleteTextView editSearchUserName;
+    private ActivityResultLauncher<Intent> addMoodLauncher;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +75,21 @@ public class CommonSpaceActivity extends AppCompatActivity {
         filteredMoods = new ArrayList<>();
         pendingAuthors= new HashSet<>();
         allUsernames = new ArrayList<>();
+
+        addMoodLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK) {
+                        loadAllMoodsFromFirestore();
+                    }
+                }
+        );
+        SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
+
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            loadAllMoodsFromFirestore(); // refresh
+        });
+
 
 
         String currentUser1 = getSharedPreferences("user_prefs", MODE_PRIVATE)
@@ -185,7 +207,38 @@ public class CommonSpaceActivity extends AppCompatActivity {
             }
         });
 
+        FloatingActionButton fab = findViewById(R.id.fab_add_mood);
+        fab.setOnClickListener(v -> {
+            Intent intent = new Intent(CommonSpaceActivity.this, AddingMoodActivity.class);
+            addMoodLauncher.launch(intent);
+        });
+
     }
+    private void deleteMoodFromFirestore(String moodId) {
+        db.collection("MoodEvents")
+                .whereEqualTo("id", moodId)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    if (!snapshot.isEmpty()) {
+                        String docId = snapshot.getDocuments().get(0).getId();
+                        db.collection("MoodEvents").document(docId)
+                                .delete()
+                                .addOnSuccessListener(v -> {
+                                    Toast.makeText(this, "Mood deleted from Firestore", Toast.LENGTH_SHORT).show();
+                                    deleteMoodFromList(moodId);
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(this, "Delete failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                });
+                    } else {
+                        Toast.makeText(this, "Mood not found in Firestore", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Query failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                );
+    }
+
 
 
     /**
@@ -224,6 +277,8 @@ public class CommonSpaceActivity extends AppCompatActivity {
      * store them in 'allMoods' and display them.
      */
     private void loadAllMoodsFromFirestore() {
+        SwipeRefreshLayout swipe = findViewById(R.id.swipeRefreshLayout);
+
         db.collection("MoodEvents")
                 .whereEqualTo("privacyLevel", "ALL_USERS")
                 .get()
@@ -240,12 +295,86 @@ public class CommonSpaceActivity extends AppCompatActivity {
 
                     filteredMoods.addAll(allMoods);
                     adapter.notifyDataSetChanged();
+                    swipe.setRefreshing(false); // close swipe
+
                     Toast.makeText(this, "Loaded " + allMoods.size() + " mood events", Toast.LENGTH_SHORT).show();
                 })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Failed to load moods: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                );
+                .addOnFailureListener(e -> {
+                    swipe.setRefreshing(false);
+                    Toast.makeText(this, "Failed to load moods: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK && data != null) {
+            // delete
+            if (data.hasExtra("deleteMoodId")) {
+                String deleteId = data.getStringExtra("deleteMoodId");
+                if (deleteId != null) {
+                    deleteMoodFromFirestore(deleteId);
+                }
+            }
+            // update mood
+            else if (data.hasExtra("updatedMood")) {
+                MoodEvent updated = (MoodEvent) data.getSerializableExtra("updatedMood");
+                if (updated != null) {
+                    updateMoodInList(updated);
+                }
+            }
+            // add mood
+            else {
+                loadAllMoodsFromFirestore();
+            }
+        }
+    }
+
+    private void deleteMoodFromList(String deleteId) {
+        boolean changed = false;
+        for (int i = 0; i < allMoods.size(); i++) {
+            if (allMoods.get(i).getId().equals(deleteId)) {
+                allMoods.remove(i);
+                changed = true;
+                break;
+            }
+        }
+
+        for (int i = 0; i < filteredMoods.size(); i++) {
+            if (filteredMoods.get(i).getId().equals(deleteId)) {
+                filteredMoods.remove(i);
+                changed = true;
+                break;
+            }
+        }
+
+        if (changed) adapter.notifyDataSetChanged();
+    }
+
+    private void updateMoodInList(MoodEvent updated) {
+        boolean changed = false;
+
+        for (int i = 0; i < allMoods.size(); i++) {
+            if (allMoods.get(i).getId().equals(updated.getId())) {
+                allMoods.set(i, updated);
+                changed = true;
+                break;
+            }
+        }
+
+        for (int i = 0; i < filteredMoods.size(); i++) {
+            if (filteredMoods.get(i).getId().equals(updated.getId())) {
+                filteredMoods.set(i, updated);
+                changed = true;
+                break;
+            }
+        }
+
+        if (changed) adapter.notifyDataSetChanged();
+    }
+
+
 
 
 
