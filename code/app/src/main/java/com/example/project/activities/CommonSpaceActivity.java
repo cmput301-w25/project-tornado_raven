@@ -394,7 +394,7 @@ public class CommonSpaceActivity extends AppCompatActivity {
             finish();
             return true;
         } else if (id == R.id.nav_mood_map) {
-            Toast.makeText(this, "Go to Mood Map", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this,mood_map.class));
             finish();
             return true;
         } else if (id == R.id.nav_profile) {
