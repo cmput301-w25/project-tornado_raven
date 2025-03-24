@@ -99,14 +99,13 @@
                 android:textSize="16sp"
                 android:layout_marginTop="10dp" />
 
-            <EditText
-                android:id="@+id/locationEditText"
+            <Spinner
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Enter location"
-                android:inputType="text"
-                android:background="@android:drawable/edit_text" />
-
+                android:id="@+id/locationspinner"
+                android:background="@android:drawable/btn_dropdown"
+                android:text="Include location?"
+                android:padding="8dp"/>
             <!-- Privacy Level -->
             <TextView
                 android:layout_width="wrap_content"
