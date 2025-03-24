@@ -92,12 +92,6 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
             return;
         }
 
-        // check button situation：
-        if (author == null) {
-            holder.btnFollow.setVisibility(View.GONE);
-            return;
-        }
-
         if (followedAuthors.contains(author)) {
             // following
             holder.btnFollow.setText("Following");
