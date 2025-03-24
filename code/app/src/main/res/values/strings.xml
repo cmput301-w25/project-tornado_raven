@@ -9,10 +9,7 @@
     <string name="nav_mood_map">Mood Map</string>
     <string name="nav_profile">Profile</string>
 
-    <string-array name="locationchoice">
-        <item>No</item>
-        <item>Yes</item>
-    </string-array>
+
 
     <string name="nav_followees_moods">Followees Moods</string>
 

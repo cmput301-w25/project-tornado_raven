@@ -125,6 +125,10 @@ public class FolloweesMoodsActivity extends AppCompatActivity {
             startActivity(new Intent(this, FollowingUsersActivity.class));
             finish();
             return true;
+        } else if (id == R.id.nav_mood_map) {
+            startActivity(new Intent(this, mood_map.class));
+            finish();
+            return true;
         } else if (id == R.id.nav_profile) {
             startActivity(new Intent(this, ProfileActivity.class));
             finish();

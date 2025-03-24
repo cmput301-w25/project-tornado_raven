@@ -63,7 +63,7 @@ public class FollowingUsersActivity extends AppCompatActivity {
 
         // Bottom nav setup
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
-        bottomNav.setSelectedItemId(R.id.nav_common_space);
+        bottomNav.setSelectedItemId(R.id.nav_following_users);
         bottomNav.setOnItemSelectedListener(this::onBottomNavItemSelected);
     }
 
@@ -110,7 +110,7 @@ public class FollowingUsersActivity extends AppCompatActivity {
         } else if (id == R.id.nav_following_users) {
             return true;
         } else if (id == R.id.nav_mood_map) {
-            Toast.makeText(this, "Go to Mood Map", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, mood_map.class));
             finish();
             return true;
         } else if (id == R.id.nav_profile) {
