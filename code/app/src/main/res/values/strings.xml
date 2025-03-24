@@ -26,7 +26,10 @@
     <string name="btn_show_pending_requests">Show Pending Follow Requests</string>
     <string name="btn_details">Details</string>
 
-
+    <string-array name="locationchoice">
+        <item>No</item>
+        <item>Yes</item>
+    </string-array>
     <!-- spinner item-->
     <string-array name="choices">
         <item>ANGER</item>
