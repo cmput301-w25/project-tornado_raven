@@ -63,6 +63,7 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
     @Override
     public void onBindViewHolder(@NonNull CommonSpaceAdapter.ViewHolder holder, int position) {
         MoodEvent mood = moodList.get(position);
+        String author = mood.getAuthor();
 
         holder.tvEmotion.setText(mood.getEmotion().toString());
         int color = EmotionData.getEmotionColor(holder.itemView.getContext(), mood.getEmotion());
@@ -71,41 +72,33 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
         Drawable icon = EmotionData.getEmotionIcon(holder.itemView.getContext(), mood.getEmotion());
         holder.ivEmoticon.setImageDrawable(icon);
 
-        if (mood.getReason() != null) {
-            holder.tvReason.setText(mood.getReason());
-        } else {
-            holder.tvReason.setText("");
-        }
+        holder.tvReason.setText(mood.getReason() != null ? mood.getReason() : "");
+        holder.tvDate.setText(mood.getDate() != null ?
+                new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(mood.getDate())
+                : "");
 
-        if (mood.getDate() != null) {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
-            holder.tvDate.setText(sdf.format(mood.getDate()));
-        } else {
-            holder.tvDate.setText("");
-        }
-
-        String author = mood.getAuthor();
         holder.tvSocial.setText("Posted by: " + (author == null ? "Unknown" : author));
 
+        // goto default button situation firstly
+        holder.btnFollow.setVisibility(View.VISIBLE);
+        holder.btnFollow.setEnabled(true);
+        holder.btnFollow.setText("Request Follow");
+        holder.btnFollow.setOnClickListener(null); // clear old listener
+
+        // button situation
         if (author == null || author.equals(currentUsername)) {
             holder.btnFollow.setVisibility(View.GONE);
-            return;
-        }
-
-        if (followedAuthors.contains(author)) {
-            // following
+        } else if (followedAuthors.contains(author)) {
             holder.btnFollow.setText("Following");
-            holder.btnFollow.setEnabled(true);
             holder.btnFollow.setOnClickListener(v -> {
                 Toast.makeText(holder.itemView.getContext(),
                         "You are following this user!", Toast.LENGTH_SHORT).show();
             });
         } else if (pendingAuthors.contains(author)) {
-            // requested
             holder.btnFollow.setText("Requested");
             holder.btnFollow.setEnabled(false);
         } else {
-            // can request
+            // can send request
             holder.btnFollow.setText("Request Follow");
             holder.btnFollow.setEnabled(true);
             holder.btnFollow.setOnClickListener(v -> {
@@ -114,11 +107,10 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
                 }
             });
         }
-
-        // click the item to show details
+        // details if click on item
         holder.itemView.setOnClickListener(v -> showDetailsDialog(v.getContext(), mood));
-
     }
+
 
     private void showDetailsDialog(Context context, MoodEvent moodEvent) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
