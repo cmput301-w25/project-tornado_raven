@@ -81,14 +81,6 @@ public class AddingMoodActivity extends AppCompatActivity {
 
         privacySpinner = findViewById(R.id.privacySpinner);
 
-        // Populate the social situation Spinner
-        ArrayAdapter<CharSequence> socialSituationAdapter = ArrayAdapter.createFromResource(
-                this,
-                R.array.social_situations, // Reference to the string array
-                android.R.layout.simple_spinner_item
-        );
-        socialSituationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        socialSituationSpinner.setAdapter(socialSituationAdapter);
 
         // Population the privacy level spinner.
         ArrayAdapter<CharSequence> privacyAdapter = ArrayAdapter.createFromResource(
@@ -100,7 +92,7 @@ public class AddingMoodActivity extends AppCompatActivity {
         privacySpinner.setAdapter(privacyAdapter);
 
 
-        locationEditText = findViewById(R.id.locationEditText);
+        //locationEditText = findViewById(R.id.locationEditText);
         submitButton = findViewById(R.id.submitButton);
         ImageButton backButton = findViewById(R.id.backButton);
         btnPickImage = findViewById(R.id.addPhotoButton);
@@ -214,9 +206,8 @@ public class AddingMoodActivity extends AppCompatActivity {
                 reason,
                 socialSituation,
 
-              
+
                 location.isEmpty() ? null : location,
-                selectedImageUri != null ? selectedImageUri.toString() : null
                 selectedPrivacyValue
         );
 

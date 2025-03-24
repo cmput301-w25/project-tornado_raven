@@ -102,13 +102,9 @@
             <Spinner
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-
                 android:id="@+id/locationspinner"
                 android:background="@android:drawable/btn_dropdown"
                 android:padding="8dp"/>
-                android:hint="Enter location"
-                android:inputType="text"
-                android:background="@android:drawable/edit_text" />
 
             <!-- Privacy Level -->
             <TextView

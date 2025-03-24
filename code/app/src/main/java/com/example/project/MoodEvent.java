@@ -82,12 +82,12 @@ public class MoodEvent implements Serializable {
      * @param reason The reason for the mood.
      * @param socialSituation The social situation at the time of the mood event.
      * @param location The location where the mood event occurred.
-     * @param photoUri The URI of the photo taken during the mood event, if any.
+     //* @param photoUri The URI of the photo taken during the mood event, if any.
      * @param privacyLevel The privacy level of the mood event.
      */
 
 
-    public MoodEvent(String author, Emotion emotion, Date date, String reason, SocialSituation socialSituation, String location, Uri photoUri, String privacyLevel) {
+    public MoodEvent(String author, Emotion emotion, Date date, String reason, SocialSituation socialSituation, String location, String privacyLevel) {
         this.author = author;
         this.emotion = emotion;
         this.date = date;
@@ -95,7 +95,7 @@ public class MoodEvent implements Serializable {
         this.socialSituation = socialSituation;
         this.location=location;
         this.id = UUID.randomUUID().toString();
-        this.photoUri = photoUri;
+        //this.photoUri = photoUri;
         this.privacyLevel = privacyLevel;
 
     }
