@@ -16,6 +16,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.project.Emotion;
 import com.example.project.MoodEvent;
@@ -75,6 +76,12 @@ public class ProfileActivity extends AppCompatActivity {
 
         recyclerView = findViewById(R.id.recyclerViewRecentMoods);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            loadMoodHistoryForUser(displayedUsername, displayedUsername.equals(getCurrentUserName()));
+        });
+
 
 
         moodHistoryList = new ArrayList<>();
@@ -279,7 +286,7 @@ public class ProfileActivity extends AppCompatActivity {
     private void loadPendingRequestCount() {
         String currentUser = getCurrentUserName();
         if (currentUser == null || currentUser.isEmpty()) return;
-
+        SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
         db.collection("FollowRequests")
                 .whereEqualTo("toUser", currentUser)
                 .whereEqualTo("status", "PENDING")
@@ -292,10 +299,14 @@ public class ProfileActivity extends AppCompatActivity {
                     } else {
                         followRequestBadge.setVisibility(View.GONE);
                     }
+                    swipeRefreshLayout.setRefreshing(false);
                 })
-                .addOnFailureListener(e ->
-                        Log.e("FollowRequest", "Failed to load request count", e)
+                .addOnFailureListener(e -> {
+                    Log.e("FollowRequest", "Failed to load request count", e);
+                    swipeRefreshLayout.setRefreshing(false);}
+
                 );
+
     }
 
     @Override
@@ -410,18 +421,18 @@ public class ProfileActivity extends AppCompatActivity {
                                         .delete()
                                         .addOnSuccessListener(aVoid -> {
                                             Toast.makeText(this, "deleted successfully", Toast.LENGTH_SHORT).show();
+
+
+                                            loadMoodHistoryForUser(displayedUsername, displayedUsername.equals(getCurrentUserName()));
                                         })
                                         .addOnFailureListener(e ->
                                                 Toast.makeText(this, "deleted failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
                                         );
-//                                loadMoodHistoryFromFirestore();
                             } else {
                                 Toast.makeText(this, "No corresponding MoodEvent", Toast.LENGTH_SHORT).show();
                             }
-                        })
-                        .addOnFailureListener(e ->
-                                Toast.makeText(this, "search failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                        );
+                        });
+
                 return;
             }
         }
@@ -430,12 +441,29 @@ public class ProfileActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        // If we added a mood, reload
-        if (requestCode == 1 && resultCode == RESULT_OK) {
-            // reload after adding a new mood
-            loadMoodHistoryForUser(displayedUsername, displayedUsername.equals(getCurrentUserName()));
+
+        if ((requestCode == 1 || requestCode == 2) && resultCode == RESULT_OK && data != null) {
+            boolean isSelf = displayedUsername.equals(getCurrentUserName());
+
+            // delete
+            if (data.hasExtra("deleteMoodId")) {
+                String deleteId = data.getStringExtra("deleteMoodId");
+                if (deleteId != null) {
+                    deleteMood(deleteId);
+                }
+            }
+            // edit
+            else if (data.hasExtra("updatedMood")) {
+                loadMoodHistoryForUser(displayedUsername, isSelf);
+            }
+            // add
+            else {
+                loadMoodHistoryForUser(displayedUsername, isSelf);
+            }
         }
     }
+
+
 
 
     private void showMoodFilterDialog() {

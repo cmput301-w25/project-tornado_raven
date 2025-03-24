@@ -162,6 +162,25 @@ public class EditMoodActivity extends AppCompatActivity {
         resultIntent.putExtra("updatedMood", currentMood);
         setResult(RESULT_OK, resultIntent);
         finish();
+
+        db.collection("MoodEvents")
+                .whereEqualTo("id", currentMood.getId())
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        String documentId = queryDocumentSnapshots.getDocuments().get(0).getId();
+                        db.collection("MoodEvents").document(documentId)
+                                .set(currentMood)
+                                .addOnSuccessListener(aVoid -> {
+                                    Toast.makeText(this, "Updated successfully", Toast.LENGTH_SHORT).show();
+                                    setResult(RESULT_OK);
+                                    finish();
+                                })
+                                .addOnFailureListener(e ->
+                                        Toast.makeText(this, "Update failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                    }
+                });
+
     }
 
     /**
