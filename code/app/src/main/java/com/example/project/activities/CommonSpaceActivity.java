@@ -90,6 +90,26 @@ public class CommonSpaceActivity extends AppCompatActivity {
                         Toast.makeText(this, "Failed to load followed users", Toast.LENGTH_SHORT).show();
                     });
         }
+        if (currentUser1 != null) {
+            // get all pending following requests from me
+            db.collection("FollowRequests")
+                    .whereEqualTo("fromUser", currentUser1)
+                    .whereEqualTo("status", "PENDING")
+                    .get()
+                    .addOnSuccessListener(snapshot -> {
+                        for (DocumentSnapshot doc : snapshot) {
+                            String toUser = doc.getString("toUser");
+                            if (toUser != null) {
+                                pendingAuthors.add(toUser);
+                            }
+                        }
+                        adapter.notifyDataSetChanged(); // update adapter
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(this, "Failed to load pending requests", Toast.LENGTH_SHORT).show();
+                    });
+        }
+
 
 
 
@@ -122,6 +142,7 @@ public class CommonSpaceActivity extends AppCompatActivity {
                 },
                 pendingAuthors
         );
+        adapter.setCurrentUsername(currentUser1);
         recyclerCommonSpace.setAdapter(adapter);
 
         // Load all moods

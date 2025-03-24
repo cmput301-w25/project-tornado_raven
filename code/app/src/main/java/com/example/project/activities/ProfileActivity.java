@@ -146,7 +146,6 @@ public class ProfileActivity extends AppCompatActivity {
             int id = item.getItemId();
 
             if (id == R.id.nav_common_space && !isCurrentActivity(FolloweesMoodsActivity.class)) {
-
                 startActivity(new Intent(this, CommonSpaceActivity.class));
                 overridePendingTransition(0, 0);
                 finish();

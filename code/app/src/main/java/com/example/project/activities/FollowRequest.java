@@ -95,7 +95,7 @@ public class FollowRequest extends AppCompatActivity {
                 finish();
                 return true;
             } else if (id == R.id.nav_following_users) {
-                startActivity(new Intent(this, MoodHistoryActivity.class));
+                startActivity(new Intent(this, FollowingUsersActivity.class));
                 overridePendingTransition(0, 0);
                 finish();
                 return true;
