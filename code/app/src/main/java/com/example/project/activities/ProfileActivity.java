@@ -168,7 +168,7 @@ public class ProfileActivity extends AppCompatActivity {
                 finish();
                 return true;
             }else if (id == R.id.nav_mood_map) {
-                startActivity(new Intent(this, mood_map.class));
+                startActivity(new Intent(this, mood_mapActivity.class));
                 finish();
                 return true;
             }else if (id == R.id.nav_profile) {

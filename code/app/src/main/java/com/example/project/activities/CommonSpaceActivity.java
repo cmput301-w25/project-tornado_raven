@@ -4,8 +4,6 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -27,7 +25,6 @@ import com.example.project.Emotion;
 import com.example.project.MoodEvent;
 import com.example.project.R;
 import com.example.project.adapters.CommonSpaceAdapter;
-import com.example.project.adapters.FollowRequestAdapter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -394,7 +391,7 @@ public class CommonSpaceActivity extends AppCompatActivity {
             finish();
             return true;
         } else if (id == R.id.nav_mood_map) {
-            startActivity(new Intent(this,mood_map.class));
+            startActivity(new Intent(this, mood_mapActivity.class));
             finish();
             return true;
         } else if (id == R.id.nav_profile) {
