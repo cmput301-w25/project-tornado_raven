@@ -262,10 +262,10 @@ public class AddingMoodActivity extends AppCompatActivity {
         String selectedPrivacyValue = privacyValues[privacyPosition];
 
         // Validate required fields
-        if (selectedEmotion.isEmpty() || reason.isEmpty()) {
-            Toast.makeText(this, "Emotion and Reason are required", Toast.LENGTH_SHORT).show();
-            return;
-        }
+//        if (selectedEmotion.isEmpty() || reason.isEmpty()) {
+//            Toast.makeText(this, "Emotion and Reason are required", Toast.LENGTH_SHORT).show();
+//            return;
+//        }
 
         if (selectedPrivacyValue.isEmpty()){
             Toast.makeText(this, "Please choose a privacy level.", Toast.LENGTH_SHORT).show();
@@ -315,6 +315,8 @@ public class AddingMoodActivity extends AppCompatActivity {
 //            Toast.makeText(this, "Offline! Mood saved locally.", Toast.LENGTH_SHORT).show();
 //            finishActivityResult(newMood);
 //        }
+        finishActivityResult(newMood);
+
     }
 
 
