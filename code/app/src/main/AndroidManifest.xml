@@ -56,6 +56,9 @@
 
         <activity android:name=".activities.FollowRequest" />
 
+        <!-- Comment Activity-->
+        <activity android:name=".activities.CommentActivity" />
+
 
 
     </application>
