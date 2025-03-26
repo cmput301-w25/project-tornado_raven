@@ -60,14 +60,25 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         MoodEvent moodEvent = moodHistoryList.get(position);
         holder.emotion.setText(moodEvent.getEmotion().toString());
         holder.date.setText(moodEvent.getDate().toString());
-        holder.reason.setText(moodEvent.getReason());
-        holder.social.setText(moodEvent.getSocialSituation().toString());
+        String reason = moodEvent.getReason();
+        if (reason == null || reason.trim().isEmpty()) {
+            reason = "null";
+        }
+        holder.reason.setText("Reason: " + reason);
+        String social = moodEvent.getSocialSituation().toString();
+        if (social == null || social.trim().isEmpty()) {
+            social = "null";
+        }
+        holder.social.setText("Social Situation: " + social);
         int emotionColor = EmotionData.getEmotionColor(context, moodEvent.getEmotion());
         holder.emotion.setTextColor(emotionColor);
         Drawable emojiDrawable = EmotionData.getEmotionIcon(context, moodEvent.getEmotion());
         holder.emoticon.setImageDrawable(emojiDrawable);
-        holder.location.setText(moodEvent.getLocation());
-        // Set up the onClickListener for editing mood event
+        String location = moodEvent.getLocation();
+        if (location == null || location.trim().isEmpty()) {
+            location = "null";
+        }
+        holder.location.setText("Location: " + location);
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, EditMoodActivity.class);
             intent.putExtra("moodEvent", moodEvent);
@@ -172,12 +183,18 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Mood Details");
         StringBuilder message = new StringBuilder();
-
+        String location = moodEvent.getLocation();
         message.append("Emotion: ").append(moodEvent.getEmotion().toString()).append("\n")
                 .append("Date: ").append(moodEvent.getDate().toString()).append("\n")
-                .append("Reason: ").append(moodEvent.getReason()).append("\n")
-                .append("Location:").append(moodEvent.getLocation()).append("\n")
-                .append("Social Situation: ").append(moodEvent.getSocialSituation());
+                .append("Reason: ")
+                .append(moodEvent.getReason() != null && !moodEvent.getReason().isEmpty() ? moodEvent.getReason() : "null")
+                .append("\n");
+        if (location == null || location.trim().isEmpty()) {
+            message.append("Location: null\n");
+        } else {
+            message.append("Location: ").append(location).append("\n");
+        }
+        message.append("Social Situation: ").append(moodEvent.getSocialSituation());
 
 
         builder.setMessage(message.toString());
