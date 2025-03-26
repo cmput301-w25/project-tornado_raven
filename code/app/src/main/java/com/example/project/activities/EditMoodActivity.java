@@ -1,14 +1,23 @@
 package com.example.project.activities;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -17,6 +26,11 @@ import com.example.project.MoodEvent;
 import com.example.project.R;
 import com.example.project.SocialSituation;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 
 /**
  * Activity for editing an existing mood event.
@@ -27,11 +41,14 @@ public class EditMoodActivity extends AppCompatActivity {
     private Spinner moodSpinner;
     private Spinner privacySpinner;
     private EditText reasonEditText, locationEditText;
-    private Button saveButton, deleteButton;
+    private Button saveButton, deleteButton, changePhotoBtn;
+    private ImageView photoImageView;
+
     private Spinner socialSituationSpinner;
     private ImageButton backButton;
-
     private MoodEvent currentMood;
+    private Uri selectedImageUri;
+    private ActivityResultLauncher<Intent> imagePickerLauncher;
     private FirebaseFirestore db;
 
     /**
@@ -54,9 +71,12 @@ public class EditMoodActivity extends AppCompatActivity {
         saveButton = findViewById(R.id.saveButton);
         deleteButton = findViewById(R.id.deleteButton);
         backButton = findViewById(R.id.backButton);
+        changePhotoBtn=findViewById(R.id.changePhotoBtn);
+        photoImageView=findViewById(R.id.photoImageView);
         db = FirebaseFirestore.getInstance();
 
         setupSpinners();
+        registerImagePicker();
 
         // Retrieve and initialize mood data
         Intent intent = getIntent();
@@ -70,6 +90,7 @@ public class EditMoodActivity extends AppCompatActivity {
         backButton.setOnClickListener(v -> finish());
         deleteButton.setOnClickListener(v -> deleteMood());
         saveButton.setOnClickListener(v -> saveChanges());
+        changePhotoBtn.setOnClickListener(v -> openImagePicker());
     }
 
     /**
@@ -107,6 +128,8 @@ public class EditMoodActivity extends AppCompatActivity {
      * @param mood The mood event to display.
      */
     private void initData(MoodEvent mood) {
+        TextView photoUrlText = findViewById(R.id.photoUrlText);
+
         reasonEditText.setText(mood.getReason());
         locationEditText.setText(mood.getLocation());
 
@@ -134,6 +157,12 @@ public class EditMoodActivity extends AppCompatActivity {
                 }
             }
         }
+        if (mood.getPhotoUri() != null) {
+            selectedImageUri = Uri.parse(mood.getPhotoUri());
+            photoImageView.setImageURI(selectedImageUri);
+        }
+        photoUrlText.setText("Image URL: " + mood.getPhotoUri());
+
     }
 
     /**
@@ -163,6 +192,14 @@ public class EditMoodActivity extends AppCompatActivity {
         setResult(RESULT_OK, resultIntent);
         finish();
 
+        if (selectedImageUri != null) {
+            Bitmap compressed = compressImage(selectedImageUri);
+            if (compressed != null) {
+                Uri compressedUri = saveCompressedImage(compressed);
+                currentMood.setPhotoUri(compressedUri.toString());
+            }
+        }
+
         db.collection("MoodEvents")
                 .whereEqualTo("id", currentMood.getId())
                 .get()
@@ -191,5 +228,49 @@ public class EditMoodActivity extends AppCompatActivity {
         resultIntent.putExtra("deleteMoodId", currentMood.getId());
         setResult(RESULT_OK, resultIntent);
         finish();
+    }
+    private void registerImagePicker() {
+        imagePickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        selectedImageUri = result.getData().getData();
+                        photoImageView.setImageURI(selectedImageUri);
+                    } else {
+                        Toast.makeText(EditMoodActivity.this, "No image selected", Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
+    }
+
+    private void openImagePicker() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        imagePickerLauncher.launch(intent);
+    }
+
+    private Bitmap compressImage(Uri imageUri) {
+        try (InputStream inputStream = getContentResolver().openInputStream(imageUri)) {
+            Bitmap original = BitmapFactory.decodeStream(inputStream);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            original.compress(Bitmap.CompressFormat.JPEG, 50, outputStream);
+            byte[] compressedBytes = outputStream.toByteArray();
+            return BitmapFactory.decodeByteArray(compressedBytes, 0, compressedBytes.length);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private Uri saveCompressedImage(Bitmap compressedBitmap) {
+        try {
+            File file = new File(getFilesDir(), "edited_mood_photo_" + System.currentTimeMillis() + ".jpg");
+            FileOutputStream out = new FileOutputStream(file);
+            compressedBitmap.compress(Bitmap.CompressFormat.JPEG, 50, out);
+            out.close();
+            return Uri.fromFile(file);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

@@ -3,6 +3,7 @@ package com.example.project;
 /**
  * Enum to choose if we we want to add a location
  */
+/*
 public enum LocationEnum {
     YES,
     NO;
@@ -17,4 +18,4 @@ public enum LocationEnum {
                 return NO; // Default
         }
     }
-}
+}*/
