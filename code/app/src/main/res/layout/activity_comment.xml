@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@color/white">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerComments"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="vertical"
+        android:overScrollMode="never"
+        android:paddingBottom="8dp"/>
+
+    <!-- type -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:elevation="8dp"
+        android:padding="8dp">
+
+        <!-- type -->
+        <EditText
+            android:id="@+id/editComment"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Share your opinion..."
+            android:inputType="textMultiLine"
+            android:maxLines="3"
+            android:minLines="1"
+            android:textSize="16sp"
+            android:background="@null"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:textColorHint="@color/gray_600"/>
+
+        <Button
+            android:id="@+id/btnPostComment"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:text="Post"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"/>
+    </LinearLayout>
+</LinearLayout>

@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.project.EmotionData;
 import com.example.project.MoodEvent;
 import com.example.project.R;
+import com.example.project.activities.CommentActivity;
 import com.example.project.activities.EditMoodActivity;
 
 import java.text.SimpleDateFormat;
@@ -119,8 +120,9 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
                 }
             });
         }
-        // details if click on item
-        holder.itemView.setOnClickListener(v -> showDetailsDialog(v.getContext(), mood));
+        // details or comments if click on item
+        holder.itemView.setOnClickListener(v -> showDetailsDialog(v.getContext(), mood));//details
+        // view/post comments
         holder.itemView.setOnLongClickListener(v -> {
             if (author != null && author.equals(currentUsername)) {
                 Intent intent = new Intent(holder.itemView.getContext(), EditMoodActivity.class);
@@ -157,6 +159,11 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
         builder.setMessage(message.toString());
         builder.setPositiveButton("OK", (dialog, which) -> dialog.dismiss());
 
+        builder.setNeutralButton("Comments", (dialog, which) -> {
+            Intent intent = new Intent(context, CommentActivity.class);
+            intent.putExtra("MOOD_EVENT_ID", moodEvent.getId());
+            context.startActivity(intent);
+        });
         builder.create().show();
     }
 
