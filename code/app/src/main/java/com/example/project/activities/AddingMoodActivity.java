@@ -169,18 +169,25 @@ public class AddingMoodActivity extends AppCompatActivity {
      */
     private void registerResult() {
         resultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-                new ActivityResultCallback<ActivityResult>() {
-                    @Override
-                    public void onActivityResult(ActivityResult o) {
-                        try {
-                            selectedImageUri = o.getData().getData(); // Store the selected image URI
-                            imageview.setImageURI(selectedImageUri);
-                        } catch (Exception e) {
-                            Toast.makeText(AddingMoodActivity.this, "No image Selected", Toast.LENGTH_SHORT).show();
+                o -> {
+                    try {
+                        selectedImageUri = o.getData().getData();
+                        if (selectedImageUri != null) {
+                            Bitmap compressedBitmap = compressImage(selectedImageUri);
+                            if (compressedBitmap != null) {
+                                Uri compressedUri = saveCompressedImage(compressedBitmap);
+                                selectedImageUri = compressedUri;  // Update to use compressed image
+                                imageview.setImageURI(compressedUri);
+                            } else {
+                                Toast.makeText(this, "Image compression failed.", Toast.LENGTH_SHORT).show();
+                            }
                         }
+                    } catch (Exception e) {
+                        Toast.makeText(AddingMoodActivity.this, "No image selected", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
+
 
     /**
      * Checks if the selected image is within the allowed size limit.
@@ -282,6 +289,8 @@ public class AddingMoodActivity extends AppCompatActivity {
             return;
         }
 
+        String photoUriString = selectedImageUri != null ? selectedImageUri.toString() : null;
+
         // Create MoodEvent
         newMood = new MoodEvent(
                 username,
@@ -290,7 +299,7 @@ public class AddingMoodActivity extends AppCompatActivity {
                 reason,
                 socialSituation,
                 null,
-                photoUri,
+                photoUriString,
                 selectedPrivacyValue
         );
 
