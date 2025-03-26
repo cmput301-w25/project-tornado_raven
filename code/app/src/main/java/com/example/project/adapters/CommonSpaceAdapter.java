@@ -75,13 +75,22 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
         Drawable icon = EmotionData.getEmotionIcon(holder.itemView.getContext(), mood.getEmotion());
         holder.ivEmoticon.setImageDrawable(icon);
 
-        holder.tvReason.setText(mood.getReason() != null ? mood.getReason() : "");
+        //holder.tvReason.setText(mood.getReason() != null ? mood.getReason() : "");
+        String r = mood.getReason();
+        if (r == null || r.trim().isEmpty()) {
+            r = "null";
+        }
+        holder.tvReason.setText("Reason: " + r);
         holder.tvDate.setText(mood.getDate() != null ?
                 new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(mood.getDate())
                 : "");
 
         holder.tvSocial.setText("Posted by: " + (author == null ? "Unknown" : author));
-
+        String location = mood.getLocation();
+        if (location == null || location.trim().isEmpty()) {
+            location = "null";
+        }
+        holder.tvLocation.setText("Location: " + location);
         // goto default button situation firstly
         holder.btnFollow.setVisibility(View.VISIBLE);
         holder.btnFollow.setEnabled(true);
@@ -128,13 +137,22 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
     private void showDetailsDialog(Context context, MoodEvent moodEvent) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Mood Details");
+        String location = moodEvent.getLocation();
 
         StringBuilder message = new StringBuilder();
         message.append("Emotion: ").append(moodEvent.getEmotion().toString()).append("\n")
                 .append("Date: ").append(moodEvent.getDate()).append("\n")
-                .append("Reason: ").append(moodEvent.getReason()).append("\n")
-                .append("Location: ").append(moodEvent.getLocation()).append("\n")
-                .append("Social Situation: ").append(moodEvent.getSocialSituation());
+                //.append("Reason: ").append(moodEvent.getReason()).append("\n")
+                .append("Reason: ")
+                .append(moodEvent.getReason() != null && !moodEvent.getReason().isEmpty() ? moodEvent.getReason() : "null")
+                .append("\n");
+                //.append("Location: ").append(moodEvent.getLocation()).append("\n")
+        if (location == null || location.trim().isEmpty()) {
+            message.append("Location: null\n");
+        } else {
+            message.append("Location: ").append(location).append("\n");
+        }
+        message.append("Social Situation: ").append(moodEvent.getSocialSituation());
 
         builder.setMessage(message.toString());
         builder.setPositiveButton("OK", (dialog, which) -> dialog.dismiss());
@@ -154,7 +172,7 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
 
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvEmotion, tvDate, tvReason, tvSocial;
+        TextView tvEmotion, tvDate, tvReason, tvSocial,tvLocation;
         ImageView ivEmoticon;
         Button btnFollow;
 
@@ -165,6 +183,7 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
             tvReason   = itemView.findViewById(R.id.reason);
             tvSocial   = itemView.findViewById(R.id.postedBy);
             ivEmoticon = itemView.findViewById(R.id.emoticon);
+            tvLocation=itemView.findViewById(R.id.location);
 
             // Reuse the existing button ID or add a new one
             btnFollow = itemView.findViewById(R.id.btnDetails);
