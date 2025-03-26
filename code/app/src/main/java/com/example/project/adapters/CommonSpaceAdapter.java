@@ -163,7 +163,7 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
             tvEmotion  = itemView.findViewById(R.id.emotion);
             tvDate     = itemView.findViewById(R.id.date);
             tvReason   = itemView.findViewById(R.id.reason);
-            tvSocial   = itemView.findViewById(R.id.socialSituation);
+            tvSocial   = itemView.findViewById(R.id.postedBy);
             ivEmoticon = itemView.findViewById(R.id.emoticon);
 
             // Reuse the existing button ID or add a new one

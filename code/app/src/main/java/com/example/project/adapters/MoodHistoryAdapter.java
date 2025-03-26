@@ -157,7 +157,7 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
             reason=itemView.findViewById(R.id.reason);
             emoticon=itemView.findViewById(R.id.emoticon);
             date = itemView.findViewById(R.id.date);
-            social=itemView.findViewById(R.id.socialSituation);
+            social=itemView.findViewById(R.id.postedBy);
             location = itemView.findViewById(R.id.location);
             detailsButton = itemView.findViewById(R.id.btnDetails);
         }

@@ -76,6 +76,7 @@ public class FolloweesMoodsActivity extends AppCompatActivity {
                     if (!snap.isEmpty()) {
                         for (int i = 0; i < snap.size(); i++) {
                             String followedUser = snap.getDocuments().get(i).getString("followedUsername");
+                            Toast.makeText(this,followedUser,Toast.LENGTH_SHORT);
                             if (followedUser != null) {
                                 // Now load that user's last 3 moods
                                 db.collection("MoodEvents")

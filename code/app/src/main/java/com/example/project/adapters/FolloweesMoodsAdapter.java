@@ -78,12 +78,12 @@ public class FolloweesMoodsAdapter extends RecyclerView.Adapter<FolloweesMoodsAd
             holder.txtReason.setText("");
         }
 
-        // Show social situation
-        if (mood.getSocialSituation() != null) {
-            holder.txtSocial.setText("Social: " + mood.getSocialSituation());
-        } else {
-            holder.txtSocial.setText("");
-        }
+//        // Show social situation
+//        if (mood.getSocialSituation() != null) {
+//            holder.txtSocial.setText("Social: " + mood.getSocialSituation());
+//        } else {
+//            holder.txtSocial.setText("");
+//        }
     }
 
     @Override
@@ -99,13 +99,13 @@ public class FolloweesMoodsAdapter extends RecyclerView.Adapter<FolloweesMoodsAd
             super(itemView);
 
             // Because item_mood.xml has fields: emotion, date, reason, socialSituation, emoticon
-            txtUsername = itemView.findViewById(R.id.emotion);        // repurpose
-            txtEmotion  = itemView.findViewById(R.id.date);
-            txtDate     = itemView.findViewById(R.id.reason);
-            txtReason   = itemView.findViewById(R.id.socialSituation);
+            txtUsername = itemView.findViewById(R.id.postedBy);
+            txtEmotion  = itemView.findViewById(R.id.emotion);
+            txtDate     = itemView.findViewById(R.id.date);
+            txtReason   = itemView.findViewById(R.id.reason);
             imgIcon     = itemView.findViewById(R.id.emoticon);
 
-            // If you'd like a separate text field for username, just add it to item_mood.xml
+
         }
     }
 }

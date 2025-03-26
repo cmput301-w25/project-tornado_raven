@@ -312,9 +312,7 @@ public class ProfileActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> {
                     Log.e("FollowRequest", "Failed to load request count", e);
                     swipeRefreshLayout.setRefreshing(false);}
-
                 );
-
     }
 
     @Override
