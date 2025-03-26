@@ -77,6 +77,12 @@ public class FolloweesMoodsAdapter extends RecyclerView.Adapter<FolloweesMoodsAd
         } else {
             holder.txtReason.setText("");
         }
+        // show location
+        String location = mood.getLocation();
+        if (location == null || location.trim().isEmpty()) {
+            location = "null";
+        }
+        holder.tvLocation.setText("Location: " + location);
 
 //        // Show social situation
 //        if (mood.getSocialSituation() != null) {
@@ -92,7 +98,7 @@ public class FolloweesMoodsAdapter extends RecyclerView.Adapter<FolloweesMoodsAd
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView txtUsername, txtEmotion, txtDate, txtReason, txtSocial;
+        TextView txtUsername, txtEmotion, txtDate, txtReason, tvLocation;
         ImageView imgIcon;
 
         public ViewHolder(@NonNull View itemView) {
@@ -103,6 +109,7 @@ public class FolloweesMoodsAdapter extends RecyclerView.Adapter<FolloweesMoodsAd
             txtEmotion  = itemView.findViewById(R.id.emotion);
             txtDate     = itemView.findViewById(R.id.date);
             txtReason   = itemView.findViewById(R.id.reason);
+            tvLocation=itemView.findViewById(R.id.location);
             imgIcon     = itemView.findViewById(R.id.emoticon);
 
 
