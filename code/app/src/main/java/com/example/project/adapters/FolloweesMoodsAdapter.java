@@ -1,6 +1,7 @@
 package com.example.project.adapters;
 
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +11,7 @@ import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.project.EmotionData;
 import com.example.project.MoodEvent;
 import com.example.project.R;
@@ -90,6 +92,15 @@ public class FolloweesMoodsAdapter extends RecyclerView.Adapter<FolloweesMoodsAd
 //        } else {
 //            holder.txtSocial.setText("");
 //        }
+        String photoUri = mood.getPhotoUrl();
+        if (photoUri != null && !photoUri.trim().isEmpty()) {
+            holder.ivPostedImage.setVisibility(View.VISIBLE);
+            Glide.with(holder.itemView.getContext())
+                    .load(Uri.parse(photoUri))
+                    .into(holder.ivPostedImage);
+        } else {
+            holder.ivPostedImage.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -99,7 +110,7 @@ public class FolloweesMoodsAdapter extends RecyclerView.Adapter<FolloweesMoodsAd
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView txtUsername, txtEmotion, txtDate, txtReason, tvLocation;
-        ImageView imgIcon;
+        ImageView imgIcon, ivPostedImage;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -110,6 +121,7 @@ public class FolloweesMoodsAdapter extends RecyclerView.Adapter<FolloweesMoodsAd
             txtDate     = itemView.findViewById(R.id.date);
             txtReason   = itemView.findViewById(R.id.reason);
             tvLocation=itemView.findViewById(R.id.location);
+            ivPostedImage=itemView.findViewById(R.id.imageView);
             imgIcon     = itemView.findViewById(R.id.emoticon);
 
 
