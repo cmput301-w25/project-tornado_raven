@@ -24,7 +24,7 @@ public class MoodEvent implements Serializable {
     private SocialSituation socialSituation;
     private String documentId;
     private String location;
-    private String photoUri;
+    private String photoUrl;
     private String author;
     private String privacyLevel;
 
@@ -82,12 +82,12 @@ public class MoodEvent implements Serializable {
      * @param reason The reason for the mood.
      * @param socialSituation The social situation at the time of the mood event.
      * @param location The location where the mood event occurred.
-     //* @param photoUri The URI of the photo taken during the mood event, if any.
+     //* @param photoUrl The URI of the photo taken during the mood event, if any.
      * @param privacyLevel The privacy level of the mood event.
      */
 
 
-    public MoodEvent(String author, Emotion emotion, Date date, String reason, SocialSituation socialSituation, String location,String photoUri, String privacyLevel) {
+    public MoodEvent(String author, Emotion emotion, Date date, String reason, SocialSituation socialSituation, String location,String photoUrl, String privacyLevel) {
         this.author = author;
         this.emotion = emotion;
         this.date = date;
@@ -95,7 +95,7 @@ public class MoodEvent implements Serializable {
         this.socialSituation = socialSituation;
         this.location=location;
         this.id = UUID.randomUUID().toString();
-        this.photoUri = photoUri;
+        this.photoUrl = photoUrl;
         this.privacyLevel = privacyLevel;
 
     }
@@ -104,16 +104,16 @@ public class MoodEvent implements Serializable {
      *
      * @return The photo URI.
      */
-    public String getPhotoUri() {
-        return photoUri;
+    public String getPhotoUrl() {
+        return photoUrl;
     }
     /**
      * Sets the URI of the photo for this mood event.
      *
-     * @param photoUri The URI to set.
+     * @param photoUrl The URI to set.
      */
-    public void setPhotoUri(String photoUri) {
-        this.photoUri = photoUri;
+    public void setPhotoUrl(String photoUrl) {
+        this.photoUrl = photoUrl;
     }
     /**
      * Sets the emotion for this mood event.
@@ -279,8 +279,8 @@ public class MoodEvent implements Serializable {
         if (this.getLocation() != null) {
             moodData.put("location", this.getLocation());
         }
-        if (this.getPhotoUri() != null) {
-            moodData.put("photoUrl", this.getPhotoUri().toString());
+        if (this.getPhotoUrl() != null) {
+            moodData.put("photoUrl", this.getPhotoUrl().toString());
         }
         return moodData;
     }

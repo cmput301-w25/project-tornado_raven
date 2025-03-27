@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.project.EmotionData;
 import com.example.project.MoodEvent;
 import com.example.project.R;
@@ -86,6 +88,17 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         });
         // Set up the button to show detailed mood event information in a dialog
         holder.detailsButton.setOnClickListener(v -> showDetailsDialog(moodEvent));
+
+        String photoUri = moodEvent.getPhotoUrl();
+        if (photoUri != null && !photoUri.trim().isEmpty()) {
+            holder.ivPostedImage.setVisibility(View.VISIBLE);
+            Glide.with(holder.itemView.getContext())
+                    .load(Uri.parse(photoUri))
+                    .into(holder.ivPostedImage);
+        } else {
+            holder.ivPostedImage.setVisibility(View.GONE);
+        }
+
     }
 
     @Override
@@ -159,7 +172,7 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         private TextView location;
 
         public Button detailsButton;
-        public ImageView emoticon;
+        public ImageView emoticon , ivPostedImage;
 
 
         public ViewHolder(View itemView) {
@@ -170,6 +183,7 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
             date = itemView.findViewById(R.id.date);
             social=itemView.findViewById(R.id.postedBy);
             location = itemView.findViewById(R.id.location);
+            ivPostedImage=itemView.findViewById(R.id.imageView);
             detailsButton = itemView.findViewById(R.id.btnDetails);
         }
     }

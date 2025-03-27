@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -68,15 +69,19 @@ public class EditMoodActivity extends AppCompatActivity {
         reasonEditText = findViewById(R.id.reasonEditText);
         socialSituationSpinner = findViewById(R.id.socialSituationSpinner);
         locationEditText = findViewById(R.id.locationEditText);
+        locationEditText.setEnabled(false);
+        locationEditText.setFocusable(false);
+        locationEditText.setClickable(false);
         saveButton = findViewById(R.id.saveButton);
         deleteButton = findViewById(R.id.deleteButton);
         backButton = findViewById(R.id.backButton);
         changePhotoBtn=findViewById(R.id.changePhotoBtn);
+        changePhotoBtn.setVisibility(View.GONE);
         photoImageView=findViewById(R.id.photoImageView);
         db = FirebaseFirestore.getInstance();
 
         setupSpinners();
-        registerImagePicker();
+        //registerImagePicker();
 
         // Retrieve and initialize mood data
         Intent intent = getIntent();
@@ -90,7 +95,7 @@ public class EditMoodActivity extends AppCompatActivity {
         backButton.setOnClickListener(v -> finish());
         deleteButton.setOnClickListener(v -> deleteMood());
         saveButton.setOnClickListener(v -> saveChanges());
-        changePhotoBtn.setOnClickListener(v -> openImagePicker());
+        //changePhotoBtn.setOnClickListener(v -> openImagePicker());
     }
 
     /**
@@ -131,7 +136,7 @@ public class EditMoodActivity extends AppCompatActivity {
         TextView photoUrlText = findViewById(R.id.photoUrlText);
 
         reasonEditText.setText(mood.getReason());
-        locationEditText.setText(mood.getLocation());
+        //locationEditText.setText(mood.getLocation());
 
         String[] emotions = getResources().getStringArray(R.array.choices);
         for (int i = 0; i < emotions.length; i++) {
@@ -157,11 +162,11 @@ public class EditMoodActivity extends AppCompatActivity {
                 }
             }
         }
-        if (mood.getPhotoUri() != null) {
-            selectedImageUri = Uri.parse(mood.getPhotoUri());
+        if (mood.getPhotoUrl() != null) {
+            selectedImageUri = Uri.parse(mood.getPhotoUrl());
             photoImageView.setImageURI(selectedImageUri);
         }
-        photoUrlText.setText("Image URL: " + mood.getPhotoUri());
+        photoUrlText.setText("Image URL: " + mood.getPhotoUrl());
 
     }
 
@@ -170,11 +175,11 @@ public class EditMoodActivity extends AppCompatActivity {
      */
     private void saveChanges() {
         String trigger = reasonEditText.getText().toString().trim();
-        String location = locationEditText.getText().toString().trim();
+        //String location = locationEditText.getText().toString().trim();
 
         // Update mood event data
         currentMood.setReason(trigger);
-        currentMood.setLocation(location);
+        //currentMood.setLocation(location);
 
         String selectedEmotion = moodSpinner.getSelectedItem().toString().toUpperCase();
         currentMood.setEmotion(Emotion.valueOf(selectedEmotion));
@@ -191,14 +196,14 @@ public class EditMoodActivity extends AppCompatActivity {
         resultIntent.putExtra("updatedMood", currentMood);
         setResult(RESULT_OK, resultIntent);
         finish();
-
+        /*
         if (selectedImageUri != null) {
             Bitmap compressed = compressImage(selectedImageUri);
             if (compressed != null) {
                 Uri compressedUri = saveCompressedImage(compressed);
                 currentMood.setPhotoUri(compressedUri.toString());
             }
-        }
+        }*/
 
         db.collection("MoodEvents")
                 .whereEqualTo("id", currentMood.getId())
@@ -229,7 +234,7 @@ public class EditMoodActivity extends AppCompatActivity {
         setResult(RESULT_OK, resultIntent);
         finish();
     }
-    private void registerImagePicker() {
+    /*private void registerImagePicker() {
         imagePickerLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -272,5 +277,5 @@ public class EditMoodActivity extends AppCompatActivity {
             e.printStackTrace();
             return null;
         }
-    }
+    }*/
 }

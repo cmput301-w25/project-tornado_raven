@@ -1,9 +1,13 @@
 package com.example.project.adapters;
 
+import static java.util.logging.Level.parse;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +20,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.project.EmotionData;
 import com.example.project.MoodEvent;
 import com.example.project.R;
@@ -131,6 +136,16 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
             }
             return true;
         });
+        String photoUrl = mood.getPhotoUrl();
+        if (photoUrl != null && !photoUrl.trim().isEmpty()) {
+            holder.ivPostedImage.setVisibility(View.VISIBLE);
+            Glide.with(holder.itemView.getContext())
+                    .load(photoUrl)
+                    .into(holder.ivPostedImage);
+        } else {
+            holder.ivPostedImage.setVisibility(View.GONE);
+        }
+
 
 
     }
@@ -180,7 +195,7 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvEmotion, tvDate, tvReason, tvSocial,tvLocation;
-        ImageView ivEmoticon;
+        ImageView ivEmoticon, ivPostedImage;
         Button btnFollow;
 
         public ViewHolder(@NonNull View itemView) {
@@ -191,7 +206,7 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
             tvSocial   = itemView.findViewById(R.id.postedBy);
             ivEmoticon = itemView.findViewById(R.id.emoticon);
             tvLocation=itemView.findViewById(R.id.location);
-
+            ivPostedImage=itemView.findViewById(R.id.imageView);
             // Reuse the existing button ID or add a new one
             btnFollow = itemView.findViewById(R.id.btnDetails);
         }

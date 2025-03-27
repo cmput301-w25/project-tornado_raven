@@ -33,6 +33,7 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResponse;
 import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.storage.FirebaseStorage;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.util.List;
@@ -313,7 +314,8 @@ public class AddingMoodActivity extends AppCompatActivity {
 //        if (network != null && connectivityManager.getNetworkCapabilities(network) != null &&
 //                connectivityManager.getNetworkCapabilities(network).hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
             // Online: Save to Firestore
-            saveMoodToFirestore(newMood);}
+            uploadImageToFirebase(selectedImageUri, newMood);
+        }
         newMood.setSynced(true);
 
 //        } else {
@@ -460,7 +462,7 @@ public class AddingMoodActivity extends AppCompatActivity {
         // Get user inputs
         newMood.setLocation(currentLocation);
         // Save to Firestore
-        saveMoodToFirestore(newMood);
+        uploadImageToFirebase(selectedImageUri, newMood);
     }
 
 
@@ -486,8 +488,8 @@ public class AddingMoodActivity extends AppCompatActivity {
         if (moodEvent.getLocation() != null) {
             moodData.put("location", moodEvent.getLocation());
         }
-        if (moodEvent.getPhotoUri() != null) {
-            moodData.put("photoUrl", moodEvent.getPhotoUri().toString());
+        if (moodEvent.getPhotoUrl() != null) {
+            moodData.put("photoUrl", moodEvent.getPhotoUrl().toString());
         }
 
         // Add a new document with an auto-generated ID
@@ -507,4 +509,31 @@ public class AddingMoodActivity extends AppCompatActivity {
                     Toast.makeText(this, "Failed to save mood to Firestore: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
+
+    private void uploadImageToFirebase(Uri imageUri, MoodEvent moodEvent) {
+        if (imageUri == null) {
+            // No image to upload, just save the mood
+            saveMoodToFirestore(moodEvent);
+            return;
+        }
+
+        String fileName = "mood_images/" + moodEvent.getId() + "_" + System.currentTimeMillis() + ".jpg";
+        FirebaseStorage.getInstance().getReference(fileName)
+                .putFile(imageUri)
+                .addOnSuccessListener(taskSnapshot -> {
+                    // Get download URL and store it in Firestore
+                    taskSnapshot.getStorage().getDownloadUrl().addOnSuccessListener(uri -> {
+                        String downloadUrl = uri.toString();
+                        moodEvent.setPhotoUrl(downloadUrl);
+                        saveMoodToFirestore(moodEvent);
+                    });
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Image upload failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    // Still save the mood without photo
+                    saveMoodToFirestore(moodEvent);
+                });
+    }
+
+
 }
