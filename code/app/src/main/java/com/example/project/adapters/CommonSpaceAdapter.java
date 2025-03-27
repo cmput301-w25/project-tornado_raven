@@ -3,6 +3,7 @@ package com.example.project.adapters;
 import static java.util.logging.Level.parse;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
@@ -142,6 +143,7 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
             Glide.with(holder.itemView.getContext())
                     .load(photoUrl)
                     .into(holder.ivPostedImage);
+            holder.ivPostedImage.setOnClickListener(v -> showFullImageDialog(holder.itemView.getContext(), photoUrl));
         } else {
             holder.ivPostedImage.setVisibility(View.GONE);
         }
@@ -149,6 +151,26 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
 
 
     }
+    private void showFullImageDialog(Context context, String imageUrl) {
+        final Dialog dialog = new Dialog(context);
+        dialog.setContentView(R.layout.fullscreeen_image);
+
+        // Make background transparent
+        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+
+        ImageView imageView = dialog.findViewById(R.id.enlargedImageView);
+
+        Glide.with(context)
+                .load(imageUrl)
+                .into(imageView);
+
+        // Dismiss dialog when clicking outside or on the image
+        dialog.setCanceledOnTouchOutside(true);
+        imageView.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
+    }
+
 
 
     private void showDetailsDialog(Context context, MoodEvent moodEvent) {
