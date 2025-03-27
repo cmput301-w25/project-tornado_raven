@@ -4,13 +4,17 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.project.Emotion;
 import com.example.project.MoodEvent;
 import com.example.project.R;
 import com.example.project.adapters.FolloweesMoodsAdapter;
@@ -32,6 +36,10 @@ public class FolloweesMoodsActivity extends AppCompatActivity {
     private FolloweesMoodsAdapter followeesMoodsAdapter;
     private List<FolloweesMoodsAdapter.UserMoodItem> userMoodItems = new ArrayList<>();
 
+    private Button btnShowLastWeek, btnFilterByMood, btnFilterByKeyword, btnClearFilters;
+    private List<FolloweesMoodsAdapter.UserMoodItem> originalUserMoodItems = new ArrayList<>();
+
+
     private FirebaseFirestore db;
 
     @Override
@@ -47,6 +55,18 @@ public class FolloweesMoodsActivity extends AppCompatActivity {
         followeesMoodsAdapter = new FolloweesMoodsAdapter(userMoodItems);
         recyclerFollowees.setAdapter(followeesMoodsAdapter);
 
+        btnShowLastWeek    = findViewById(R.id.btnShowLastWeekFlw);
+        btnFilterByMood    = findViewById(R.id.btnFilterByMoodFlw);
+        btnFilterByKeyword = findViewById(R.id.btnFilterByKeywordFlw);
+        btnClearFilters    = findViewById(R.id.btnClearFiltersFlw);
+
+// Set listeners
+        btnShowLastWeek.setOnClickListener(v -> filterByLastWeek());
+        btnFilterByMood.setOnClickListener(v -> showMoodFilterDialog());
+        btnFilterByKeyword.setOnClickListener(v -> showKeywordFilterDialog());
+        btnClearFilters.setOnClickListener(v -> clearFilters());
+
+
         // Load from the "Follows" collection
         loadFolloweesMoods();
 
@@ -55,12 +75,94 @@ public class FolloweesMoodsActivity extends AppCompatActivity {
         bottomNav.setOnItemSelectedListener(this::onBottomNavItemSelected);
     }
 
+    private void filterByLastWeek() {
+        userMoodItems.clear();
+        long oneWeekAgo = System.currentTimeMillis() - 7L * 24 * 60 * 60 * 1000;
+        for (FolloweesMoodsAdapter.UserMoodItem item : originalUserMoodItems) {
+            if (item.moodEvent.getDate() != null &&
+                    item.moodEvent.getDate().getTime() >= oneWeekAgo) {
+                userMoodItems.add(item);
+            }
+        }
+        followeesMoodsAdapter.notifyDataSetChanged();
+        Toast.makeText(this, "Filtered: last week", Toast.LENGTH_SHORT).show();
+    }
+
+    private void filterByMood(Emotion selectedEmotion) {
+        userMoodItems.clear();
+        for (FolloweesMoodsAdapter.UserMoodItem item : originalUserMoodItems) {
+            if (item.moodEvent.getEmotion() == selectedEmotion) {
+                userMoodItems.add(item);
+            }
+        }
+        followeesMoodsAdapter.notifyDataSetChanged();
+        Toast.makeText(this, "Filtered by mood: " + selectedEmotion, Toast.LENGTH_SHORT).show();
+    }
+
+    private void showMoodFilterDialog() {
+        final String[] moods = {"ANGER", "CONFUSION", "DISGUST", "FEAR", "HAPPINESS", "SADNESS", "SHAME", "SURPRISE", "CLEAR FILTER"};
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Select Mood to Filter")
+                .setItems(moods, (dialog, which) -> {
+                    if (moods[which].equals("CLEAR FILTER")) {
+                        clearFilters();
+                    } else {
+                        filterByMood(Emotion.valueOf(moods[which]));
+                    }
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+        builder.create().show();
+    }
+
+    private void showKeywordFilterDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Enter keyword for reason");
+
+        final EditText input = new EditText(this);
+        builder.setView(input);
+
+        builder.setPositiveButton("Filter", (dialog, which) -> {
+            String keyword = input.getText().toString().trim();
+            if (!keyword.isEmpty()) {
+                filterByKeyword(keyword);
+            } else {
+                Toast.makeText(this, "Enter a keyword", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+        builder.show();
+    }
+
+    private void filterByKeyword(String keyword) {
+        userMoodItems.clear();
+        String lowerKeyword = keyword.toLowerCase();
+        for (FolloweesMoodsAdapter.UserMoodItem item : originalUserMoodItems) {
+            String reason = item.moodEvent.getReason();
+            if (reason != null && reason.toLowerCase().contains(lowerKeyword)) {
+                userMoodItems.add(item);
+            }
+        }
+        followeesMoodsAdapter.notifyDataSetChanged();
+        Toast.makeText(this, "Filtered by keyword: " + keyword, Toast.LENGTH_SHORT).show();
+    }
+
+    private void clearFilters() {
+        userMoodItems.clear();
+        userMoodItems.addAll(originalUserMoodItems);
+        followeesMoodsAdapter.notifyDataSetChanged();
+        Toast.makeText(this, "Cleared all filters", Toast.LENGTH_SHORT).show();
+    }
+
+
     /**
      * Finds all docs in "Follows" where followerUsername == currentUser,
      * then loads up to 3 moods for each followedUsername from "MoodEvents".
      */
     private void loadFolloweesMoods() {
         userMoodItems.clear();
+        originalUserMoodItems.clear();
+
 
         SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
         String currentUser = prefs.getString("username", null);
@@ -91,9 +193,9 @@ public class FolloweesMoodsActivity extends AppCompatActivity {
                                                     MoodEvent me = querySnapshot.getDocuments().get(j)
                                                             .toObject(MoodEvent.class);
                                                     if (me != null) {
-                                                        userMoodItems.add(
-                                                                new FolloweesMoodsAdapter.UserMoodItem(followedUser, me)
-                                                        );
+                                                        FolloweesMoodsAdapter.UserMoodItem item = new FolloweesMoodsAdapter.UserMoodItem(followedUser, me);
+                                                        userMoodItems.add(item);
+                                                        originalUserMoodItems.add(item);
                                                     }
                                                 }
                                                 followeesMoodsAdapter.notifyDataSetChanged();
