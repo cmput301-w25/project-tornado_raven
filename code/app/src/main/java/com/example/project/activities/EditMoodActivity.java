@@ -1,6 +1,8 @@
 package com.example.project.activities;
 
 import android.app.Activity;
+import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -22,6 +24,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
 import com.example.project.Emotion;
 import com.example.project.MoodEvent;
 import com.example.project.R;
@@ -48,8 +51,6 @@ public class EditMoodActivity extends AppCompatActivity {
     private Spinner socialSituationSpinner;
     private ImageButton backButton;
     private MoodEvent currentMood;
-    private Uri selectedImageUri;
-    private ActivityResultLauncher<Intent> imagePickerLauncher;
     private FirebaseFirestore db;
 
     /**
@@ -162,12 +163,38 @@ public class EditMoodActivity extends AppCompatActivity {
                 }
             }
         }
-        if (mood.getPhotoUrl() != null) {
-            selectedImageUri = Uri.parse(mood.getPhotoUrl());
-            photoImageView.setImageURI(selectedImageUri);
+        // displaying photo
+        String photoUrl = mood.getPhotoUrl();
+        if (photoUrl != null && !photoUrl.trim().isEmpty()) {
+            Glide.with(EditMoodActivity.this)
+                    .load(photoUrl)
+                    .into(photoImageView);
+            photoImageView.setVisibility(View.VISIBLE);
+            photoImageView.setOnClickListener(v -> showFullImageDialog(EditMoodActivity.this, photoUrl));
+        } else {
+            photoImageView.setVisibility(View.GONE);
         }
         photoUrlText.setText("Image URL: " + mood.getPhotoUrl());
 
+    }
+    private void showFullImageDialog(Context context, String imageUrl) {
+        final Dialog dialog = new Dialog(context);
+        dialog.setContentView(R.layout.fullscreeen_image);
+
+        // Make background transparent
+        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+
+        ImageView imageView = dialog.findViewById(R.id.enlargedImageView);
+
+        Glide.with(context)
+                .load(imageUrl)
+                .into(imageView);
+
+        // Dismiss dialog when clicking outside or on the image
+        dialog.setCanceledOnTouchOutside(true);
+        imageView.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
     }
 
     /**

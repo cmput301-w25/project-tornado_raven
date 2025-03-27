@@ -24,6 +24,7 @@ import com.example.project.R;
 import com.example.project.adapters.MoodHistoryAdapter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -47,7 +48,7 @@ public class ProfileActivity extends AppCompatActivity {
     private TextView userNameTextView;
 
     // Buttons from my_profile.xml
-    private Button addmood_btn;
+    private FloatingActionButton addmood_btn;
     private Button logout_btn;
 
     private List<MoodEvent> filteredList;
