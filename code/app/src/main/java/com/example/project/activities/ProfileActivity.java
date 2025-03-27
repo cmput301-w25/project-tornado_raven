@@ -87,8 +87,6 @@ public class ProfileActivity extends AppCompatActivity {
 
         moodHistoryList = new ArrayList<>();
         filteredList = new ArrayList<>();
-        moodHistoryAdapter = new MoodHistoryAdapter(this, filteredList);
-        recyclerView.setAdapter(moodHistoryAdapter);
 
         userNameTextView = findViewById(R.id.username);
 
@@ -127,6 +125,9 @@ public class ProfileActivity extends AppCompatActivity {
         } else {
             userNameTextView.setText(displayedUsername);
         }
+
+        moodHistoryAdapter = new MoodHistoryAdapter(this, filteredList, displayedUsername.equals(currentUserName));
+        recyclerView.setAdapter(moodHistoryAdapter);
 
         // 4) Load moods
         loadMoodHistoryForUser(displayedUsername, displayedUsername.equals(currentUserName));

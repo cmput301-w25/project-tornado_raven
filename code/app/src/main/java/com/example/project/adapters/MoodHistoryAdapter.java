@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -35,19 +36,16 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
     private List<MoodEvent> moodHistoryList;
     private List<MoodEvent> originalList; // Stores full list for filtering
 
+    private boolean isOwnProfile;
+
     private Context context;
-    /**
-     * Constructor for the MoodHistoryAdapter.
-     *
-     * @param context The context for the adapter, typically an Activity or Fragment.
-     * @param moodHistoryList The list of MoodEvent objects to be displayed.
-     */
-    public MoodHistoryAdapter(Context context, List<MoodEvent> moodHistoryList) {
+    public MoodHistoryAdapter(Context context, List<MoodEvent> moodHistoryList, boolean isOwnProfile) {
         this.context = context;
         this.moodHistoryList = new ArrayList<>(moodHistoryList);
-        this.originalList = new ArrayList<>(moodHistoryList); // Preserve full list
-
+        this.originalList = new ArrayList<>(moodHistoryList);
+        this.isOwnProfile = isOwnProfile;
     }
+
 
     @NonNull
     @Override
@@ -81,11 +79,17 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
             location = "null";
         }
         holder.location.setText("Location: " + location);
-        holder.itemView.setOnClickListener(v -> {
-            Intent intent = new Intent(context, EditMoodActivity.class);
-            intent.putExtra("moodEvent", moodEvent);
-            ((Activity) context).startActivityForResult(intent, 2); //edit
-        });
+        if (isOwnProfile) {
+            holder.itemView.setOnClickListener(v -> {
+                Intent intent = new Intent(context, EditMoodActivity.class);
+                intent.putExtra("moodEvent", moodEvent);
+                ((Activity) context).startActivityForResult(intent, 2); // edit
+            });
+        } else {
+            holder.itemView.setOnClickListener(null); // disable click
+            Toast.makeText(context, "You can only edit your own moods.", Toast.LENGTH_SHORT).show();
+        }
+
         // Set up the button to show detailed mood event information in a dialog
         holder.detailsButton.setOnClickListener(v -> showDetailsDialog(moodEvent));
 
