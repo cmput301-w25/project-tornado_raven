@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MoodMapActivity">
+    android:layout_height="match_parent">
 
     <!-- Google Map -->
     <fragment
@@ -13,71 +11,101 @@
         android:layout_height="match_parent"
         android:name="com.google.android.gms.maps.SupportMapFragment" />
 
-    <!-- Filters -->
+    <!-- Top Filter Buttons -->
     <LinearLayout
-        android:orientation="horizontal"
+        android:id="@+id/filterContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_alignParentTop="true"
+        android:background="#88000000"
         android:gravity="center"
-        android:background="#DDDDDD"
+        android:orientation="horizontal"
         android:padding="10dp">
 
         <Button
-            android:id="@+id/btnFilterHistory"
+            android:id="@+id/btnFilterByEmotion"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Filter: My History" />
+            android:backgroundTint="#4CAF50"
+            android:text="Filter by Emotion"
+            android:textColor="#FFFFFF" />
 
         <Button
-            android:id="@+id/btnFilterFollowing"
+            android:id="@+id/btnFilterByDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Filter: Following"
-            android:layout_marginLeft="10dp" />
-
+            android:layout_marginLeft="10dp"
+            android:backgroundTint="#2196F3"
+            android:text="Filter by Date"
+            android:textColor="#FFFFFF" />
         <Button
-            android:id="@+id/btnFilterNearby"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Filter: Nearby"
-            android:layout_marginLeft="10dp" />
+            android:backgroundTint="#4CAF50"
+            android:text="Clear Filters"
+            android:textColor="#FFFFFF"
+            android:id="@+id/btnClearFilters"/>
+
     </LinearLayout>
 
-    <!-- Zoom Controls -->
+    <!-- Bottom Info Panel -->
     <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="wrap_content"
+        android:id="@+id/infoPanel"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="60dp">
+        android:background="#88000000"
+        android:orientation="vertical"
+        android:padding="10dp">
 
-        <Button
-            android:id="@+id/btnZoomIn"
-            android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/txtMoodInfo"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Zoom In" />
+            android:padding="5dp"
+            android:text="Select a mood event to see details"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp" />
 
-        <Button
-            android:id="@+id/btnZoomOut"
-            android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/txtMoodReason"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Zoom Out"
-            android:layout_marginLeft="10dp" />
+            android:padding="5dp"
+            android:text=""
+            android:textColor="#CCCCCC"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/txtMoodDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:text=""
+            android:textColor="#AAAAAA"
+            android:textSize="12sp" />
     </LinearLayout>
 
-    <!-- Mood Description -->
-    <TextView
-        android:id="@+id/moodDescription"
+    <!-- Floating Action Button for Zoom Controls -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabZoomIn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="The mood of Wendy.Pleakley is (Party)"
-        android:textSize="16sp"
-        android:textColor="#333333"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="100dp"
-        android:background="#E0E0E0"
-        android:padding="10dp" />
+        android:layout_above="@id/infoPanel"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="Zoom In"
+        android:src="@drawable/ic_zoom_in" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabZoomOut"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/fabZoomIn"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp"
+        android:contentDescription="Zoom Out"
+        android:src="@drawable/ic_zoom_out" />
 </RelativeLayout>
