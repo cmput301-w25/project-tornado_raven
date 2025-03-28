@@ -58,7 +58,9 @@
 
         <!-- Comment Activity-->
         <activity android:name=".activities.CommentActivity" />
-
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/my_map_api_key" />
 
 
     </application>
