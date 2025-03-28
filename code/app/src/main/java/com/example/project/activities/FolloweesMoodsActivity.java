@@ -52,7 +52,8 @@ public class FolloweesMoodsActivity extends AppCompatActivity {
         recyclerFollowees = findViewById(R.id.recyclerFollowees);
         recyclerFollowees.setLayoutManager(new LinearLayoutManager(this));
 
-        followeesMoodsAdapter = new FolloweesMoodsAdapter(userMoodItems);
+        //followeesMoodsAdapter = new FolloweesMoodsAdapter(userMoodItems);
+        followeesMoodsAdapter = new FolloweesMoodsAdapter(FolloweesMoodsActivity.this, userMoodItems);
         recyclerFollowees.setAdapter(followeesMoodsAdapter);
 
         btnShowLastWeek    = findViewById(R.id.btnShowLastWeekFlw);

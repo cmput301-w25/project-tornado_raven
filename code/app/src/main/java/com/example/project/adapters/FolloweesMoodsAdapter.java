@@ -1,10 +1,13 @@
 package com.example.project.adapters;
 
+import android.app.AlertDialog;
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.ImageView;
 
@@ -35,9 +38,11 @@ public class FolloweesMoodsAdapter extends RecyclerView.Adapter<FolloweesMoodsAd
     }
 
     private List<UserMoodItem> userMoodItems;
+    private Context context;
 
-    public FolloweesMoodsAdapter(List<UserMoodItem> items) {
+    public FolloweesMoodsAdapter(Context context,List<UserMoodItem> items) {
         this.userMoodItems = items;
+        this.context = context;
     }
 
     @NonNull
@@ -101,6 +106,7 @@ public class FolloweesMoodsAdapter extends RecyclerView.Adapter<FolloweesMoodsAd
         } else {
             holder.ivPostedImage.setVisibility(View.GONE);
         }
+        holder.detailsbtn.setOnClickListener(v -> showDetailsDialog(mood));
     }
 
     @Override
@@ -111,7 +117,7 @@ public class FolloweesMoodsAdapter extends RecyclerView.Adapter<FolloweesMoodsAd
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView txtUsername, txtEmotion, txtDate, txtReason, tvLocation;
         ImageView imgIcon, ivPostedImage;
-
+        Button detailsbtn;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
 
@@ -123,8 +129,32 @@ public class FolloweesMoodsAdapter extends RecyclerView.Adapter<FolloweesMoodsAd
             tvLocation=itemView.findViewById(R.id.location);
             ivPostedImage=itemView.findViewById(R.id.imageView);
             imgIcon     = itemView.findViewById(R.id.emoticon);
+            detailsbtn=itemView.findViewById(R.id.btnDetails);
 
 
         }
+    }
+    private void showDetailsDialog(MoodEvent moodEvent) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Mood Details");
+        StringBuilder message = new StringBuilder();
+        String location = moodEvent.getLocation();
+        message.append("Emotion: ").append(moodEvent.getEmotion().toString()).append("\n")
+                .append("Date: ").append(moodEvent.getDate().toString()).append("\n")
+                .append("Reason: ")
+                .append(moodEvent.getReason() != null && !moodEvent.getReason().isEmpty() ? moodEvent.getReason() : "null")
+                .append("\n");
+        if (location == null || location.trim().isEmpty()) {
+            message.append("Location: null\n");
+        } else {
+            message.append("Location: ").append(location).append("\n");
+        }
+        message.append("Social Situation: ").append(moodEvent.getSocialSituation());
+
+
+        builder.setMessage(message.toString());
+        builder.setPositiveButton("OK", (dialog, which) -> dialog.dismiss());
+
+        builder.create().show();
     }
 }
