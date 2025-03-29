@@ -3,6 +3,7 @@ package com.example.project.activities;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -11,6 +12,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -36,13 +38,18 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 public class mood_mapActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private FusedLocationProviderClient fusedLocationClient;
     private FirebaseFirestore db;
+    private ToggleButton toggleFollowees;
+    private String currentUser;
     private Button btnFilterEmotion;
     private Button btnFilterDate;
     private Button btnClearFilters;
@@ -50,6 +57,7 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
 
     private List<MoodEvent> allMoodEvents = new ArrayList<>();
     private List<MoodEvent> filteredMoodEvents = new ArrayList<>();
+    private Set<String> followeeNames = new HashSet<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,15 +67,32 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
         db = FirebaseFirestore.getInstance();
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        // Initialize filter buttons
+        SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        currentUser = prefs.getString("username", null);
+        if (currentUser == null) {
+            Toast.makeText(this, "No user logged in. Please log in first.", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
+        // Initialize views
         btnFilterDate = findViewById(R.id.btnFilterByDate);
         btnFilterEmotion = findViewById(R.id.btnFilterByEmotion);
         btnClearFilters = findViewById(R.id.btnClearFilters);
+        toggleFollowees = findViewById(R.id.toggleViewMode);
 
         // Set click listeners
         btnFilterDate.setOnClickListener(v -> filterByLastWeek());
         btnFilterEmotion.setOnClickListener(v -> showMoodFilterDialog());
         btnClearFilters.setOnClickListener(v -> clearFilters());
+        loadFolloweeNames();
+        toggleFollowees.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                loadAllFolloweesMoods();
+            } else {
+                loadMoodEventsWithLocations();
+            }
+        });
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -133,7 +158,7 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
 
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             MoodEvent moodEvent = document.toObject(MoodEvent.class);
-                            if (moodEvent.getLocation() != null && !moodEvent.getLocation().isEmpty()) {
+                            if (moodEvent.getLocation() != null && !moodEvent.getLocation().isEmpty() && Objects.equals(moodEvent.getAuthor(), currentUser)) {
                                 allMoodEvents.add(moodEvent);
                             }
                         }
@@ -285,6 +310,87 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
         filteredMoodEvents.addAll(allMoodEvents);
         updateMapMarkers();
         Toast.makeText(this, "Filters cleared", Toast.LENGTH_SHORT).show();
+    }
+    private void loadFolloweeNames() {
+        db.collection("Follows")
+                .whereEqualTo("followerUsername", currentUser)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    followeeNames.clear();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        String followedUser = document.getString("followedUsername");
+                        if (followedUser != null) {
+                            followeeNames.add(followedUser);
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to load followees", Toast.LENGTH_SHORT).show();
+                    Log.e("MapActivity", "Error loading followees", e);
+                });
+    }
+    private void addMarkerForMoodEvent(MoodEvent moodEvent, boolean isFollowee) {
+        try {
+            String[] latLng = moodEvent.getLocation().split(",");
+            if (latLng.length == 2) {
+                LatLng position = new LatLng(
+                        Double.parseDouble(latLng[0].trim()),
+                        Double.parseDouble(latLng[1].trim()));
+
+                String title = isFollowee ?
+                        moodEvent.getAuthor() + ": " + moodEvent.getEmotion().name() :
+                        moodEvent.getEmotion().name();
+
+                mMap.addMarker(new MarkerOptions()
+                        .position(position)
+                        .title(title)
+                        .snippet(moodEvent.getReason())
+                        .icon(getCustomMarkerIcon(moodEvent.getEmotion())));
+            }
+        } catch (Exception e) {
+            Log.e("MapActivity", "Error adding marker", e);
+        }
+    }
+    private void loadAllFolloweesMoods() {
+        if (followeeNames.isEmpty()) {
+            Toast.makeText(this, "You're not following anyone yet", Toast.LENGTH_SHORT).show();
+            toggleFollowees.setChecked(false);
+            return;
+        }
+
+        db.collection("MoodEvents")
+                .whereNotEqualTo("location", null)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        allMoodEvents.clear();
+                        filteredMoodEvents.clear();
+                        mMap.clear();
+
+                        int loadedCount = 0;
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            MoodEvent moodEvent = document.toObject(MoodEvent.class);
+                            if (moodEvent.getLocation() != null &&
+                                    !moodEvent.getLocation().isEmpty() &&
+                                    followeeNames.contains(moodEvent.getAuthor()) &&
+                                    !Objects.equals(moodEvent.getPrivacyLevel(), "PRIVATE")) {
+
+                                allMoodEvents.add(moodEvent);
+                                addMarkerForMoodEvent(moodEvent, true);
+                                loadedCount++;
+                            }
+                        }
+
+                        filteredMoodEvents.addAll(allMoodEvents);
+                        Toast.makeText(this,
+                                "Loaded " + loadedCount + " moods from all followees",
+                                Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(this, "Error loading followees' moods", Toast.LENGTH_SHORT).show();
+                        toggleFollowees.setChecked(false);
+                        loadMoodEventsWithLocations();
+                    }
+                });
     }
 
 }
