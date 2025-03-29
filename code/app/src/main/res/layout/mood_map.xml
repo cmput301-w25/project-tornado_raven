@@ -21,6 +21,15 @@
         android:gravity="center"
         android:orientation="horizontal"
         android:padding="10dp">
+        <ToggleButton
+            android:id="@+id/toggleMoodView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textOn="View Followees' Moods"
+            android:textOff="View My Moods"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_margin="8dp"/>
 
         <Button
             android:id="@+id/btnFilterByEmotion"
@@ -86,26 +95,4 @@
             android:textSize="12sp" />
     </LinearLayout>
 
-    <!-- Floating Action Button for Zoom Controls -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabZoomIn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/infoPanel"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        android:contentDescription="Zoom In"
-        android:src="@drawable/ic_zoom_in" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabZoomOut"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/fabZoomIn"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="8dp"
-        android:contentDescription="Zoom Out"
-        android:src="@drawable/ic_zoom_out" />
 </RelativeLayout>
