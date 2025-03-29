@@ -174,13 +174,22 @@ public class AddingMoodActivity extends AppCompatActivity {
                     try {
                         selectedImageUri = o.getData().getData();
                         if (selectedImageUri != null) {
-                            Bitmap compressedBitmap = compressImage(selectedImageUri);
-                            if (compressedBitmap != null) {
-                                Uri compressedUri = saveCompressedImage(compressedBitmap);
-                                selectedImageUri = compressedUri;  // Update to use compressed image
+                            Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImageUri);
+                            int quality = 100;
+                            byte[] compressedBytes;
+
+                            do {
+                                compressedBytes = compressImage(bitmap, quality);
+                                quality -= 5;
+                            } while (compressedBytes != null && compressedBytes.length > 65536 && quality > 10);
+
+                            if (compressedBytes != null && compressedBytes.length <= 65536) {
+                                Bitmap compressedBitmap = BitmapFactory.decodeByteArray(compressedBytes, 0, compressedBytes.length);
+                                Uri compressedUri = saveCompressedImage(compressedBitmap, quality + 5); // pass final quality
+                                selectedImageUri = compressedUri;
                                 imageview.setImageURI(compressedUri);
                             } else {
-                                Toast.makeText(this, "Image compression failed.", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(this, "Image too large even after compression. Please pick a smaller one.", Toast.LENGTH_SHORT).show();
                             }
                         }
                     } catch (Exception e) {
@@ -191,55 +200,29 @@ public class AddingMoodActivity extends AppCompatActivity {
 
 
     /**
-     * Checks if the selected image is within the allowed size limit.
-     *
-     * @param imageUri The URI of the selected image.
-     * @param sizeLimit The size limit in bytes.
-     * @return True if the image is within the size limit, otherwise false.
-     */
-    private boolean isImageUnderSizeLimit(Uri imageUri, long sizeLimit) {
-        try {
-            InputStream inputStream = getContentResolver().openInputStream(imageUri);
-            int imageSize = inputStream.available(); // Get the size of the image in bytes
-            inputStream.close();
-            return imageSize <= sizeLimit; // Return true if the image is under the size limit
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-
-    /**
      * Compresses the selected image to reduce its size.
      *
-     * @param imageUri The URI of the selected image.
+     * @param bitmap The URI of the selected image.
      * @return A compressed Bitmap image.
      */
-    private Bitmap compressImage(Uri imageUri) {
+    private byte[] compressImage(Bitmap bitmap, int quality) {
         try {
-            InputStream inputStream = getContentResolver().openInputStream(imageUri);
-            Bitmap originalBitmap = BitmapFactory.decodeStream(inputStream);
-            inputStream.close();
-
-            // Compress the image
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            originalBitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream); // Adjust quality (0-100)
-            byte[] compressedImageBytes = outputStream.toByteArray();
-
-            return BitmapFactory.decodeByteArray(compressedImageBytes, 0, compressedImageBytes.length);
-        } catch (IOException e) {
+            bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
+            return outputStream.toByteArray();
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
 
 
-    private Uri saveCompressedImage(Bitmap compressedBitmap) {
+
+    private Uri saveCompressedImage(Bitmap compressedBitmap,int quality) {
         try {
             File file = new File(getFilesDir(), "compressed_image_" + System.currentTimeMillis() + ".jpg");
             FileOutputStream outputStream = new FileOutputStream(file);
-            compressedBitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream); // Adjust quality (0-100)
+            compressedBitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream); // Adjust quality (0-100)
             outputStream.close();
             return Uri.fromFile(file);
         } catch (IOException e) {
