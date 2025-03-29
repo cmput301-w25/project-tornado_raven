@@ -2,6 +2,7 @@ package com.example.project.activities;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -30,6 +31,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -74,6 +76,36 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
         }
 
         checkLocationPermission();
+        // 6) Setup bottom navigation
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
+        bottomNavigationView.setSelectedItemId(R.id.nav_mood_map);
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+
+            if (id == R.id.nav_common_space && !isCurrentActivity(FolloweesMoodsActivity.class)) {
+                startActivity(new Intent(this, CommonSpaceActivity.class));
+                overridePendingTransition(0, 0);
+                finish();
+                return true;
+            } else if (id == R.id.nav_followees_moods && !isCurrentActivity(FolloweesMoodsActivity.class)) {
+                startActivity(new Intent(this, FolloweesMoodsActivity.class));
+                overridePendingTransition(0, 0);
+                finish();
+                return true;
+            } else if (id == R.id.nav_following_users) {
+                startActivity(new Intent(this, FollowingUsersActivity.class));
+                overridePendingTransition(0, 0);
+                finish();
+                return true;
+            }else if (id == R.id.nav_mood_map) {
+                return true;
+            }else if (id == R.id.nav_profile) {
+                startActivity(new Intent(this, ProfileActivity.class));
+                finish();
+                return true;
+            }
+            return false;
+        });
     }
 
     @Override
@@ -146,6 +178,12 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
         } catch (Exception e) {
             Log.e("MapActivity", "Error adding marker for: " + moodEvent.getDocumentId(), e);
         }
+    }
+    /**
+     * Checks if the current activity is the specified activity class.
+     */
+    private boolean isCurrentActivity(Class<?> activityClass) {
+        return this.getClass().equals(activityClass);
     }
 
     private BitmapDescriptor getCustomMarkerIcon(Emotion emotion) {
