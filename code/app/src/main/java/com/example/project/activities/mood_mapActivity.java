@@ -2,6 +2,7 @@ package com.example.project.activities;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -35,6 +36,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class mood_mapActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -44,6 +46,7 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
     private Button btnFilterEmotion;
     private Button btnFilterDate;
     private Button btnClearFilters;
+    private String currentUser;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1000;
 
     private List<MoodEvent> allMoodEvents = new ArrayList<>();
@@ -56,7 +59,13 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
 
         db = FirebaseFirestore.getInstance();
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
+        SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        currentUser = prefs.getString("username", null);
+        if (currentUser == null) {
+            Toast.makeText(this, "No user logged in. Please log in first.", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
         // Initialize filter buttons
         btnFilterDate = findViewById(R.id.btnFilterByDate);
         btnFilterEmotion = findViewById(R.id.btnFilterByEmotion);
@@ -91,6 +100,7 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
     }
 
     private void loadMoodEventsWithLocations() {
+
         db.collection("MoodEvents")
                 .whereNotEqualTo("location", null)
                 .get()
@@ -101,7 +111,7 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
 
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             MoodEvent moodEvent = document.toObject(MoodEvent.class);
-                            if (moodEvent.getLocation() != null && !moodEvent.getLocation().isEmpty()) {
+                            if (moodEvent.getLocation() != null && !moodEvent.getLocation().isEmpty() && Objects.equals(moodEvent.getAuthor(), currentUser)) {
                                 allMoodEvents.add(moodEvent);
                             }
                         }
@@ -111,10 +121,10 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
                         updateMapMarkers();
 
                         Toast.makeText(this,
-                                "Loaded " + allMoodEvents.size() + " mood events with locations",
+                                "Loaded " + allMoodEvents.size() + " mood events with locations" + "for"+currentUser,
                                 Toast.LENGTH_SHORT).show();
                     } else {
-                        Log.w("MapActivity", "Error loading documents", task.getException());
+                        Toast.makeText(this,"MapActivity"+"Error loading documents"+ "for"+currentUser, Toast.LENGTH_SHORT).show();
                     }
                 });
     }
