@@ -74,6 +74,15 @@
             android:visibility="gone"
             app:layout_constraintTop_toBottomOf="@id/follow_request_button"
             app:layout_constraintEnd_toEndOf="@id/follow_request_button" />
+
+        <Button
+            android:id="@+id/btnShowMoodChart"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Mood Chart"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"/>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- Filter Buttons (Horizontal) -->
