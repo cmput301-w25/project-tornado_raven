@@ -1,17 +1,23 @@
 package com.example.project.activities;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -22,15 +28,26 @@ import com.example.project.Emotion;
 import com.example.project.MoodEvent;
 import com.example.project.R;
 import com.example.project.adapters.MoodHistoryAdapter;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * ProfileActivity can show:
@@ -58,6 +75,10 @@ public class ProfileActivity extends AppCompatActivity {
 
     // The username we are displaying
     private String displayedUsername;
+    private ActivityResultLauncher<Intent> addMoodLauncher;
+    private Button followBtnInProfile;
+
+
 
     /**
      * Called whn activity starts.Sets up UI,load mood data,
@@ -70,6 +91,30 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.my_profile);
 
+        addMoodLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        boolean isSelf = displayedUsername.equals(getCurrentUserName());
+
+                        Intent data = result.getData();
+                        // delete
+                        if (data.hasExtra("deleteMoodId")) {
+                            String deleteId = data.getStringExtra("deleteMoodId");
+                            if (deleteId != null) {
+                                deleteMood(deleteId);
+                            }
+                        }
+                        // edit / add
+                        else {
+                            loadMoodHistoryForUser(displayedUsername, isSelf);
+                        }
+                    }
+                }
+        );
+
+
+        // 1) Initialize Firestore and other fields
         db = FirebaseFirestore.getInstance();
         moodHistoryList = new ArrayList<>();
 
@@ -101,6 +146,9 @@ public class ProfileActivity extends AppCompatActivity {
         logout_btn        = findViewById(R.id.logout_button);
         followRequestBtn  = findViewById(R.id.follow_request_button);
         followRequestBadge= findViewById(R.id.follow_request_badge);
+        followBtnInProfile = findViewById(R.id.btnFlwInProfile);
+
+
 
         //Decide if we’re viewing our own or another user's profile
         // userNameFromIntent is the target username we want to view.
@@ -131,6 +179,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         moodHistoryAdapter = new MoodHistoryAdapter(this, filteredList, displayedUsername.equals(currentUserName));
         recyclerView.setAdapter(moodHistoryAdapter);
+        checkFollowStatusAndUpdateUI(currentUserName, displayedUsername);
 
         //Load moods
         loadMoodHistoryForUser(displayedUsername, displayedUsername.equals(currentUserName));
@@ -139,7 +188,7 @@ public class ProfileActivity extends AppCompatActivity {
         logout_btn.setOnClickListener(v -> logoutAndExit());
         addmood_btn.setOnClickListener(v -> {
             Intent addIntent = new Intent(this, AddingMoodActivity.class);
-            startActivityForResult(addIntent, 1);
+            addMoodLauncher.launch(addIntent);
         });
         followRequestBtn.setOnClickListener(v -> {
             Intent reqIntent = new Intent(this, FollowRequest.class);
@@ -190,6 +239,10 @@ public class ProfileActivity extends AppCompatActivity {
 
         btnFilterByMood.setOnClickListener(v -> showMoodFilterDialog());
         btnShowLastWeek.setOnClickListener(v -> filterByLastWeek());
+
+        Button btnShowChart = findViewById(R.id.btnShowMoodChart);
+        btnShowChart.setOnClickListener(v -> showMoodChartDialog());
+
 
     }
 
@@ -607,5 +660,176 @@ public class ProfileActivity extends AppCompatActivity {
         moodHistoryAdapter.updateList(filteredList);
         Toast.makeText(this, "Filters cleared", Toast.LENGTH_SHORT).show();
     }
+
+    private void checkFollowStatusAndUpdateUI(String currentUser, String targetUser) {
+        if (currentUser.equals(targetUser)) return;
+
+        followBtnInProfile.setVisibility(View.VISIBLE);
+        followBtnInProfile.setEnabled(false);
+        followBtnInProfile.setText("Loading...");
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        // follow?
+        db.collection("Follows")
+                .whereEqualTo("followerUsername", currentUser)
+                .whereEqualTo("followedUsername", targetUser)
+                .get()
+                .addOnSuccessListener(followsSnap -> {
+                    if (!followsSnap.isEmpty()) {
+                        // following
+                        followBtnInProfile.setText("Following");
+                        followBtnInProfile.setEnabled(false);
+                    } else {
+                        // check whether having requested
+                        db.collection("FollowRequests")
+                                .whereEqualTo("fromUser", currentUser)
+                                .whereEqualTo("toUser", targetUser)
+                                .whereEqualTo("status", "PENDING")
+                                .get()
+                                .addOnSuccessListener(reqSnap -> {
+                                    if (!reqSnap.isEmpty()) {
+                                        followBtnInProfile.setText("Request Sent");
+                                        followBtnInProfile.setEnabled(false);
+                                    } else {
+                                        // no requests
+                                        followBtnInProfile.setText("Follow");
+                                        followBtnInProfile.setEnabled(true);
+                                        followBtnInProfile.setOnClickListener(v -> sendFollowRequest(currentUser, targetUser));
+                                    }
+                                })
+                                .addOnFailureListener(e -> {
+                                    followBtnInProfile.setText("Error");
+                                });
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    followBtnInProfile.setText("Error");
+                });
+    }
+
+    private void sendFollowRequest(String fromUser, String toUser) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        HashMap<String, Object> request = new HashMap<>();
+        request.put("fromUser", fromUser);
+        request.put("toUser", toUser);
+        request.put("status", "PENDING");
+
+        db.collection("FollowRequests")
+                .add(request)
+                .addOnSuccessListener(docRef -> {
+                    Toast.makeText(this, "Request Sent", Toast.LENGTH_SHORT).show();
+                    followBtnInProfile.setText("Request Sent");
+                    followBtnInProfile.setEnabled(false);
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to send request: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
+
+
+    private void showMoodChartDialog() {
+        Dialog dialog = new Dialog(this);
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_mood_chart, null);
+        dialog.setContentView(view);
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
+
+        LineChart chart = view.findViewById(R.id.lineChartMood);
+        setupTimelineChart(chart);
+        dialog.show();
+    }
+
+
+    private void setupTimelineChart(LineChart chart) {
+        chart.getDescription().setEnabled(false);
+        chart.setTouchEnabled(true);
+        chart.setPinchZoom(true);
+        chart.setNoDataText("No mood data available.");
+
+        // X Axis
+        XAxis xAxis = chart.getXAxis();
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setGranularity(1f);
+        xAxis.setDrawGridLines(false);
+        xAxis.setLabelRotationAngle(-45);
+        xAxis.setLabelCount(5, true);
+        xAxis.setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getAxisLabel(float value, AxisBase axis) {
+                int index = (int) value;
+                if (index >= 0 && index < moodHistoryList.size()) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("MM/dd", Locale.getDefault());
+                    return sdf.format(moodHistoryList.get(index).getDate());
+                }
+                return "";
+            }
+        });
+
+        // Y Axis
+        YAxis yAxisLeft = chart.getAxisLeft();
+        yAxisLeft.setGranularity(1f);
+        yAxisLeft.setAxisMinimum(0f);
+        yAxisLeft.setAxisMaximum(8f);
+        yAxisLeft.setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getAxisLabel(float value, AxisBase axis) {
+                switch ((int) value) {
+                    case 1: return "Anger";
+                    case 2: return "Confusion";
+                    case 3: return "Disgust";
+                    case 4: return "Fear";
+                    case 5: return "Happiness";
+                    case 6: return "Sadness";
+                    case 7: return "Shame";
+                    case 8: return "Surprise";
+                    default: return "";
+                }
+            }
+        });
+        chart.getAxisRight().setEnabled(false);
+
+        // Dataset
+        List<Entry> entries = new ArrayList<>();
+        for (int i = 0; i < moodHistoryList.size(); i++) {
+            Emotion mood = moodHistoryList.get(i).getEmotion();
+            float moodValue = mapEmotionToY(mood);
+            entries.add(new Entry(i, moodValue));
+        }
+
+        LineDataSet dataSet = new LineDataSet(entries, "Mood Over Time");
+        dataSet.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+        dataSet.setColor(Color.BLUE);
+        dataSet.setCircleColor(Color.RED);
+        dataSet.setLineWidth(2f);
+        dataSet.setCircleRadius(5f);
+        dataSet.setValueTextSize(10f);
+        dataSet.setDrawValues(false);
+
+        LineData lineData = new LineData(dataSet);
+        chart.setData(lineData);
+        chart.invalidate();
+    }
+
+    private float mapEmotionToY(Emotion emotion) {
+        switch (emotion) {
+            case ANGER: return 1f;
+            case CONFUSION: return 2f;
+            case DISGUST: return 3f;
+            case FEAR: return 4f;
+            case HAPPINESS: return 5f;
+            case SADNESS: return 6f;
+            case SHAME: return 7f;
+            case SURPRISE: return 8f;
+            default: return 0f;
+        }
+    }
+
+
+
 
 }

@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -15,6 +17,7 @@ import com.example.project.R;
 import com.example.project.adapters.FolloweesAdapter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -33,6 +36,9 @@ public class FollowingUsersActivity extends AppCompatActivity {
     private FirebaseAuth auth;
     private List<String> followeesList;
     private FolloweesAdapter adapter;
+    private AutoCompleteTextView editSearchUserName;
+    private List<String> allUsernames;
+
 
 
     /**
@@ -59,7 +65,22 @@ public class FollowingUsersActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
 
+        allUsernames = new ArrayList<>();
+        editSearchUserName = findViewById(R.id.editTextSearchUserName);
+        editSearchUserName.setThreshold(1);
+        editSearchUserName.setOnItemClickListener((parent, view, position, id) -> {
+            String selectedUser = (String) parent.getItemAtPosition(position);
+            if (selectedUser != null && !selectedUser.isEmpty()) {
+                Intent intent = new Intent(FollowingUsersActivity.this, ProfileActivity.class);
+                intent.putExtra("userName", selectedUser);
+                startActivity(intent);
+            }
+        });
+
+
         loadFollowees();
+        loadAllUsersForSearch();
+
 
         // Bottom navbar setup
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
@@ -72,6 +93,29 @@ public class FollowingUsersActivity extends AppCompatActivity {
      * Loads the list of users that the current user is following from Firestore.
      * Updates the RecyclerView adapter with the data.
      */
+    private void loadAllUsersForSearch() {
+        db.collection("users")
+                .get()
+                .addOnSuccessListener(snap -> {
+                    allUsernames.clear();
+                    for (DocumentSnapshot doc : snap) {
+                        String uname = doc.getString("username");
+                        if (uname != null && !uname.isEmpty()) {
+                            allUsernames.add(uname);
+                        }
+                    }
+                    ArrayAdapter<String> userAdapter = new ArrayAdapter<>(
+                            this,
+                            android.R.layout.simple_spinner_dropdown_item,
+                            allUsernames
+                    );
+                    editSearchUserName.setAdapter(userAdapter);
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Failed to load users: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                );
+    }
+
     private void loadFollowees() {
         SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
         String currentUser = prefs.getString("username", null);

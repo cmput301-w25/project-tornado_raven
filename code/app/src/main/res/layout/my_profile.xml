@@ -72,8 +72,31 @@
             android:textSize="10sp"
             android:gravity="center"
             android:visibility="gone"
-            app:layout_constraintTop_toBottomOf="@id/follow_request_button"
+            app:layout_constraintTop_toTopOf="@id/follow_request_button"
             app:layout_constraintEnd_toEndOf="@id/follow_request_button" />
+
+        <Button
+            android:id="@+id/btnShowMoodChart"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Mood Chart"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            app:layout_constraintEnd_toStartOf="@id/follow_request_button"
+            tools:ignore="MissingConstraints" />
+
+        <Button
+            android:id="@+id/btnFlwInProfile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Follow"
+            android:layout_gravity="center_horizontal"
+            app:layout_constraintStart_toEndOf="@id/follow_request_badge"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp"
+            android:visibility="gone"
+            tools:ignore="MissingConstraints" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- Filter Buttons (Horizontal) -->
