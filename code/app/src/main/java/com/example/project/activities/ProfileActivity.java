@@ -59,17 +59,20 @@ public class ProfileActivity extends AppCompatActivity {
     // The username we are displaying
     private String displayedUsername;
 
-
+    /**
+     * Called whn activity starts.Sets up UI,load mood data,
+     * config views depending on whether it's current user or other user.
+     * @param savedInstanceState If the activity is being re-initiated after previously shut-down
+     *                           ,this contains data it most recently supplied.
+     */
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.my_profile);
 
-        // 1) Initialize Firestore and other fields
         db = FirebaseFirestore.getInstance();
         moodHistoryList = new ArrayList<>();
 
-        // 2) Get references to layout elements
         profileImage     = findViewById(R.id.profileImage);
         profileImage.setImageResource(R.drawable.ic_profile);
 
@@ -99,7 +102,7 @@ public class ProfileActivity extends AppCompatActivity {
         followRequestBtn  = findViewById(R.id.follow_request_button);
         followRequestBadge= findViewById(R.id.follow_request_badge);
 
-        // 3) Decide if we’re viewing our own or another user's profile
+        //Decide if we’re viewing our own or another user's profile
         // userNameFromIntent is the target username we want to view.
         Intent intent = getIntent();
         String userNameFromIntent = intent.getStringExtra("userName"); // Could be null
@@ -129,10 +132,10 @@ public class ProfileActivity extends AppCompatActivity {
         moodHistoryAdapter = new MoodHistoryAdapter(this, filteredList, displayedUsername.equals(currentUserName));
         recyclerView.setAdapter(moodHistoryAdapter);
 
-        // 4) Load moods
+        //Load moods
         loadMoodHistoryForUser(displayedUsername, displayedUsername.equals(currentUserName));
 
-        // 5) If it's your own profile, set up those button clicks (Logout, Add Mood, FollowRequests)
+        //If it's your own profile, set up button clicks (Logout, Add Mood, FollowRequests)
         logout_btn.setOnClickListener(v -> logoutAndExit());
         addmood_btn.setOnClickListener(v -> {
             Intent addIntent = new Intent(this, AddingMoodActivity.class);
@@ -143,12 +146,12 @@ public class ProfileActivity extends AppCompatActivity {
             startActivity(reqIntent);
         });
 
-        // If it's your own profile => load follow requests count
+        // If it's your own profile then,load follow requests count
         if (displayedUsername.equals(currentUserName)) {
             loadPendingRequestCount();
         }
 
-        // 6) Setup bottom navigation
+        //bottom navigation
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
         bottomNavigationView.setSelectedItemId(R.id.nav_profile);
         bottomNavigationView.setOnItemSelectedListener(item -> {
@@ -181,14 +184,12 @@ public class ProfileActivity extends AppCompatActivity {
 
         Button btnFilterByMood = findViewById(R.id.btnFilterByType);
         Button btnShowLastWeek = findViewById(R.id.btnShowLastMonth);
-        //Button btnClearFilter = findViewById(R.id.btnClearFilters); // Add a clear filter button
         Button btnSearchKeyword = findViewById(R.id.btnSearchKeyword);
         btnSearchKeyword.setOnClickListener(v -> showReasonFilterDialog());
 
 
         btnFilterByMood.setOnClickListener(v -> showMoodFilterDialog());
         btnShowLastWeek.setOnClickListener(v -> filterByLastWeek());
-        //btnClearFilter.setOnClickListener(v -> clearFilters()); // Reset filtering
 
     }
 
@@ -196,6 +197,8 @@ public class ProfileActivity extends AppCompatActivity {
      * If displaying moods for user themselves, display all moods
      * If displaying moods for another user,
      * display it based on there following relationship
+     * @param username The username of profile being displayed
+     * @param isSelf True if the profile belongs to current user.
      */
     private void loadMoodHistoryForUser(String username, boolean isSelf) {
         if (username == null || username.isEmpty()) {
@@ -215,7 +218,7 @@ public class ProfileActivity extends AppCompatActivity {
                                 moodHistoryList.add(me);
                             }
                         }
-                        // Sort by date desc
+                        // Sort by date desc....
                         moodHistoryList.sort((a, b) -> b.getDate().compareTo(a.getDate()));
                         moodHistoryAdapter.updateList(moodHistoryList);
                     })
@@ -226,20 +229,17 @@ public class ProfileActivity extends AppCompatActivity {
             swipeRefreshLayout.setRefreshing(false);
 
         } else {
-            // 2) Another user's profile => check if currentUser follows them
+            //Another user's profile,check if currentUser follows them
             String currentUser = getCurrentUserName();
 
-            // Step A: Query "Follows" to see if we have a doc where (followerUsername=currentUser, followedUsername=displayedUsername)
             db.collection("Follows")
                     .whereEqualTo("followerUsername", currentUser)
                     .whereEqualTo("followedUsername", username)
                     .get()
                     .addOnSuccessListener(followSnap -> {
-                        boolean isFollowing = !followSnap.isEmpty();  // If doc found => isFollowing = true
+                        boolean isFollowing = !followSnap.isEmpty();
 
-                        // Step B: Then decide which privacy levels to load from "MoodEvents"
                         if (isFollowing) {
-                            // If following => load "ALL_USERS" + "FOLLOWERS_ONLY"
                             db.collection("MoodEvents")
                                     .whereEqualTo("author", username)
                                     .whereIn("privacyLevel", Arrays.asList("ALL_USERS", "FOLLOWERS_ONLY"))
@@ -260,7 +260,6 @@ public class ProfileActivity extends AppCompatActivity {
                                     );
 
                         } else {
-                            // If NOT following => load only "ALL_USERS"
                             db.collection("MoodEvents")
                                     .whereEqualTo("author", username)
                                     .whereEqualTo("privacyLevel", "ALL_USERS")
@@ -320,7 +319,6 @@ public class ProfileActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // If it’s your own profile, reload request count in case something changed
         if (displayedUsername != null && displayedUsername.equals(getCurrentUserName())) {
             loadPendingRequestCount();
         }
@@ -328,6 +326,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     /**
      * Return the name of the logged-in user from SharedPreferences.
+     * @return The username of the current user.
      */
     private String getCurrentUserName() {
         SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
@@ -353,6 +352,8 @@ public class ProfileActivity extends AppCompatActivity {
 
     /**
      * Checks if the current activity is the specified activity class.
+     * @param activityClass The activity class to compare against.
+     * @return True if the current activity is an instance of the provided class.
      */
     private boolean isCurrentActivity(Class<?> activityClass) {
         return this.getClass().equals(activityClass);
@@ -445,7 +446,14 @@ public class ProfileActivity extends AppCompatActivity {
             }
         }
     }
-
+    /**
+     * Called when returning from another activity, such as adding or editing a mood.
+     * Updates the UI or performs deletes based on the result.
+     *
+     * @param requestCode The integer request code originally supplied to startActivityForResult().
+     * @param resultCode  The integer result code returned by the child activity.
+     * @param data        An Intent containing any returned data.
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -472,8 +480,9 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
 
-
-
+    /**
+     * Displays a dialog to let the user filter moods based on emotion type.
+     */
     private void showMoodFilterDialog() {
         final String[] moods = {"ANGER","CONFUSION","DISGUST","FEAR","HAPPINESS", "SADNESS","SHAME","SURPRISE","CLEAR FILTER"}; // Add more moods if needed
 

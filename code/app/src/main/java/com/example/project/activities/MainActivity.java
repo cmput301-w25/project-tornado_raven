@@ -9,8 +9,11 @@ import com.google.firebase.FirebaseApp;
 
 /**
  * Main activity of the application. This activity is responsible for handling
- * the bottom navigation menu and checking if the user is logged in.
- */
+ * <ul>
+ *     <li>Firebase initialization</li>
+ *     <li>Checking if a user is logged in</li>
+ *     <li>Navigation to other activities using the bottom navigation bar</li>
+ * </ul> */
 public class MainActivity extends AppCompatActivity {
 
     /**
@@ -24,11 +27,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         FirebaseApp.initializeApp(this);
-
-        // Check login status before setting up Bottom Navigation
+        //redirect to login if not logged in.
         if (!isUserLoggedIn()) {
             startActivity(new Intent(this, LoginActivity.class));
-            finish(); // Close MainActivity so the user can't go back without logging in
+            finish(); //prevent back navigation.
             return;
         }
 
@@ -65,13 +67,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Checks if the user is logged in by reading the shared preferences.
-     *
+     * Checks if the user is logged.
      * @return true if the user is logged in, false otherwise.
      */
     private boolean isUserLoggedIn() {
-//        SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
-//        return prefs.getBoolean("is_logged_in", false);
         return false;
     }
 

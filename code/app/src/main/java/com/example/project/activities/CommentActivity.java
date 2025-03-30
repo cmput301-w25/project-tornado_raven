@@ -22,6 +22,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Activity that displays and posts comments related to a specific mood event.
+ * It connects to Firestore to retrieve and store comments.
+ */
 public class CommentActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private RecyclerView recyclerComments;
@@ -29,6 +33,15 @@ public class CommentActivity extends AppCompatActivity {
     private List<Usercomment> commentList = new ArrayList<>();
     private String moodEventId;
 
+
+
+    /**
+     * Called when the activity is first created.
+     * Initializes the activity and sets up views and data.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after previously being shut down,
+     *                           this Bundle contains the data it most recently supplied. Otherwise, it is null.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,11 +54,15 @@ public class CommentActivity extends AppCompatActivity {
         commentAdapter = new CommentAdapter(commentList);
         recyclerComments.setAdapter(commentAdapter);
 
-        //load comments
         loadComments();
         findViewById(R.id.btnPostComment).setOnClickListener(v -> postComment());
     }
 
+
+    /**
+     * Loads comments from Firestore where the moodEventId matches the current mood event.
+     * Updates the RecyclerView with the retrieved comments in real-time using a snapshot listener.
+     */
     private void loadComments() {
         // search comments
         db.collection("Comments")
@@ -55,7 +72,6 @@ public class CommentActivity extends AppCompatActivity {
                         Toast.makeText(this, "errors!", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    // add new data
                     commentList.clear();
                     for (DocumentSnapshot doc:snapshots.getDocuments()) {
                         Usercomment comment = doc.toObject(Usercomment.class);
@@ -65,8 +81,12 @@ public class CommentActivity extends AppCompatActivity {
                 });
     }
 
+
+    /**
+     * Posts a new comment to Firestore after validating that the comment is not empty.
+     * Uses SharedPreferences to retrieve the author username and clears the input on success.
+     */
     private void postComment() {
-        //validation
         String content = ((EditText) findViewById(R.id.editComment)).getText().toString().trim();
         if (content.isEmpty()) {
             Toast.makeText(this, "cannot be empty", Toast.LENGTH_SHORT).show();
@@ -75,10 +95,7 @@ public class CommentActivity extends AppCompatActivity {
 
         SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
         String author = prefs.getString("username", null);
-//        if (author == null) {
-//            Toast.makeText(this,
 
-        //comment instance
         Usercomment comment = new Usercomment();
         comment.setCommentId(UUID.randomUUID().toString());
         comment.setMoodEventId(moodEventId);

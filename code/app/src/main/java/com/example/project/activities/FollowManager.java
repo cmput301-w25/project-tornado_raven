@@ -11,15 +11,29 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Handles the new request-based follow system.
- * - "sendFollowRequest" => creates a doc in "FollowRequests" with status="PENDING"
- * - "acceptFollowRequest" => sets doc to "ACCEPTED" + writes doc in "Follows"
- * - "rejectFollowRequest" => sets doc to "REJECTED"
+ * FollowManager handles all functionality related to following users.
+ * It supports:
+ * <ul>
+ *     <li>Sending follow requests</li>
+ *     <li>Accepting follow requests</li>
+ *     <li>Rejecting follow requests</li>
+ *     <li>Unfollowing users</li>
+ * </ul>
+ *
+ * Firestore collections used:
+ * <ul>
+ *     <li><b>FollowRequests</b> - Stores pending/accepted/rejected requests.</li>
+ *     <li><b>Follows</b> - Stores actual follow relationships after acceptance.</li>
+ * </ul>
  */
 public class FollowManager {
 
     /**
-     * Send a follow request from user A to user B.
+     * Sends a follow request from user A to user B.
+     * Creates a new document in the "FollowRequests" collection with status "PENDING".
+     *
+     * @param fromUser The username of the user sending the request.
+     * @param toUser   The username of the user to follow.
      */
     public static void sendFollowRequest(String fromUser, String toUser) {
         if (fromUser == null || toUser == null || fromUser.equals(toUser)) {
@@ -28,7 +42,6 @@ public class FollowManager {
         }
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        // Create doc in "FollowRequests" with status "PENDING"
         Map<String, Object> requestData = new HashMap<>();
         requestData.put("fromUser", fromUser);
         requestData.put("toUser", toUser);
@@ -46,7 +59,10 @@ public class FollowManager {
     }
 
     /**
-     * Accept the follow request from user A to user B. Then create doc in "Follows" (the final relationship).
+     * Accept the follow request from user A to user B.
+     * Then create doc in "Follows" (the final relationship).
+     * @param fromUser The user who sent the follow request.
+     * @param toUser   The user accepting the request.
      */
     public static void acceptFollowRequest(String fromUser, String toUser) {
         if (fromUser == null || toUser == null) return;
@@ -60,7 +76,8 @@ public class FollowManager {
                 .addOnSuccessListener(snap -> {
                     if (!snap.isEmpty()) {
                         DocumentReference reqDocRef = snap.getDocuments().get(0).getReference();
-                        // Mark request as "ACCEPTED"
+
+                        //update request to "ACCEPTED"
                         reqDocRef.update("status", "ACCEPTED")
                                 .addOnSuccessListener(aVoid ->
                                         Log.d("FollowManager", "Follow request accepted: " + fromUser + " -> " + toUser)
@@ -69,7 +86,7 @@ public class FollowManager {
                                         Log.e("FollowManager", "Error updating follow request: " + e.getMessage())
                                 );
 
-                        // Now create doc in "Follows"
+                        // create follow relationship.
                         Map<String, Object> followData = new HashMap<>();
                         followData.put("followerUsername", fromUser);
                         followData.put("followedUsername", toUser);
@@ -95,6 +112,10 @@ public class FollowManager {
     /**
      * Reject the follow request from user A to user B.
      * Set "status"="REJECTED".
+     *
+     *
+     * @param fromUser The user who sent the follow request.
+     * @param toUser   The user rejecting the request.
      */
     public static void rejectFollowRequest(String fromUser, String toUser) {
         if (fromUser == null || toUser == null) return;
@@ -108,7 +129,6 @@ public class FollowManager {
                 .addOnSuccessListener(snap -> {
                     if (!snap.isEmpty()) {
                         DocumentReference reqDocRef = snap.getDocuments().get(0).getReference();
-                        // Mark request as "REJECTED", or you can do reqDocRef.delete()
                         reqDocRef.update("status", "REJECTED")
                                 .addOnSuccessListener(aVoid ->
                                         Log.d("FollowManager", "Follow request rejected.")
@@ -124,7 +144,12 @@ public class FollowManager {
                         Log.e("FollowManager", "Error searching follow request: " + e.getMessage())
                 );
     }
-
+    /**
+     * Unfollows a user by deleting the relationship document.
+     *
+     * @param fromUser The user who wants to unfollow.
+     * @param toUser   The user to unfollow.
+     */
     public static void unfollowUser(String fromUser, String toUser) {
         if (fromUser == null || toUser == null || fromUser.equals(toUser)) {
         return;
@@ -137,7 +162,7 @@ public class FollowManager {
                 .get()
                 .addOnSuccessListener(snap -> {
                     if (!snap.isEmpty()) {
-                        // Delete all matching docs (usually just one)
+                        // Delete all matching FOLLOW RELATIONSHIPS.
                         for (DocumentSnapshot doc : snap) {
                             doc.getReference().delete()
                                     .addOnSuccessListener(aVoid -> {

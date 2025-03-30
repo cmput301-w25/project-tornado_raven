@@ -68,6 +68,8 @@ import java.util.Map;
 /**
  * Activity for adding a new mood event.
  * Allows users to select an emotion, provide a reason, pick an image, and submit the mood event.
+ * Handles image compression, location services, and Firestore integration.
+ * set social and privacy settings, and choose whether to include location data.
  */
 public class AddingMoodActivity extends AppCompatActivity {
     private FirebaseFirestore db;
@@ -102,16 +104,14 @@ public class AddingMoodActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
-        // Initialize UI elements
         emotionSpinner = findViewById(R.id.emotionSpinner);
         reasonEditText = findViewById(R.id.reasonEditText);
         socialSituationSpinner = findViewById(R.id.socialSituationSpinner);
         privacySpinner = findViewById(R.id.privacySpinner);
         locationSpinner=findViewById(R.id.locationspinner);
-        // Populate the social situation Spinner
         ArrayAdapter<CharSequence> socialSituationAdapter = ArrayAdapter.createFromResource(
                 this,
-                R.array.social_situations, // Reference to the string array
+                R.array.social_situations,
                 android.R.layout.simple_spinner_item
         );
         socialSituationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -121,7 +121,6 @@ public class AddingMoodActivity extends AppCompatActivity {
         );
         locationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         locationSpinner.setAdapter(locationAdapter);
-        // Population the privacy level spinner.
         ArrayAdapter<CharSequence> privacyAdapter = ArrayAdapter.createFromResource(
                 this,
                 R.array.privacy_levels,
@@ -130,18 +129,15 @@ public class AddingMoodActivity extends AppCompatActivity {
         privacyAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         privacySpinner.setAdapter(privacyAdapter);
 
-        //locationEditText = findViewById(R.id.locationEditText);
         submitButton = findViewById(R.id.submitButton);
         ImageButton backButton = findViewById(R.id.backButton);
         btnPickImage = findViewById(R.id.addPhotoButton);
         imageview = findViewById(R.id.photoImageView);
 
-        // Register the result launcher
         registerResult();
 
         btnPickImage.setOnClickListener(view -> pickImage());
 
-        // Populate Spinner with emotion options
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
                 this,
                 R.array.choices,
@@ -150,10 +146,8 @@ public class AddingMoodActivity extends AppCompatActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         emotionSpinner.setAdapter(adapter);
 
-        // Handle back button click
         backButton.setOnClickListener(v -> finish());
 
-        // Set OnClickListener for submit button
         submitButton.setOnClickListener(v -> saveMood());
     }
 
@@ -166,7 +160,7 @@ public class AddingMoodActivity extends AppCompatActivity {
     }
 
     /**
-     * Registers the activity result launcher for image selection.
+     * Registers the image picker result and handles compression of selected image.
      */
     private void registerResult() {
         resultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
@@ -185,15 +179,15 @@ public class AddingMoodActivity extends AppCompatActivity {
 
                             if (compressedBytes != null && compressedBytes.length <= 65536) {
                                 Bitmap compressedBitmap = BitmapFactory.decodeByteArray(compressedBytes, 0, compressedBytes.length);
-                                Uri compressedUri = saveCompressedImage(compressedBitmap, quality + 5); // pass final quality
+                                Uri compressedUri = saveCompressedImage(compressedBitmap, quality + 5);
                                 selectedImageUri = compressedUri;
                                 imageview.setImageURI(compressedUri);
                             } else {
-                                Toast.makeText(this, "Image too large even after compression. Please pick a smaller one.", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(this, "Image too large even after compression.Choose something else.", Toast.LENGTH_SHORT).show();
                             }
                         }
                     } catch (Exception e) {
-                        Toast.makeText(AddingMoodActivity.this, "No image selected", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(AddingMoodActivity.this, "Nothing selected", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -202,8 +196,9 @@ public class AddingMoodActivity extends AppCompatActivity {
     /**
      * Compresses the selected image to reduce its size.
      *
-     * @param bitmap The URI of the selected image.
-     * @return A compressed Bitmap image.
+     * @param bitmap The image bitmap.
+     * @param quality Compression quality (0-100).
+     * @return A compressed Bitmap array.
      */
     private byte[] compressImage(Bitmap bitmap, int quality) {
         try {
@@ -218,6 +213,13 @@ public class AddingMoodActivity extends AppCompatActivity {
 
 
 
+    /**
+     * Saves a compressed bitmap to internal storage and returns its URI.
+     *
+     * @param compressedBitmap The compressed image.
+     * @param quality          Quality to use for saving.
+     * @return URI of the saved image file.
+     */
     private Uri saveCompressedImage(Bitmap compressedBitmap,int quality) {
         try {
             File file = new File(getFilesDir(), "compressed_image_" + System.currentTimeMillis() + ".jpg");
@@ -235,28 +237,19 @@ public class AddingMoodActivity extends AppCompatActivity {
      * saves the updated attributes of the mood and update the firebase
      */
     private void saveMood() {
-        // Get user inputs
         String selectedEmotion = emotionSpinner.getSelectedItem().toString();
         String reason = reasonEditText.getText().toString().trim();
         int socialSituationPosition = socialSituationSpinner.getSelectedItemPosition();
         SocialSituation socialSituation = socialSituationPosition >= 0 ? SocialSituation.fromPosition(socialSituationPosition) : null;
-        //String location = locationEditText.getText().toString().trim();
         Uri photoUri = selectedImageUri;
         int choice = locationSpinner.getSelectedItemPosition();
 
         SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
         String username = prefs.getString("username", "Unknown User");
 
-        //Get the selected privacy type.
         int privacyPosition = privacySpinner.getSelectedItemPosition();
         String[] privacyValues = getResources().getStringArray(R.array.privacy_values); // Get STORAGE values
         String selectedPrivacyValue = privacyValues[privacyPosition];
-
-        // Validate required fields
-//        if (selectedEmotion.isEmpty() || reason.isEmpty()) {
-//            Toast.makeText(this, "Emotion and Reason are required", Toast.LENGTH_SHORT).show();
-//            return;
-//        }
 
         if (selectedPrivacyValue.isEmpty()){
             Toast.makeText(this, "Please choose a privacy level.", Toast.LENGTH_SHORT).show();
@@ -264,7 +257,6 @@ public class AddingMoodActivity extends AppCompatActivity {
         }
 
 
-        // Convert to enum
         Emotion emotion;
         try {
             emotion = Emotion.valueOf(selectedEmotion.toUpperCase());
@@ -296,7 +288,6 @@ public class AddingMoodActivity extends AppCompatActivity {
 
 //        if (network != null && connectivityManager.getNetworkCapabilities(network) != null &&
 //                connectivityManager.getNetworkCapabilities(network).hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
-            // Online: Save to Firestore
             uploadImageToFirebase(selectedImageUri, newMood);
         }
         newMood.setSynced(true);
@@ -314,7 +305,9 @@ public class AddingMoodActivity extends AppCompatActivity {
     }
 
 
-
+    /**
+     * Saves mood locally if offline (not used in current flow).
+     */
     private void saveMoodLocally(MoodEvent mood) {
         SharedPreferences prefs = getSharedPreferences("OfflineMoods", MODE_PRIVATE);
         String existing = prefs.getString("moods", "[]");
@@ -324,12 +317,19 @@ public class AddingMoodActivity extends AppCompatActivity {
         prefs.edit().putString("moods", gson.toJson(moodList)).apply();
     }
 
+    /**
+     * Sends the mood result back to the calling activity.
+     */
     private void finishActivityResult(MoodEvent mood) {
         Intent resultIntent = new Intent();
         resultIntent.putExtra("newMood", mood);
         setResult(RESULT_OK, resultIntent);
         finish();
     }
+
+    /**
+     * Requests location settings update if required by user.
+     */
     private void checkLocationSettings() {
         LocationRequest locationRequest = LocationRequest.create();
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -341,18 +341,15 @@ public class AddingMoodActivity extends AppCompatActivity {
         Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
 
         task.addOnSuccessListener(this, locationSettingsResponse -> {
-            // Location settings are satisfied, proceed with location request
             getLastLocation();
         });
 
         task.addOnFailureListener(this, e -> {
             if (e instanceof ResolvableApiException) {
-                // Location settings are not satisfied, show a dialog to enable them
                 try {
                     ResolvableApiException resolvable = (ResolvableApiException) e;
                     resolvable.startResolutionForResult(this, REQUEST_CHECK_SETTINGS);
                 } catch (IntentSender.SendIntentException sendEx) {
-                    // Ignore the error
                 }
             }
         });
@@ -370,27 +367,40 @@ public class AddingMoodActivity extends AppCompatActivity {
 
         fusedLocationProviderClient.getLastLocation().addOnSuccessListener(this, location -> {
             if (location != null) {
-                // Use the location
                 currentLocation = location.getLatitude() + ", " + location.getLongitude();
                 saveMoodWithLocation();
             } else {
-                // Request a new location update
                 requestNewLocation();
             }
         });
     }
+
+    /**
+     * Handles the result of the location settings dialog.
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CHECK_SETTINGS) {
             if (resultCode == RESULT_OK) {
-                // Location settings enabled, fetch location
                 getLastLocation();
             } else {
                 Toast.makeText(this, "Location services are required to fetch location.", Toast.LENGTH_SHORT).show();
             }
         }
     }
+
+
+    /**
+     *
+     * @param requestCode The request code passed in {@link #requestPermissions(
+     * android.app.Activity, String[], int)}
+     * @param permissions The requested permissions. Never null.
+     * @param grantResults The grant results for the corresponding permissions
+     *     which is either {@link android.content.pm.PackageManager#PERMISSION_GRANTED}
+     *     or {@link android.content.pm.PackageManager#PERMISSION_DENIED}. Never null.
+     *
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -427,7 +437,6 @@ public class AddingMoodActivity extends AppCompatActivity {
                 }
                 for (Location location : locationResult.getLocations()) {
                     if (location != null) {
-                        // Use the location
                         currentLocation = location.getLatitude() + ", " + location.getLongitude();
                         saveMoodWithLocation();
                         fusedLocationProviderClient.removeLocationUpdates(this); // Stop updates
@@ -442,9 +451,7 @@ public class AddingMoodActivity extends AppCompatActivity {
      * Saves the mood event with the current location.
      */
     private void saveMoodWithLocation() {
-        // Get user inputs
         newMood.setLocation(currentLocation);
-        // Save to Firestore
         uploadImageToFirebase(selectedImageUri, newMood);
     }
 
@@ -495,7 +502,6 @@ public class AddingMoodActivity extends AppCompatActivity {
 
     private void uploadImageToFirebase(Uri imageUri, MoodEvent moodEvent) {
         if (imageUri == null) {
-            // No image to upload, just save the mood
             saveMoodToFirestore(moodEvent);
             return;
         }
@@ -504,7 +510,6 @@ public class AddingMoodActivity extends AppCompatActivity {
         FirebaseStorage.getInstance().getReference(fileName)
                 .putFile(imageUri)
                 .addOnSuccessListener(taskSnapshot -> {
-                    // Get download URL and store it in Firestore
                     taskSnapshot.getStorage().getDownloadUrl().addOnSuccessListener(uri -> {
                         String downloadUrl = uri.toString();
                         moodEvent.setPhotoUrl(downloadUrl);
@@ -513,7 +518,6 @@ public class AddingMoodActivity extends AppCompatActivity {
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Image upload failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    // Still save the mood without photo
                     saveMoodToFirestore(moodEvent);
                 });
     }

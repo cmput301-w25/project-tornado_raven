@@ -32,7 +32,13 @@ public class FollowRequest extends AppCompatActivity {
     private List<FollowRequestAdapter.RequestItem> pendingRequests;
 
     private FirebaseFirestore db;
-
+    /**
+     * Initializes the activity
+     * sets up the toolbar, recycler view, adapter,
+     * and loads the follow requests from Firestore.
+     *
+     * @param savedInstanceState The saved state of the activity.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,7 +65,6 @@ public class FollowRequest extends AppCompatActivity {
                 String currentUser = getCurrentUsername();
                 FollowManager.acceptFollowRequest(fromUser, currentUser);
                 Toast.makeText(FollowRequest.this, "Accepted: " + fromUser, Toast.LENGTH_SHORT).show();
-//                reloadRequests();
                 removeRequest(fromUser);
             }
 
@@ -68,7 +73,6 @@ public class FollowRequest extends AppCompatActivity {
                 String currentUser = getCurrentUsername();
                 FollowManager.rejectFollowRequest(fromUser, currentUser);
                 Toast.makeText(FollowRequest.this, "Rejected: " + fromUser, Toast.LENGTH_SHORT).show();
-//                reloadRequests();
                 removeRequest(fromUser);
             }
         });
@@ -77,7 +81,7 @@ public class FollowRequest extends AppCompatActivity {
         // Initial load
         reloadRequests();
 
-        // set nav up
+        // set up bottom navbar.
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
         bottomNavigationView.setSelectedItemId(R.id.nav_profile);
 
@@ -108,11 +112,15 @@ public class FollowRequest extends AppCompatActivity {
             return false;
         });
     }
-
+    /**
+     * Handles toolbar back navigation (home button).
+     *
+     * @param item The selected menu item.
+     * @return true if handled, otherwise calls super.
+     */
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            // go back
             Intent intent = new Intent(this, ProfileActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // clear top Activity
             startActivity(intent);
@@ -122,7 +130,12 @@ public class FollowRequest extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-
+    /**
+     * Removes a follow request from the list,
+     * and updates the adapter.
+     *
+     * @param fromUser The username of the requester to remove.
+     */
     private void removeRequest(String fromUser) {
         for (int i = 0; i < pendingRequests.size(); i++) {
             if (pendingRequests.get(i).fromUser.equals(fromUser)) {
@@ -133,11 +146,19 @@ public class FollowRequest extends AppCompatActivity {
         }
     }
 
-
+    /**
+     * Checks if the current activity is the specified activity class.
+     *
+     * @param activityClass The activity class to compare against.
+     * @return True if the current activity is an instance of the provided class.
+     */
     private boolean isCurrentActivity(Class<?> activityClass) {
         return this.getClass().equals(activityClass);
     }
 
+    /**
+     * reloads all pending follow requests for the currenly logged-in user.
+     */
     private void reloadRequests() {
         pendingRequests.clear();
         String currentUser = getCurrentUsername();
@@ -146,7 +167,6 @@ public class FollowRequest extends AppCompatActivity {
             return;
         }
 
-        // Find all PENDING requests "toUser = currentUser"
         db.collection("FollowRequests")
                 .whereEqualTo("toUser", currentUser)
                 .whereEqualTo("status", "PENDING")
@@ -169,12 +189,21 @@ public class FollowRequest extends AppCompatActivity {
                         Toast.makeText(this, "Error loading requests: " + e.getMessage(), Toast.LENGTH_SHORT).show()
                 );
     }
-
+    /**
+     * Return the name of the logged-in user from SharedPreferences.
+     * @return The username of the current user.
+     */
     private String getCurrentUsername() {
         SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
         return prefs.getString("username", null);
     }
-
+    /**
+     * Handles manual bottom navigation item selection. This method is unused in this class
+     * but available for external call if needed.
+     *
+     * @param item The selected bottom navigation menu item.
+     * @return true if the selection is handled.
+     */
     private boolean onBottomNavItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.nav_followees_moods) {
