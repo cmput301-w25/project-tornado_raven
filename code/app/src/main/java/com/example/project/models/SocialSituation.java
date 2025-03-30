@@ -1,4 +1,4 @@
-package com.example.project;
+package com.example.project.models;
 /**
  * Enum representing different social situations that a person might experience during a mood event.
  * This enum is used to categorize the environment in which the mood event occurs.

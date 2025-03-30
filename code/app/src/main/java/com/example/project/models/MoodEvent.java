@@ -1,6 +1,4 @@
-package com.example.project;
-
-import android.net.Uri;
+package com.example.project.models;
 
 import java.io.Serializable;
 import java.util.Date;
