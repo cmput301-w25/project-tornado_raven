@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -38,8 +39,10 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -49,10 +52,14 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
     private FusedLocationProviderClient fusedLocationClient;
     private FirebaseFirestore db;
     private ToggleButton toggleFollowees;
+    private Button btnFilterNearbyFollowees;
+
+    private static final double MAX_DISTANCE_KM = 5.0;
     private String currentUser;
     private Button btnFilterEmotion;
     private Button btnFilterDate;
     private Button btnClearFilters;
+    private LatLng currentUserLocation;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1000;
 
     private List<MoodEvent> allMoodEvents = new ArrayList<>();
@@ -80,11 +87,13 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
         btnFilterEmotion = findViewById(R.id.btnFilterByEmotion);
         btnClearFilters = findViewById(R.id.btnClearFilters);
         toggleFollowees = findViewById(R.id.toggleViewMode);
+        btnFilterNearbyFollowees = findViewById(R.id.btnNearbyFollowees);
 
         // Set click listeners
         btnFilterDate.setOnClickListener(v -> filterByLastWeek());
         btnFilterEmotion.setOnClickListener(v -> showMoodFilterDialog());
         btnClearFilters.setOnClickListener(v -> clearFilters());
+        btnFilterNearbyFollowees.setOnClickListener(v -> showNearbyFolloweesRecentMoods());
         loadFolloweeNames();
         toggleFollowees.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
@@ -132,6 +141,7 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
             return false;
         });
     }
+
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -259,11 +269,7 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
                         return;
                     }
                     mMap.setMyLocationEnabled(true);
-                    getLastKnownLocation();
-                }
-            }
-        }
-    }
+                    getLastKnownLocation();}}}}
 
     // Filter methods
     private void showMoodFilterDialog() {
@@ -390,6 +396,86 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
                         toggleFollowees.setChecked(false);
                         loadMoodEventsWithLocations();
                     }
+                });
+    }
+
+
+    private void showNearbyFolloweesRecentMoods() {
+        if (ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            checkLocationPermission();
+            return;
+        }
+
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, location -> {
+                    if (location == null) {
+                        Toast.makeText(this, "Could not get current location", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    currentUserLocation = new LatLng(location.getLatitude(), location.getLongitude());
+
+                    // Reuse your existing loadAllFolloweesMoods but with distance check
+                    if (followeeNames.isEmpty()) {
+                        Toast.makeText(this, "You're not following anyone yet", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    db.collection("MoodEvents")
+                            .whereNotEqualTo("location", null)
+                            .get()
+                            .addOnCompleteListener(task -> {
+                                if (task.isSuccessful()) {
+                                    mMap.clear();
+                                    Map<String, MoodEvent> latestEvents = new HashMap<>();
+
+                                    for (QueryDocumentSnapshot document : task.getResult()) {
+                                        MoodEvent moodEvent = document.toObject(MoodEvent.class);
+                                        if (moodEvent.getLocation() != null &&
+                                                !moodEvent.getLocation().isEmpty() &&
+                                                followeeNames.contains(moodEvent.getAuthor()) &&
+                                                !Objects.equals(moodEvent.getPrivacyLevel(), "PRIVATE")) {
+
+                                            try {
+                                                String[] latLng = moodEvent.getLocation().split(",");
+                                                LatLng eventLocation = new LatLng(
+                                                        Double.parseDouble(latLng[0].trim()),
+                                                        Double.parseDouble(latLng[1].trim()));
+
+                                                float[] results = new float[1];
+                                                Location.distanceBetween(
+                                                        currentUserLocation.latitude, currentUserLocation.longitude,
+                                                        eventLocation.latitude, eventLocation.longitude,
+                                                        results);
+
+                                                if ((results[0] / 1000) <= MAX_DISTANCE_KM) {
+                                                    // only the most recent event per followee
+                                                    MoodEvent existing = latestEvents.get(moodEvent.getAuthor());
+                                                    if (existing == null || moodEvent.getDate().after(existing.getDate())) {
+                                                        latestEvents.put(moodEvent.getAuthor(), moodEvent);
+                                                    }
+                                                }
+                                            } catch (Exception e) {
+                                                Log.e("MapActivity", "Error processing location", e);
+                                            }
+                                        }
+                                    }
+
+                                    for (MoodEvent event : latestEvents.values()) {
+                                        addMarkerForMoodEvent(event, true);
+                                    }
+
+                                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                                            currentUserLocation, 12));
+
+                                    Toast.makeText(this,
+                                            "Showing " + latestEvents.size() + " nearby followees' recent moods",
+                                            Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(this, "Error loading followees' moods", Toast.LENGTH_SHORT).show();
+                                }
+                            });
                 });
     }
 
