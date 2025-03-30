@@ -34,11 +34,18 @@ import java.util.List;
 public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.ViewHolder> {
 
     private List<MoodEvent> moodHistoryList;
-    private List<MoodEvent> originalList; // Stores full list for filtering
+    private List<MoodEvent> originalList;
 
     private boolean isOwnProfile;
 
     private Context context;
+
+    /**
+     *
+     * @param context The context where tha adapter is used.
+     * @param moodHistoryList The list of mood events to display.
+     * @param isOwnProfile Flag indicating whether the displayed moods belong to the logged-in user.
+     */
     public MoodHistoryAdapter(Context context, List<MoodEvent> moodHistoryList, boolean isOwnProfile) {
         this.context = context;
         this.moodHistoryList = new ArrayList<>(moodHistoryList);
@@ -47,6 +54,14 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
     }
 
 
+    /**
+     *
+     * @param parent The ViewGroup into which the new View will be added after it is bound to
+     *               an adapter position.
+     * @param viewType The view type of the new View.
+     *
+     * @return A new viewHolder for the mood item.
+     */
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -55,6 +70,12 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         return new ViewHolder(view);
     }
 
+    /**
+     *
+     * @param holder The ViewHolder which should be updated to represent the contents of the
+     *        item at the given position in the data set.
+     * @param position The position of the item within the adapter's data set.
+     */
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         MoodEvent moodEvent = moodHistoryList.get(position);
@@ -90,7 +111,6 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
             Toast.makeText(context, "You can only edit your own moods.", Toast.LENGTH_SHORT).show();
         }
 
-        // Set up the button to show detailed mood event information in a dialog
         holder.detailsButton.setOnClickListener(v -> showDetailsDialog(moodEvent));
 
         String photoUri = moodEvent.getPhotoUrl();
@@ -105,6 +125,10 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
 
     }
 
+    /**
+     *
+     * @return The size of the mood event list.
+     */
     @Override
     public int getItemCount() {
         return moodHistoryList.size();
@@ -161,8 +185,8 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
      * @param newMood The new MoodEvent to be added.
      */
     public void addMood(MoodEvent newMood) {
-        moodHistoryList.add(0, newMood); // Add new mood at the top
-        notifyItemInserted(0); // Notify RecyclerView to refresh UI
+        moodHistoryList.add(0, newMood);
+        notifyItemInserted(0);
     }
 
     /**

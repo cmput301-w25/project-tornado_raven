@@ -28,7 +28,8 @@ import java.util.List;
 
 /**
  * Displays up to three most recent moods of each user that the current user follows,
- * reading from the "Follows" collection (where 'followerUsername' == current user).
+ * from each user the current user is following.
+ * It supports filtering moods by emotion, reason keyword, and date.
  */
 public class FolloweesMoodsActivity extends AppCompatActivity {
 
@@ -41,7 +42,12 @@ public class FolloweesMoodsActivity extends AppCompatActivity {
 
 
     private FirebaseFirestore db;
-
+    /**
+     * Initializes the activity, sets up UI components and listeners,
+     * and loads followed users' mood data from Firestore.
+     *
+     * @param savedInstanceState Previously saved instance state, if any.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,7 +58,6 @@ public class FolloweesMoodsActivity extends AppCompatActivity {
         recyclerFollowees = findViewById(R.id.recyclerFollowees);
         recyclerFollowees.setLayoutManager(new LinearLayoutManager(this));
 
-        //followeesMoodsAdapter = new FolloweesMoodsAdapter(userMoodItems);
         followeesMoodsAdapter = new FolloweesMoodsAdapter(FolloweesMoodsActivity.this, userMoodItems);
         recyclerFollowees.setAdapter(followeesMoodsAdapter);
 
@@ -61,21 +66,21 @@ public class FolloweesMoodsActivity extends AppCompatActivity {
         btnFilterByKeyword = findViewById(R.id.btnFilterByKeywordFlw);
         btnClearFilters    = findViewById(R.id.btnClearFiltersFlw);
 
-// Set listeners
         btnShowLastWeek.setOnClickListener(v -> filterByLastWeek());
         btnFilterByMood.setOnClickListener(v -> showMoodFilterDialog());
         btnFilterByKeyword.setOnClickListener(v -> showKeywordFilterDialog());
         btnClearFilters.setOnClickListener(v -> clearFilters());
 
 
-        // Load from the "Follows" collection
         loadFolloweesMoods();
 
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
         bottomNav.setSelectedItemId(R.id.nav_followees_moods);
         bottomNav.setOnItemSelectedListener(this::onBottomNavItemSelected);
     }
-
+    /**
+     * Filters the displayed moods to show only those from the last 7 days.
+     */
     private void filterByLastWeek() {
         userMoodItems.clear();
         long oneWeekAgo = System.currentTimeMillis() - 7L * 24 * 60 * 60 * 1000;
@@ -89,6 +94,11 @@ public class FolloweesMoodsActivity extends AppCompatActivity {
         Toast.makeText(this, "Filtered: last week", Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Filters the moods by the selected emotion.
+     *
+     * @param selectedEmotion The emotion to filter by.
+     */
     private void filterByMood(Emotion selectedEmotion) {
         userMoodItems.clear();
         for (FolloweesMoodsAdapter.UserMoodItem item : originalUserMoodItems) {
@@ -100,6 +110,10 @@ public class FolloweesMoodsActivity extends AppCompatActivity {
         Toast.makeText(this, "Filtered by mood: " + selectedEmotion, Toast.LENGTH_SHORT).show();
     }
 
+
+    /**
+     * Displays a dialog with mood options to filter moods by emotion.
+     */
     private void showMoodFilterDialog() {
         final String[] moods = {"ANGER", "CONFUSION", "DISGUST", "FEAR", "HAPPINESS", "SADNESS", "SHAME", "SURPRISE", "CLEAR FILTER"};
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -115,6 +129,9 @@ public class FolloweesMoodsActivity extends AppCompatActivity {
         builder.create().show();
     }
 
+    /**
+     * Displays a dialog prompting the user to input a keyword for filtering moods by reason.
+     */
     private void showKeywordFilterDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Enter keyword for reason");
@@ -135,6 +152,12 @@ public class FolloweesMoodsActivity extends AppCompatActivity {
         builder.show();
     }
 
+
+    /**
+     * Filters the moods to show only those whose reason contains the specified keyword.
+     *
+     * @param keyword The keyword to search for.
+     */
     private void filterByKeyword(String keyword) {
         userMoodItems.clear();
         String lowerKeyword = keyword.toLowerCase();
@@ -148,6 +171,9 @@ public class FolloweesMoodsActivity extends AppCompatActivity {
         Toast.makeText(this, "Filtered by keyword: " + keyword, Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Clears all active filters and resets the mood list to original.
+     */
     private void clearFilters() {
         userMoodItems.clear();
         userMoodItems.addAll(originalUserMoodItems);
@@ -181,7 +207,6 @@ public class FolloweesMoodsActivity extends AppCompatActivity {
                             String followedUser = snap.getDocuments().get(i).getString("followedUsername");
                             Toast.makeText(this,followedUser,Toast.LENGTH_SHORT);
                             if (followedUser != null) {
-                                // Now load that user's last 3 moods
                                 db.collection("MoodEvents")
                                         .whereEqualTo("author", followedUser)
                                         .whereIn("privacyLevel", Arrays.asList("ALL_USERS", "FOLLOWERS_ONLY"))
@@ -216,6 +241,13 @@ public class FolloweesMoodsActivity extends AppCompatActivity {
                 );
     }
 
+
+    /**
+     * Handles navigation from the bottom navigation bar.
+     *
+     * @param item The selected navigation item.
+     * @return true if the item was handled.
+     */
     private boolean onBottomNavItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.nav_common_space) {

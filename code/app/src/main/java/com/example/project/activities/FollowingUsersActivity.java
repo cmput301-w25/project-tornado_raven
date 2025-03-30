@@ -24,6 +24,11 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * Activity for displaying the list of users that the logged in user is following.
+ * Users are retrieved from the "Follows" collection in Firestore.
+ */
 public class FollowingUsersActivity extends AppCompatActivity {
 
     private RecyclerView recyclerFollowees;
@@ -36,17 +41,12 @@ public class FollowingUsersActivity extends AppCompatActivity {
 
 
 
-//    // dummydata
-//    private List<String> mockFollowees() {
-//        List<String> users = new ArrayList<>();
-//        users.add("Alice");
-//        users.add("Bob");
-//        users.add("Charlie");
-//        users.add("Diana");
-//        users.add("Edward");
-//        return users;
-//    }
-
+    /**
+     * Called when the activity is created.
+     * Initializes views, sets up the RecyclerView and loads followees from Firestore.
+     *
+     * @param savedInstanceState The saved instance state of the activity.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,12 +82,17 @@ public class FollowingUsersActivity extends AppCompatActivity {
         loadAllUsersForSearch();
 
 
-        // Bottom nav setup
+        // Bottom navbar setup
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
         bottomNav.setSelectedItemId(R.id.nav_following_users);
         bottomNav.setOnItemSelectedListener(this::onBottomNavItemSelected);
     }
 
+
+    /**
+     * Loads the list of users that the current user is following from Firestore.
+     * Updates the RecyclerView adapter with the data.
+     */
     private void loadAllUsersForSearch() {
         db.collection("users")
                 .get()
@@ -139,7 +144,11 @@ public class FollowingUsersActivity extends AppCompatActivity {
 
 
     /**
-     * Bottom navigation
+     * Handles bottom navigation menu item selection.
+     * Navigates to the corresponding activity based on selected item.
+     *
+     * @param item The selected menu item.
+     * @return True if the item was handled, false otherwise.
      */
     private boolean onBottomNavItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();

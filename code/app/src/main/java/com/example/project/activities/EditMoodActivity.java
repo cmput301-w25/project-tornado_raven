@@ -39,6 +39,7 @@ import java.io.InputStream;
 /**
  * Activity for editing an existing mood event.
  * Allows users to modify mood details, delete the event, or save changes.
+ * Users can also view the associated photo in full screen and delete or save changes to the mood.
  */
 public class EditMoodActivity extends AppCompatActivity {
 
@@ -54,7 +55,8 @@ public class EditMoodActivity extends AppCompatActivity {
     private FirebaseFirestore db;
 
     /**
-     * Called when the activity is first created. Initializes UI components and sets up event listeners.
+     * Called when the activity is first created.
+     * Initializes UI components and sets up event listeners.
      *
      * @param savedInstanceState If the activity is being reinitialized after previously being shut down,
      *                           this Bundle contains the data it most recently supplied. Otherwise, it is null.
@@ -64,7 +66,6 @@ public class EditMoodActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.editingmood);
 
-        // Initialize UI components
         privacySpinner = findViewById(R.id.privacySpinner);
         moodSpinner = findViewById(R.id.moodSpinner);
         reasonEditText = findViewById(R.id.reasonEditText);
@@ -82,7 +83,6 @@ public class EditMoodActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
 
         setupSpinners();
-        //registerImagePicker();
 
         // Retrieve and initialize mood data
         Intent intent = getIntent();
@@ -96,7 +96,6 @@ public class EditMoodActivity extends AppCompatActivity {
         backButton.setOnClickListener(v -> finish());
         deleteButton.setOnClickListener(v -> deleteMood());
         saveButton.setOnClickListener(v -> saveChanges());
-        //changePhotoBtn.setOnClickListener(v -> openImagePicker());
     }
 
     /**
@@ -137,7 +136,6 @@ public class EditMoodActivity extends AppCompatActivity {
         TextView photoUrlText = findViewById(R.id.photoUrlText);
 
         reasonEditText.setText(mood.getReason());
-        //locationEditText.setText(mood.getLocation());
 
         String[] emotions = getResources().getStringArray(R.array.choices);
         for (int i = 0; i < emotions.length; i++) {
@@ -153,8 +151,6 @@ public class EditMoodActivity extends AppCompatActivity {
 
         String moodPrivacy = mood.getPrivacyLevel();
         if (moodPrivacy != null && !moodPrivacy.isEmpty()) {
-            // Match it by comparing with R.array.privacy_values internally:
-            // Notice we use privacy level to display toi users and privacy values to store internally.
             String[] privacyValues = getResources().getStringArray(R.array.privacy_values);
             for (int i = 0; i < privacyValues.length; i++) {
                 if (privacyValues[i].equalsIgnoreCase(moodPrivacy)) {
@@ -177,11 +173,17 @@ public class EditMoodActivity extends AppCompatActivity {
         photoUrlText.setText("Image URL: " + mood.getPhotoUrl());
 
     }
+
+    /**
+     * Opens a dialog displaying the selected image in full screen.
+     *
+     * @param context  The context to use for displaying the dialog.
+     * @param imageUrl The URL of the image to display.
+     */
     private void showFullImageDialog(Context context, String imageUrl) {
         final Dialog dialog = new Dialog(context);
         dialog.setContentView(R.layout.fullscreeen_image);
 
-        // Make background transparent
         dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
 
         ImageView imageView = dialog.findViewById(R.id.enlargedImageView);
@@ -190,7 +192,6 @@ public class EditMoodActivity extends AppCompatActivity {
                 .load(imageUrl)
                 .into(imageView);
 
-        // Dismiss dialog when clicking outside or on the image
         dialog.setCanceledOnTouchOutside(true);
         imageView.setOnClickListener(v -> dialog.dismiss());
 
@@ -202,11 +203,8 @@ public class EditMoodActivity extends AppCompatActivity {
      */
     private void saveChanges() {
         String trigger = reasonEditText.getText().toString().trim();
-        //String location = locationEditText.getText().toString().trim();
 
-        // Update mood event data
         currentMood.setReason(trigger);
-        //currentMood.setLocation(location);
 
         String selectedEmotion = moodSpinner.getSelectedItem().toString().toUpperCase();
         currentMood.setEmotion(Emotion.valueOf(selectedEmotion));
@@ -223,14 +221,6 @@ public class EditMoodActivity extends AppCompatActivity {
         resultIntent.putExtra("updatedMood", currentMood);
         setResult(RESULT_OK, resultIntent);
         finish();
-        /*
-        if (selectedImageUri != null) {
-            Bitmap compressed = compressImage(selectedImageUri);
-            if (compressed != null) {
-                Uri compressedUri = saveCompressedImage(compressed);
-                currentMood.setPhotoUri(compressedUri.toString());
-            }
-        }*/
 
         db.collection("MoodEvents")
                 .whereEqualTo("id", currentMood.getId())
@@ -261,48 +251,5 @@ public class EditMoodActivity extends AppCompatActivity {
         setResult(RESULT_OK, resultIntent);
         finish();
     }
-    /*private void registerImagePicker() {
-        imagePickerLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                        selectedImageUri = result.getData().getData();
-                        photoImageView.setImageURI(selectedImageUri);
-                    } else {
-                        Toast.makeText(EditMoodActivity.this, "No image selected", Toast.LENGTH_SHORT).show();
-                    }
-                }
-        );
-    }
 
-    private void openImagePicker() {
-        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        imagePickerLauncher.launch(intent);
-    }
-
-    private Bitmap compressImage(Uri imageUri) {
-        try (InputStream inputStream = getContentResolver().openInputStream(imageUri)) {
-            Bitmap original = BitmapFactory.decodeStream(inputStream);
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            original.compress(Bitmap.CompressFormat.JPEG, 50, outputStream);
-            byte[] compressedBytes = outputStream.toByteArray();
-            return BitmapFactory.decodeByteArray(compressedBytes, 0, compressedBytes.length);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    private Uri saveCompressedImage(Bitmap compressedBitmap) {
-        try {
-            File file = new File(getFilesDir(), "edited_mood_photo_" + System.currentTimeMillis() + ".jpg");
-            FileOutputStream out = new FileOutputStream(file);
-            compressedBitmap.compress(Bitmap.CompressFormat.JPEG, 50, out);
-            out.close();
-            return Uri.fromFile(file);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }*/
 }

@@ -35,21 +35,36 @@ import java.util.Locale;
 import java.util.Set;
 
 /**
- * Updated to handle "requested" state for authors in 'pendingAuthors'.
+ * Adapter for displaying mood events in the "Common Space" feed.
+ * Handles dynamic UI behavior based on follow status, follow request state, and the current user.
+ * Users can view details, request to follow, view/post comments, or edit their own moods.
  */
 public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.ViewHolder> {
 
+    /**
+     * interface to handle follow request actions.
+     */
     public interface OnRequestFollowListener {
-        // We'll pass the MoodEvent + the button reference, so you can do logic
+
+        /**
+         *
+         * @param mood the mood event associated with he author to follow.
+         * @param button the follow request btn.
+         */
         void onRequestFollow(MoodEvent mood, Button button);
     }
     private String currentUsername;
     private List<MoodEvent> moodList;
     private OnRequestFollowListener followListener;
-    // We'll store a set of authors for which a follow request is already sent
     private Set<String> pendingAuthors;
     private Set<String> followedAuthors = new HashSet<>();
 
+    /**
+     *
+     * @param moodList List of mood events to display.
+     * @param followListener Listener to handle follow request actions.
+     * @param pendingAuthors  Set of authors for whom follow requests are already pending.
+     */
     public CommonSpaceAdapter(List<MoodEvent> moodList,
                               OnRequestFollowListener followListener,
                               Set<String> pendingAuthors) {
@@ -58,6 +73,11 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
         this.pendingAuthors = pendingAuthors;
     }
 
+    /**
+     *  Sets the username of the currently logged-in user.
+     *
+     * @param username the current user's username.
+     */
     public void setCurrentUsername(String username) {
         this.currentUsername = username;
     }
@@ -70,6 +90,12 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
         return new ViewHolder(v);
     }
 
+    /**
+     *
+     * @param holder The ViewHolder which should be updated to represent the contents of the
+     *        item at the given position in the data set.
+     * @param position The position of the item within the adapter's data set.
+     */
     @Override
     public void onBindViewHolder(@NonNull CommonSpaceAdapter.ViewHolder holder, int position) {
         MoodEvent mood = moodList.get(position);
@@ -82,7 +108,6 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
         Drawable icon = EmotionData.getEmotionIcon(holder.itemView.getContext(), mood.getEmotion());
         holder.ivEmoticon.setImageDrawable(icon);
 
-        //holder.tvReason.setText(mood.getReason() != null ? mood.getReason() : "");
         String r = mood.getReason();
         if (r == null || r.trim().isEmpty()) {
             r = "null";
@@ -98,13 +123,11 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
             location = "null";
         }
         holder.tvLocation.setText("Location: " + location);
-        // goto default button situation firstly
         holder.btnFollow.setVisibility(View.VISIBLE);
         holder.btnFollow.setEnabled(true);
         holder.btnFollow.setText("Request Follow");
-        holder.btnFollow.setOnClickListener(null); // clear old listener
+        holder.btnFollow.setOnClickListener(null);
 
-        // button situation
         if (author == null || author.equals(currentUsername)) {
             holder.btnFollow.setVisibility(View.GONE);
         } else if (followedAuthors.contains(author)) {
@@ -117,7 +140,6 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
             holder.btnFollow.setText("Requested");
             holder.btnFollow.setEnabled(false);
         } else {
-            // can send request
             holder.btnFollow.setText("Request Follow");
             holder.btnFollow.setEnabled(true);
             holder.btnFollow.setOnClickListener(v -> {
@@ -126,9 +148,7 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
                 }
             });
         }
-        // details or comments if click on item
         holder.itemView.setOnClickListener(v -> showDetailsDialog(v.getContext(), mood));//details
-        // view/post comments
         holder.itemView.setOnLongClickListener(v -> {
             if (author != null && author.equals(currentUsername)) {
                 Intent intent = new Intent(holder.itemView.getContext(), EditMoodActivity.class);
@@ -151,11 +171,17 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
 
 
     }
+
+    /**
+     * Displays the mood's photo in full-screen using a custom dialog layout.
+     *
+     * @param context context from current activity.
+     * @param imageUrl URL of the image to display.
+     */
     private void showFullImageDialog(Context context, String imageUrl) {
         final Dialog dialog = new Dialog(context);
         dialog.setContentView(R.layout.fullscreeen_image);
 
-        // Make background transparent
         dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
 
         ImageView imageView = dialog.findViewById(R.id.enlargedImageView);
@@ -164,7 +190,6 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
                 .load(imageUrl)
                 .into(imageView);
 
-        // Dismiss dialog when clicking outside or on the image
         dialog.setCanceledOnTouchOutside(true);
         imageView.setOnClickListener(v -> dialog.dismiss());
 
@@ -172,7 +197,11 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
     }
 
 
-
+    /**
+     *
+     * @param context Context to launch dialog and activity.
+     * @param moodEvent  the mood event whose details to display.
+     */
     private void showDetailsDialog(Context context, MoodEvent moodEvent) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Mood Details");
@@ -181,11 +210,9 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
         StringBuilder message = new StringBuilder();
         message.append("Emotion: ").append(moodEvent.getEmotion().toString()).append("\n")
                 .append("Date: ").append(moodEvent.getDate()).append("\n")
-                //.append("Reason: ").append(moodEvent.getReason()).append("\n")
                 .append("Reason: ")
                 .append(moodEvent.getReason() != null && !moodEvent.getReason().isEmpty() ? moodEvent.getReason() : "null")
                 .append("\n");
-                //.append("Location: ").append(moodEvent.getLocation()).append("\n")
         if (location == null || location.trim().isEmpty()) {
             message.append("Location: null\n");
         } else {
@@ -205,21 +232,37 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
     }
 
 
+    /**
+     *
+     * @return total number of list items.
+     */
     @Override
     public int getItemCount() {
         return moodList.size();
     }
 
+    /**
+     *
+     * @param followedAuthors set the username that the current user follows.
+     */
     public void setFollowedAuthors(Set<String> followedAuthors) {
         this.followedAuthors = followedAuthors;
     }
 
 
+    /**
+     * ViewHolder class for each mood item view.
+     */
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvEmotion, tvDate, tvReason, tvSocial,tvLocation;
         ImageView ivEmoticon, ivPostedImage;
         Button btnFollow;
 
+
+        /**
+         *
+         * @param itemView The item layout view.
+         */
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvEmotion  = itemView.findViewById(R.id.emotion);
@@ -229,7 +272,6 @@ public class CommonSpaceAdapter extends RecyclerView.Adapter<CommonSpaceAdapter.
             ivEmoticon = itemView.findViewById(R.id.emoticon);
             tvLocation=itemView.findViewById(R.id.location);
             ivPostedImage=itemView.findViewById(R.id.imageView);
-            // Reuse the existing button ID or add a new one
             btnFollow = itemView.findViewById(R.id.btnDetails);
         }
     }

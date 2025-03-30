@@ -46,6 +46,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+
+/**
+ * Activity that displays a map with markers representing mood events.
+ * Supports filtering by emotion, date, location proximity, and followees.
+ */
 public class mood_mapActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
@@ -66,6 +71,11 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
     private List<MoodEvent> filteredMoodEvents = new ArrayList<>();
     private Set<String> followeeNames = new HashSet<>();
 
+
+    /**
+     *
+     * @param savedInstanceState The saved instance state.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -110,7 +120,8 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
         }
 
         checkLocationPermission();
-        // 6) Setup bottom navigation
+
+        //set up bottom navbar.
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
         bottomNavigationView.setSelectedItemId(R.id.nav_mood_map);
         bottomNavigationView.setOnItemSelectedListener(item -> {
@@ -143,6 +154,10 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
     }
 
 
+    /**
+     * called when the google map is ready.
+     * @param  googleMap The googleMap instance.
+     */
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -157,6 +172,9 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
         loadMoodEventsWithLocations();
     }
 
+    /**
+     * Loads all mood events created by the current user that include location data.
+     */
     private void loadMoodEventsWithLocations() {
         db.collection("MoodEvents")
                 .whereNotEqualTo("location", null)
@@ -173,7 +191,6 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
                             }
                         }
 
-                        // Initially show all mood events
                         filteredMoodEvents.addAll(allMoodEvents);
                         updateMapMarkers();
 
@@ -186,16 +203,22 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
                 });
     }
 
-    private void updateMapMarkers() {
-        // Clear all existing markers
-        mMap.clear();
 
-        // Add markers for filtered mood events
+    /**
+     * add markers to the map based on filteredMoodEvents.
+     */
+    private void updateMapMarkers() {
+        mMap.clear();
         for (MoodEvent moodEvent : filteredMoodEvents) {
             addMarkerForMoodEvent(moodEvent);
         }
     }
 
+
+    /**
+     *
+     * @param moodEvent the mood event to represent.
+     */
     private void addMarkerForMoodEvent(MoodEvent moodEvent) {
         try {
             String[] latLng = moodEvent.getLocation().split(",");
@@ -221,6 +244,8 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
         return this.getClass().equals(activityClass);
     }
 
+
+
     private BitmapDescriptor getCustomMarkerIcon(Emotion emotion) {
         try {
             Drawable vectorDrawable = EmotionData.getEmotionIcon(this, emotion);
@@ -236,6 +261,10 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
         }
     }
 
+
+    /**
+     * Gets the user's last known location and moves the camera there.
+     */
     private void getLastKnownLocation() {
         if (ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -249,6 +278,10 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
         }
     }
 
+
+    /**
+     * Requests location permission if not already granted.
+     */
     private void checkLocationPermission() {
         if (ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -258,6 +291,17 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
         }
     }
 
+
+    /**
+     * Callback for location permission result.
+     * @param requestCode The request code passed in {@link #requestPermissions(
+     * android.app.Activity, String[], int)}
+     * @param permissions The requested permissions. Never null.
+     * @param grantResults The grant results for the corresponding permissions
+     *     which is either {@link android.content.pm.PackageManager#PERMISSION_GRANTED}
+     *     or {@link android.content.pm.PackageManager#PERMISSION_DENIED}. Never null.
+     *
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -271,8 +315,9 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
                     mMap.setMyLocationEnabled(true);
                     getLastKnownLocation();}}}}
 
-    // Filter methods
-    private void showMoodFilterDialog() {
+    /**
+     * display mood options dialog.
+     */    private void showMoodFilterDialog() {
         final String[] moods = {"ANGER","CONFUSION","DISGUST","FEAR","HAPPINESS","SADNESS","SHAME","SURPRISE","CLEAR FILTER"};
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Select Mood to Filter")
@@ -287,6 +332,10 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
         builder.create().show();
     }
 
+    /**
+     *
+     * @param selectedMood filter list on the basis of selected mood.
+     */
     private void filterByMood(Emotion selectedMood) {
         filteredMoodEvents.clear();
         for (MoodEvent mood : allMoodEvents) {
@@ -298,6 +347,9 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
         Toast.makeText(this, "Filtered by " + selectedMood.name(), Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Filters mood events to only those from the last week.
+     */
     private void filterByLastWeek() {
         filteredMoodEvents.clear();
         long oneWeekAgo = System.currentTimeMillis() - (7L * 24 * 60 * 60 * 1000);
@@ -311,12 +363,19 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
         Toast.makeText(this, "Showing last week's moods", Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * clear filter and display all moods.
+     */
     private void clearFilters() {
         filteredMoodEvents.clear();
         filteredMoodEvents.addAll(allMoodEvents);
         updateMapMarkers();
         Toast.makeText(this, "Filters cleared", Toast.LENGTH_SHORT).show();
     }
+
+    /**
+     * Loads the usernames of all users that the current user is following.
+     */
     private void loadFolloweeNames() {
         db.collection("Follows")
                 .whereEqualTo("followerUsername", currentUser)
@@ -335,6 +394,8 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
                     Log.e("MapActivity", "Error loading followees", e);
                 });
     }
+
+
     private void addMarkerForMoodEvent(MoodEvent moodEvent, boolean isFollowee) {
         try {
             String[] latLng = moodEvent.getLocation().split(",");
@@ -357,6 +418,10 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
             Log.e("MapActivity", "Error adding marker", e);
         }
     }
+
+    /**
+     * load moods of the users the current user follows.
+     */
     private void loadAllFolloweesMoods() {
         if (followeeNames.isEmpty()) {
             Toast.makeText(this, "You're not following anyone yet", Toast.LENGTH_SHORT).show();
@@ -400,6 +465,10 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
     }
 
 
+    /**
+     *
+     * Shows recent moods from followees who are nearby (within 5 km).
+     */
     private void showNearbyFolloweesRecentMoods() {
         if (ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {

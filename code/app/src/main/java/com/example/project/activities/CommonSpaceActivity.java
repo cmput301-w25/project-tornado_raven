@@ -40,6 +40,7 @@ import java.util.Set;
  *  - advanced filtering (mood, reason, last week)
  *  - text-based author search
  *  - "Request Follow" button logic
+ *  - Swipe-to-refresh support.
  */
 public class CommonSpaceActivity extends AppCompatActivity {
 
@@ -50,24 +51,26 @@ public class CommonSpaceActivity extends AppCompatActivity {
     private List<String> allUsernames;
     private List<MoodEvent> filteredMoods;
     private Set<String> pendingAuthors;
-    private Set<String> followedAuthors = new HashSet<>(); // the current following users of this user
+    private Set<String> followedAuthors = new HashSet<>();
 
-    // Filter buttons
     private Button btnShowLastWeek, btnFilterByMood, btnFilterByKeyword, btnClearFilters;
-    // Searching authors
     private AutoCompleteTextView editSearchUserName;
     private ActivityResultLauncher<Intent> addMoodLauncher;
 
-
+    /**
+     * Called when the activity is first created.
+     * Initializes UI components and sets up event listeners.
+     *
+     * @param savedInstanceState If the activity is being reinitialized after previously being shut down,
+     *                           this Bundle contains the data it most recently supplied. Otherwise, it is null.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_common_space);
 
-        // Firestore init
         db = FirebaseFirestore.getInstance();
 
-        // Initialize lists
         allMoods      = new ArrayList<>();
         filteredMoods = new ArrayList<>();
         pendingAuthors= new HashSet<>();
@@ -84,7 +87,7 @@ public class CommonSpaceActivity extends AppCompatActivity {
         SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
 
         swipeRefreshLayout.setOnRefreshListener(() -> {
-            loadAllMoodsFromFirestore(); // refresh
+            loadAllMoodsFromFirestore();
         });
 
 
@@ -102,15 +105,14 @@ public class CommonSpaceActivity extends AppCompatActivity {
                                 followedAuthors.add(followed);
                             }
                         }
-                        adapter.setFollowedAuthors(followedAuthors); // send this list to adapter
-                        adapter.notifyDataSetChanged(); // refresh
+                        adapter.setFollowedAuthors(followedAuthors);
+                        adapter.notifyDataSetChanged();
                     })
                     .addOnFailureListener(e -> {
                         Toast.makeText(this, "Failed to load followed users", Toast.LENGTH_SHORT).show();
                     });
         }
         if (currentUser1 != null) {
-            // get all pending following requests from me
             db.collection("FollowRequests")
                     .whereEqualTo("fromUser", currentUser1)
                     .whereEqualTo("status", "PENDING")
@@ -122,7 +124,7 @@ public class CommonSpaceActivity extends AppCompatActivity {
                                 pendingAuthors.add(toUser);
                             }
                         }
-                        adapter.notifyDataSetChanged(); // update adapter
+                        adapter.notifyDataSetChanged();
                     })
                     .addOnFailureListener(e -> {
                         Toast.makeText(this, "Failed to load pending requests", Toast.LENGTH_SHORT).show();
@@ -132,11 +134,9 @@ public class CommonSpaceActivity extends AppCompatActivity {
 
 
 
-        // Set up RecyclerView
         recyclerCommonSpace = findViewById(R.id.recyclerCommonSpace);
         recyclerCommonSpace.setLayoutManager(new LinearLayoutManager(this));
 
-        // Create adapter with "Request Follow" logic
         adapter = new CommonSpaceAdapter(
                 filteredMoods,
                 (mood, button) -> {
@@ -164,9 +164,7 @@ public class CommonSpaceActivity extends AppCompatActivity {
         adapter.setCurrentUsername(currentUser1);
         recyclerCommonSpace.setAdapter(adapter);
 
-        // Load all moods
         loadAllMoodsFromFirestore();
-        //Load all users form Firebase for searching
         loadAllUsersFromFirestore();
 
         // Set up bottom nav
@@ -174,7 +172,6 @@ public class CommonSpaceActivity extends AppCompatActivity {
         bottomNav.setSelectedItemId(R.id.nav_common_space);
         bottomNav.setOnItemSelectedListener(this::onBottomNavItemSelected);
 
-        // Filter Buttons
         btnShowLastWeek   = findViewById(R.id.btnShowLastWeek);
         btnFilterByMood   = findViewById(R.id.btnFilterByMood);
         btnFilterByKeyword= findViewById(R.id.btnFilterByKeyword);
@@ -185,21 +182,14 @@ public class CommonSpaceActivity extends AppCompatActivity {
         btnFilterByKeyword.setOnClickListener(v -> showReasonFilterDialog());
         btnClearFilters.setOnClickListener(v -> clearFilters());
 
-        // Text-based user search
         editSearchUserName = findViewById(R.id.editTextSearchUserName);
-        // Making sure we'll show suggestions after typing 1 character
         editSearchUserName.setThreshold(1);
 
-        //Implemented auto complete suggestion so that user can pick and select from the
-        //drop down list.
         editSearchUserName.setOnItemClickListener((parent, view, position, id) -> {
-            // User picked a username from the dropdown
             String pickedUser = (String) parent.getItemAtPosition(position);
             if (pickedUser != null && !pickedUser.isEmpty()) {
                 Toast.makeText(this, "Selected user: " + pickedUser,
                         Toast.LENGTH_SHORT).show();
-                // e.g., you can jump directly to their profile, or do something else
-                // For instance:
                 searchUserByUsername(pickedUser);
             }
         });
@@ -211,6 +201,11 @@ public class CommonSpaceActivity extends AppCompatActivity {
         });
 
     }
+
+    /**
+     * Deletes a mood document from Firestore based on its ID.
+     * @param moodId the ID of the mood to delete
+     */
     private void deleteMoodFromFirestore(String moodId) {
         db.collection("MoodEvents")
                 .whereEqualTo("id", moodId)
@@ -239,7 +234,7 @@ public class CommonSpaceActivity extends AppCompatActivity {
 
 
     /**
-     * ADDED: Load *all* user docs from Firestore into 'allUsernames', so we can auto-complete them.
+     * Loads all usernames from Firestore for auto-complete text suggestion.
      */
     private void loadAllUsersFromFirestore() {
         db.collection("users")
@@ -254,13 +249,11 @@ public class CommonSpaceActivity extends AppCompatActivity {
                             }
                         }
                     }
-                    // Provide a dropdown suggestion
                     ArrayAdapter<String> userAdapter = new ArrayAdapter<>(
                             this,
                             android.R.layout.simple_spinner_dropdown_item,
                             allUsernames
                     );
-                    // We set the adapter for the AutoComplete
                     editSearchUserName.setAdapter(userAdapter);
                 })
                 .addOnFailureListener(e ->
@@ -292,7 +285,7 @@ public class CommonSpaceActivity extends AppCompatActivity {
 
                     filteredMoods.addAll(allMoods);
                     adapter.notifyDataSetChanged();
-                    swipe.setRefreshing(false); // close swipe
+                    swipe.setRefreshing(false);
 
                     Toast.makeText(this, "Loaded " + allMoods.size() + " mood events", Toast.LENGTH_SHORT).show();
                 })
@@ -307,27 +300,28 @@ public class CommonSpaceActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == RESULT_OK && data != null) {
-            // delete
             if (data.hasExtra("deleteMoodId")) {
                 String deleteId = data.getStringExtra("deleteMoodId");
                 if (deleteId != null) {
                     deleteMoodFromFirestore(deleteId);
                 }
             }
-            // update mood
             else if (data.hasExtra("updatedMood")) {
                 MoodEvent updated = (MoodEvent) data.getSerializableExtra("updatedMood");
                 if (updated != null) {
                     updateMoodInList(updated);
                 }
             }
-            // add mood
             else {
                 loadAllMoodsFromFirestore();
             }
         }
     }
 
+    /**
+     * Removes a deleted mood from the list and updates the UI.
+     * @param deleteId ID of the mood to remove
+     */
     private void deleteMoodFromList(String deleteId) {
         boolean changed = false;
         for (int i = 0; i < allMoods.size(); i++) {
@@ -349,6 +343,10 @@ public class CommonSpaceActivity extends AppCompatActivity {
         if (changed) adapter.notifyDataSetChanged();
     }
 
+    /**
+     * Updates a mood from the filtered and all moods list.
+     * @param updated the updated MoodEvent
+     */
     private void updateMoodInList(MoodEvent updated) {
         boolean changed = false;
 
@@ -402,7 +400,10 @@ public class CommonSpaceActivity extends AppCompatActivity {
         return false;
     }
 
-
+    /**
+     * Filters mood events by the given author's name.
+     * @param query The partial or full username to search for
+     */
     private void filterByAuthor(String query) {
         filteredMoods.clear();
         String lowerQ = query.toLowerCase();
@@ -417,6 +418,9 @@ public class CommonSpaceActivity extends AppCompatActivity {
     }
 
 
+    /**
+     * Displays a dialog with mood options for filtering.
+     */
     private void showMoodFilterDialog() {
         final String[] moods = {"ANGER","CONFUSION","DISGUST","FEAR","HAPPINESS","SADNESS","SHAME","SURPRISE","CLEAR FILTER"};
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -432,7 +436,9 @@ public class CommonSpaceActivity extends AppCompatActivity {
         builder.create().show();
     }
 
-    // Filter by emotion
+    /**
+     *      Filter by emotion
+     */
     private void filterByMood(Emotion selectedMood) {
         filteredMoods.clear();
         for (MoodEvent mood : allMoods) {
@@ -444,7 +450,9 @@ public class CommonSpaceActivity extends AppCompatActivity {
         Toast.makeText(this, "Filtered by " + selectedMood.name(), Toast.LENGTH_SHORT).show();
     }
 
-
+    /**
+     * Displays a dialog to filter moods by a reason keyword.
+     */
     private void showReasonFilterDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Enter keyword to filter by reason");
@@ -465,7 +473,9 @@ public class CommonSpaceActivity extends AppCompatActivity {
     }
 
 
-    //Filter by keyword
+    /**
+     *     Filter by keyword
+     */
     private void filterByReasonKeyword(String keyword) {
         filteredMoods.clear();
         String lowerKeyword = keyword.toLowerCase();
@@ -485,7 +495,9 @@ public class CommonSpaceActivity extends AppCompatActivity {
     }
 
 
-    //Filter by last week
+    /**
+     *     Filter by last week
+     */
     private void filterByLastWeek() {
         filteredMoods.clear();
         long oneWeekAgo = System.currentTimeMillis() - (7L * 24 * 60 * 60 * 1000);
@@ -499,7 +511,10 @@ public class CommonSpaceActivity extends AppCompatActivity {
         Toast.makeText(this, "Showing last week's moods", Toast.LENGTH_SHORT).show();
     }
 
-    //Clear Filter
+
+    /**
+     *     Clear Filter
+     */
     private void clearFilters() {
         filteredMoods.clear();
         filteredMoods.addAll(allMoods);
@@ -511,6 +526,7 @@ public class CommonSpaceActivity extends AppCompatActivity {
     /**
      * If the user picks from the auto-complete or types something,
      * we can look them up in Firestore.
+     @param userSelected the username selected from auto-complete
      */
     private void searchUserByUsername(String userSelected) {
         db.collection("users")
@@ -521,7 +537,6 @@ public class CommonSpaceActivity extends AppCompatActivity {
                     String uName = doc.getString("username");
                     Toast.makeText(this, "Found user: " + uName, Toast.LENGTH_SHORT).show();
 
-                    // Pass the username field to the ProfileActivity
                     Intent intent = new Intent(this, ProfileActivity.class);
                     intent.putExtra("userName", uName);
                     startActivity(intent);

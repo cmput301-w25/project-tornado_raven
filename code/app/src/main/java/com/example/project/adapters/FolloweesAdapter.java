@@ -18,18 +18,38 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.List;
 
+
+/**
+ * adapter for displaying the users that the current user is following.
+ * provide functionality to view their profile and also unfollow them.
+ */
 public class FolloweesAdapter extends RecyclerView.Adapter<FolloweesAdapter.FolloweeViewHolder> {
 
     private List<String> followees;
     private Context context;
     private String currentUsername;
 
+    /**
+     *
+     * @param context The context where the adapter is used.
+     * @param followees The list of usernames the user is following.
+     * @param currentUsername The username of the currently logged-in user.
+     */
     public FolloweesAdapter(Context context, List<String> followees, String currentUsername) {
         this.context = context;
         this.followees = followees;
         this.currentUsername = currentUsername;
     }
 
+
+    /**
+     *
+     * @param parent The ViewGroup into which the new View will be added after it is bound to
+     *               an adapter position.
+     * @param viewType The view type of the new View.
+     *
+     * @return A new instance of FolloweeViewHolder.
+     */
     @NonNull
     @Override
     public FolloweeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -37,6 +57,13 @@ public class FolloweesAdapter extends RecyclerView.Adapter<FolloweesAdapter.Foll
                 .inflate(R.layout.item_following_user, parent, false);
         return new FolloweeViewHolder(view);
     }
+
+    /**
+     *
+     * @param holder The ViewHolder which should be updated to represent the contents of the
+     *        item at the given position in the data set.
+     * @param position The position of the item within the adapter's data set.
+     */
 
     @Override
     public void onBindViewHolder(@NonNull FolloweeViewHolder holder, int position) {
@@ -48,7 +75,7 @@ public class FolloweesAdapter extends RecyclerView.Adapter<FolloweesAdapter.Foll
             intent.putExtra("userName", followee);
             context.startActivity(intent);
         });
-
+        // unfollow btn logic.
         holder.btnUnfollow.setOnClickListener(v -> {
             FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -61,7 +88,6 @@ public class FolloweesAdapter extends RecyclerView.Adapter<FolloweesAdapter.Foll
                             db.collection("Follows").document(doc.getId()).delete();
                         }
 
-                        // delete followee in local list
                         followees.remove(position);
                         notifyItemRemoved(position);
                         Toast.makeText(context, "Unfollowed " + followee, Toast.LENGTH_SHORT).show();
@@ -73,15 +99,26 @@ public class FolloweesAdapter extends RecyclerView.Adapter<FolloweesAdapter.Foll
     }
 
 
+    /**
+     *
+     * @return the number of followees.
+     */
     @Override
     public int getItemCount() {
         return followees.size();
     }
 
+    /**
+     * ViewHolder for holding views related to a followee item.
+     */
     static class FolloweeViewHolder extends RecyclerView.ViewHolder {
         TextView textView;
         Button btnUnfollow;
 
+        /**
+         *
+         * @param itemView the item view representing a single followee.
+         */
         FolloweeViewHolder(@NonNull View itemView) {
             super(itemView);
             textView = itemView.findViewById(R.id.textFolloweeName);
