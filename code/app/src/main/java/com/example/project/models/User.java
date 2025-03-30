@@ -1,4 +1,4 @@
-package com.example.project;
+package com.example.project.models;
 
 /**
  * Represents a User with a username and password.

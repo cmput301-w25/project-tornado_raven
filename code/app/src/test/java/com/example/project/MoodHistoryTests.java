@@ -10,6 +10,10 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
+import com.example.project.models.Emotion;
+import com.example.project.models.MoodEvent;
+import com.example.project.models.SocialSituation;
+
 /**
  * Unit tests for the MoodHistory functionality.
  * This class includes tests for filtering, adding, and clearing mood events.
