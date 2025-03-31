@@ -1,6 +1,7 @@
 package com.example.project.activities;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
@@ -8,9 +9,13 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -32,6 +37,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -141,6 +148,31 @@ public class AddingMoodActivity extends AppCompatActivity {
         backButton.setOnClickListener(v -> finish());
 
         submitButton.setOnClickListener(v -> saveMood());
+        registerNetworkCallback();
+    }
+    private void registerNetworkCallback() {
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        connectivityManager.registerDefaultNetworkCallback(new ConnectivityManager.NetworkCallback() {
+            @Override
+            public void onAvailable(Network network) {
+                // 网络恢复时自动同步
+                syncLocalMoods();
+            }
+        });
+    }
+    private boolean isOnline() {
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        Network network = connectivityManager.getActiveNetwork();
+        if (network == null) return false;
+
+        NetworkCapabilities capabilities = connectivityManager.getNetworkCapabilities(network);
+        return capabilities != null &&
+                (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
+                        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET));
     }
 
     /**
@@ -274,13 +306,15 @@ public class AddingMoodActivity extends AppCompatActivity {
         if (choice==1){
             checkLocationSettings();
         }else{
-//        // Connectivity Check
-//        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-//        Network network = connectivityManager.getActiveNetwork();
-
-//        if (network != null && connectivityManager.getNetworkCapabilities(network) != null &&
-//                connectivityManager.getNetworkCapabilities(network).hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
-            uploadImageToFirebase(selectedImageUri, newMood);
+            if (isNetworkAvailable()) {
+                uploadImageToFirebase(selectedImageUri, newMood);
+            } else {
+                newMood.setSynced(false);
+                newMood.setPendingOperation("ADD");
+                saveMoodLocally(newMood);
+                Toast.makeText(this, "offline, save locally", Toast.LENGTH_SHORT).show();
+                finishActivityResult(newMood);
+            }
         }
         newMood.setSynced(true);
 
@@ -295,18 +329,52 @@ public class AddingMoodActivity extends AppCompatActivity {
         finishActivityResult(newMood);
 
     }
+    private void handleMoodSave(MoodEvent moodEvent) {
+        if (isOnline()) {
+            // Try online save first
+            uploadImageToFirebase(selectedImageUri, moodEvent);
+        } else {
+            // Offline: Save locally
+            moodEvent.setSynced(false);
+            moodEvent.setPendingOperation("ADD");
+            saveMoodLocally(moodEvent);
+            Toast.makeText(this, "Offline! Mood saved locally.", Toast.LENGTH_SHORT).show();
+            finishActivityResult(moodEvent);
+        }
+    }
 
 
     /**
      * Saves mood locally if offline (not used in current flow).
      */
     private void saveMoodLocally(MoodEvent mood) {
-        SharedPreferences prefs = getSharedPreferences("OfflineMoods", MODE_PRIVATE);
-        String existing = prefs.getString("moods", "[]");
-        Gson gson = new Gson();
-        List<MoodEvent> moodList = gson.fromJson(existing, new TypeToken<List<MoodEvent>>(){}.getType());
-        moodList.add(mood);
-        prefs.edit().putString("moods", gson.toJson(moodList)).apply();
+        try {
+            SharedPreferences prefs = getSharedPreferences("OfflineMoods", MODE_PRIVATE);
+            Gson gson = new Gson();
+            String existing = prefs.getString("moods", "[]");
+            List<MoodEvent> moodList = gson.fromJson(existing, new TypeToken<List<MoodEvent>>(){}.getType());
+
+            //image
+            if (selectedImageUri != null) {
+                String localImagePath = saveImageToLocalStorage(mood.getId(), selectedImageUri);
+                mood.setPhotoUrl("local:" + localImagePath);
+            }
+
+            moodList.add(mood);
+
+            prefs.edit().putString("moods", gson.toJson(moodList)).apply();
+        } catch (Exception e) {
+            Toast.makeText(this, "failed in: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private String saveImageToLocalStorage(String moodId, Uri imageUri) throws IOException {
+        Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+        File file = new File(getFilesDir(), "mood_image_" + moodId + ".jpg");
+        try (FileOutputStream outputStream = new FileOutputStream(file)) {
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 70, outputStream);
+        }
+        return file.getAbsolutePath();
     }
 
     /**
@@ -453,42 +521,63 @@ public class AddingMoodActivity extends AppCompatActivity {
      * @param moodEvent The mood event to be saved.
      */
     private void saveMoodToFirestore(MoodEvent moodEvent) {
-        // Create a map to store mood data
         Map<String, Object> moodData = new HashMap<>();
-        moodData.put("author",moodEvent.getAuthor());
+        moodData.put("author", moodEvent.getAuthor());
         moodData.put("emotion", moodEvent.getEmotion().toString());
         moodData.put("date", moodEvent.getDate());
         moodData.put("reason", moodEvent.getReason());
-        moodData.put("id",moodEvent.getId());
+        moodData.put("id", moodEvent.getId());
         moodData.put("privacyLevel", moodEvent.getPrivacyLevel());
+        moodData.put("isSynced", true);
 
-        // Add optional fields if they are not null
+        if (moodEvent.getPhotoUrl() != null && !moodEvent.getPhotoUrl().startsWith("local:")) {
+            moodData.put("photoUrl", moodEvent.getPhotoUrl());
+        }
+
         if (moodEvent.getSocialSituation() != null) {
             moodData.put("socialSituation", moodEvent.getSocialSituation().toString());
         }
         if (moodEvent.getLocation() != null) {
             moodData.put("location", moodEvent.getLocation());
         }
-        if (moodEvent.getPhotoUrl() != null) {
-            moodData.put("photoUrl", moodEvent.getPhotoUrl().toString());
-        }
 
-        // Add a new document with an auto-generated ID
         db.collection("MoodEvents")
                 .add(moodData)
                 .addOnSuccessListener(documentReference -> {
-                    // Retrieve the auto-generated document ID
                     String documentId = documentReference.getId();
-
-                    // Optionally, save the document ID in your MoodEvent object
                     moodEvent.setDocumentId(documentId);
-                    finishActivityResult(newMood);
 
-                    Toast.makeText(this, "Mood saved to Firestore!", Toast.LENGTH_SHORT).show();
+                    if (moodEvent.getPendingOperation().equals("ADD")) {
+                        runOnUiThread(() ->
+                                Toast.makeText(this, "synchorized", Toast.LENGTH_SHORT).show());
+                    }
+
+                    if (moodEvent.getPhotoUrl() != null && moodEvent.getPhotoUrl().startsWith("local:")) {
+                        new File(moodEvent.getPhotoUrl().substring(6)).delete();
+                    }
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Failed to save mood to Firestore: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    saveSingleMoodLocally(moodEvent);
+                    runOnUiThread(() ->
+                            Toast.makeText(this, "failed sync", Toast.LENGTH_SHORT).show());
                 });
+    }
+    private void saveSingleMoodLocally(MoodEvent mood) {
+        try {
+            SharedPreferences prefs = getSharedPreferences("OfflineMoods", MODE_PRIVATE);
+            Gson gson = new Gson();
+
+            String existing = prefs.getString("moods", "[]");
+            List<MoodEvent> moodList = gson.fromJson(existing, new TypeToken<List<MoodEvent>>(){}.getType());
+
+            boolean exists = moodList.stream().anyMatch(m -> m.getId().equals(mood.getId()));
+            if (!exists) {
+                moodList.add(mood);
+                prefs.edit().putString("moods", gson.toJson(moodList)).apply();
+            }
+        } catch (Exception e) {
+            Log.e("AddingMoodActivity", "failed save locally", e);
+        }
     }
 
     private void uploadImageToFirebase(Uri imageUri, MoodEvent moodEvent) {
@@ -497,35 +586,128 @@ public class AddingMoodActivity extends AppCompatActivity {
             return;
         }
 
-        String fileName = "mood_images/" + moodEvent.getId() + "_" + System.currentTimeMillis() + ".jpg";
+        String fileName = "mood_images/" + moodEvent.getId() + ".jpg";
         FirebaseStorage.getInstance().getReference(fileName)
                 .putFile(imageUri)
                 .addOnSuccessListener(taskSnapshot -> {
                     taskSnapshot.getStorage().getDownloadUrl().addOnSuccessListener(uri -> {
                         moodEvent.setPhotoUrl(uri.toString());
+                        moodEvent.setSynced(true);
                         handleFinalMoodSave(moodEvent);
                     });
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Image upload failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    moodEvent.setSynced(false);
-                    moodEvent.setPendingOperation("ADD");
-                    saveMoodLocally(moodEvent);
-                    handleFinalMoodSave(moodEvent);
-
-                    finishActivityResult(moodEvent);
-
+                    if (isNetworkAvailable()) {
+                        moodEvent.setPhotoUrl(null);
+                        handleFinalMoodSave(moodEvent);
+                    } else {
+                        moodEvent.setSynced(false);
+                        saveMoodLocally(moodEvent);
+                        runOnUiThread(() ->
+                                Toast.makeText(this, "save locally! ", Toast.LENGTH_SHORT).show());
+                    }
                 });
+    }
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivityManager == null) {
+            return false;
+        }
+
+        Network network = connectivityManager.getActiveNetwork();
+        if (network == null) {
+            return false;
+        }
+
+        NetworkCapabilities capabilities = connectivityManager.getNetworkCapabilities(network);
+        return capabilities != null &&
+                (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR));
     }
 
     private void handleFinalMoodSave(MoodEvent moodEvent) {
         if (moodEvent.isSynced()) {
             saveMoodToFirestore(moodEvent);
         } else {
-            // You may still want to store it later when reconnected
-            finishActivityResult(moodEvent); // Return to ProfileActivity
+            moodEvent.setPendingOperation("ADD");
+            saveMoodLocally(moodEvent);
+
+            runOnUiThread(() -> {
+                Toast.makeText(this, "save locally, sync after internet", Toast.LENGTH_LONG).show();
+                finishActivityResult(moodEvent);
+            });
+        }
+    }
+    public void syncLocalMoods() {
+        if (!isNetworkAvailable()) {
+            return;
+        }
+
+        SharedPreferences prefs = getSharedPreferences("OfflineMoods", MODE_PRIVATE);
+        String existing = prefs.getString("moods", "[]");
+        Gson gson = new Gson();
+        List<MoodEvent> moodList = gson.fromJson(existing, new TypeToken<List<MoodEvent>>(){}.getType());
+
+        List<MoodEvent> unsyncedMoods = new ArrayList<>();
+        for (MoodEvent mood : moodList) {
+            if (!mood.isSynced()) {
+                unsyncedMoods.add(mood);
+            }
+        }
+
+        // clear alldate
+        prefs.edit().putString("moods", "[]").apply();
+
+        for (MoodEvent mood : unsyncedMoods) {
+            if (mood.getPhotoUrl() != null && mood.getPhotoUrl().startsWith("local:")) {
+                String localPath = mood.getPhotoUrl().substring(6);
+                File imageFile = new File(localPath);
+                if (imageFile.exists()) {
+                    uploadLocalImage(imageFile, mood);
+                } else {
+                    // no photo
+                    mood.setPhotoUrl(null);
+                    saveMoodToFirestore(mood);
+                }
+            } else {
+                saveMoodToFirestore(mood);
+            }
         }
     }
 
+    private void uploadLocalImage(File imageFile, MoodEvent mood) {
+        Uri imageUri = Uri.fromFile(imageFile);
+        String fileName = "mood_images/" + mood.getId() + ".jpg";
+
+        FirebaseStorage.getInstance().getReference(fileName)
+                .putFile(imageUri)
+                .addOnSuccessListener(taskSnapshot -> {
+                    taskSnapshot.getStorage().getDownloadUrl().addOnSuccessListener(uri -> {
+                        mood.setPhotoUrl(uri.toString());
+                        mood.setSynced(true);
+                        saveMoodToFirestore(mood);
+                    });
+                })
+                .addOnFailureListener(e -> {
+                    saveSingleMoodLocally(mood);
+                    runOnUiThread(() ->
+                            Toast.makeText(this, "failed uplodaing, save locally", Toast.LENGTH_SHORT).show());
+                });
+    }
+
+//    private void removeSyncedMood(MoodEvent mood) {
+//        SharedPreferences prefs = getSharedPreferences("OfflineMoods", MODE_PRIVATE);
+//        String existing = prefs.getString("moods", "[]");
+//        Gson gson = new Gson();
+//        List<MoodEvent> moodList = gson.fromJson(existing, new TypeToken<List<MoodEvent>>(){}.getType());
+//
+//        moodList.removeIf(m -> m.getId().equals(mood.getId()));
+//        prefs.edit().putString("moods", gson.toJson(moodList)).apply();
+//
+//        if (mood.getPhotoUrl() != null && mood.getPhotoUrl().startsWith("local:")) {
+//            new File(mood.getPhotoUrl().substring(6)).delete();
+//        }
+//    }
 
 }
