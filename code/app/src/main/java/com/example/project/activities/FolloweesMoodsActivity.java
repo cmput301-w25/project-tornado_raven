@@ -224,6 +224,14 @@ public class FolloweesMoodsActivity extends AppCompatActivity {
                                                         originalUserMoodItems.add(item);
                                                     }
                                                 }
+                                                userMoodItems.sort((i1, i2) -> {
+                                                    if (i1.moodEvent.getDate() == null || i2.moodEvent.getDate() == null) return 0;
+                                                    return i2.moodEvent.getDate().compareTo(i1.moodEvent.getDate());
+                                                });
+                                                originalUserMoodItems.sort((i1, i2) -> {
+                                                    if (i1.moodEvent.getDate() == null || i2.moodEvent.getDate() == null) return 0;
+                                                    return i2.moodEvent.getDate().compareTo(i1.moodEvent.getDate());
+                                                });
                                                 followeesMoodsAdapter.notifyDataSetChanged();
                                             }
                                         })

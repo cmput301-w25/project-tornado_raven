@@ -282,6 +282,10 @@ public class CommonSpaceActivity extends AppCompatActivity {
                             allMoods.add(mood);
                         }
                     }
+                    allMoods.sort((m1, m2) -> {
+                        if (m1.getDate() == null || m2.getDate() == null) return 0;
+                        return m2.getDate().compareTo(m1.getDate()); // Descending order
+                    });
 
                     filteredMoods.addAll(allMoods);
                     adapter.notifyDataSetChanged();
