@@ -95,23 +95,32 @@ public class ProfileActivity extends AppCompatActivity {
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                        boolean isSelf = displayedUsername.equals(getCurrentUserName());
-
                         Intent data = result.getData();
-                        // delete
-                        if (data.hasExtra("deleteMoodId")) {
-                            String deleteId = data.getStringExtra("deleteMoodId");
-                            if (deleteId != null) {
-                                deleteMood(deleteId);
+
+                        if (data.hasExtra("newMood")) {
+                            MoodEvent newMood = (MoodEvent) data.getSerializableExtra("newMood");
+
+                            if (newMood != null) {
+                                moodHistoryList.add(0, newMood);
+
+                                filteredList.clear();
+                                filteredList.addAll(moodHistoryList);
+
+                                moodHistoryAdapter.updateList(filteredList);
+
+                                recyclerView.scrollToPosition(0);
                             }
+                            return;
                         }
-                        // edit / add
-                        else {
+
+                        boolean isSelf = displayedUsername.equals(getCurrentUserName());
+                        if (data.hasExtra("deleteMoodId") || data.hasExtra("updatedMood")) {
                             loadMoodHistoryForUser(displayedUsername, isSelf);
                         }
                     }
                 }
         );
+
 
 
         // 1) Initialize Firestore and other fields
