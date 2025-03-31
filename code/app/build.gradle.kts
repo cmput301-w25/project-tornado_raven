@@ -33,7 +33,7 @@ android {
 }
 
 dependencies {
-    implementation(files("${android.sdkDirectory}/platforms/${android.compileSdkVersion}/android.jar"))
+    //implementation(files("${android.sdkDirectory}/platforms/${android.compileSdkVersion}/android.jar"))
     //implementation(files("${android.sdkDirectory}/platforms/${android.compileSdkVersion}/android.jar"))
     //implementation(files("/Users/rosywang/Library/Android/sdk/platforms/android-35/android.jar"))
     implementation("com.google.firebase:firebase-auth:22.1.1")
