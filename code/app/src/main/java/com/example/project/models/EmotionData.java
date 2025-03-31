@@ -1,7 +1,7 @@
-package com.example.project;
+package com.example.project.models;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import com.example.project.Emotion;
+
 import com.example.project.R;
 import androidx.core.content.ContextCompat;
 /**

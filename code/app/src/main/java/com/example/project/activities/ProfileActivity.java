@@ -24,8 +24,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.example.project.Emotion;
-import com.example.project.MoodEvent;
+import com.example.project.models.Emotion;
+import com.example.project.models.MoodEvent;
 import com.example.project.R;
 import com.example.project.adapters.MoodHistoryAdapter;
 import com.github.mikephil.charting.charts.LineChart;

@@ -18,8 +18,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.example.project.EmotionData;
-import com.example.project.MoodEvent;
+import com.example.project.models.EmotionData;
+import com.example.project.models.MoodEvent;
 import com.example.project.R;
 import com.example.project.activities.EditMoodActivity;
 

@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.project.R;
-import com.example.project.Usercomment;
+import com.example.project.models.Usercomment;
 
 import java.text.SimpleDateFormat;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.example.project;
+package com.example.project.models;
 
 /**
  * Enum to choose if we we want to add a location
