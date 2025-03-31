@@ -24,6 +24,17 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+
+import com.example.project.R;
+import com.example.project.models.Emotion;
+import com.example.project.models.MoodEvent;
+import com.example.project.models.SocialSituation;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -34,264 +45,203 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResponse;
 import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
-import java.util.ArrayList;
-import java.util.List;
-
-
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-
-import com.example.project.models.Emotion;
-import com.example.project.models.MoodEvent;
-import com.example.project.R;
-import com.example.project.models.SocialSituation;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-
-/**
- * Activity for adding a new mood event.
- * Allows users to select an emotion, provide a reason, pick an image, and submit the mood event.
- * Handles image compression, location services, and Firestore integration.
- * set social and privacy settings, and choose whether to include location data.
- */
 public class AddingMoodActivity extends AppCompatActivity {
-    private FirebaseFirestore db;
-    private Spinner emotionSpinner;
-    private Spinner locationSpinner;
-    private FusedLocationProviderClient fusedLocationProviderClient;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
     private static final int REQUEST_CHECK_SETTINGS = 1002;
-    private static final int REQUEST_GOOGLE_PLAY_SERVICES = 1003;
+    private static final int MAX_IMAGE_SIZE_BYTES = 65536; // 64KB
+    private static final int IMAGE_COMPRESSION_QUALITY_STEP = 5;
+
+    private FirebaseFirestore db;
+    private FusedLocationProviderClient fusedLocationProviderClient;
+
+    private Spinner emotionSpinner;
+    private Spinner locationSpinner;
     private Spinner socialSituationSpinner;
     private Spinner privacySpinner;
     private EditText reasonEditText;
-    //private EditText socialSituationEditText;
-    //private EditText locationEditText;
     private Button submitButton;
     private Button btnPickImage;
     private ImageView imageview;
+
     private MoodEvent newMood;
     private ActivityResultLauncher<Intent> resultLauncher;
-    private Uri selectedImageUri; // Add this variable
+    private Uri selectedImageUri;
     private String currentLocation;
-    /**
-     * Called when the activity is first created.
-     * Initializes UI elements and sets up event listeners.
-     *
-     * @param savedInstanceState The saved instance state.
-     */
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.addingmood);
+
+        initializeFirebase();
+        initializeUI();
+        setupSpinners();
+        setupImagePicker();
+        setupButtons();
+        registerNetworkCallback();
+    }
+
+    private void initializeFirebase() {
         db = FirebaseFirestore.getInstance();
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+    }
 
+    private void initializeUI() {
         emotionSpinner = findViewById(R.id.emotionSpinner);
         reasonEditText = findViewById(R.id.reasonEditText);
         socialSituationSpinner = findViewById(R.id.socialSituationSpinner);
         privacySpinner = findViewById(R.id.privacySpinner);
-        locationSpinner=findViewById(R.id.locationspinner);
-        ArrayAdapter<CharSequence> socialSituationAdapter = ArrayAdapter.createFromResource(
-                this,
-                R.array.social_situations,
-                android.R.layout.simple_spinner_item
-        );
-        socialSituationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        socialSituationSpinner.setAdapter(socialSituationAdapter);
-        ArrayAdapter<CharSequence> locationAdapter = ArrayAdapter.createFromResource(
-                this, R.array.locationchoice, android.R.layout.simple_spinner_item
-        );
-        locationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        locationSpinner.setAdapter(locationAdapter);
-        ArrayAdapter<CharSequence> privacyAdapter = ArrayAdapter.createFromResource(
-                this,
-                R.array.privacy_levels,
-                android.R.layout.simple_spinner_item
-        );
-        privacyAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        privacySpinner.setAdapter(privacyAdapter);
-
+        locationSpinner = findViewById(R.id.locationspinner);
         submitButton = findViewById(R.id.submitButton);
-        ImageButton backButton = findViewById(R.id.backButton);
         btnPickImage = findViewById(R.id.addPhotoButton);
         imageview = findViewById(R.id.photoImageView);
+    }
 
-        registerResult();
+    private void setupSpinners() {
+        // Emotion Spinner
+        ArrayAdapter<CharSequence> emotionAdapter = ArrayAdapter.createFromResource(
+                this, R.array.choices, android.R.layout.simple_spinner_item);
+        emotionAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        emotionSpinner.setAdapter(emotionAdapter);
 
-        btnPickImage.setOnClickListener(view -> pickImage());
+        // Social Situation Spinner
+        ArrayAdapter<CharSequence> socialSituationAdapter = ArrayAdapter.createFromResource(
+                this, R.array.social_situations, android.R.layout.simple_spinner_item);
+        socialSituationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        socialSituationSpinner.setAdapter(socialSituationAdapter);
 
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
-                this,
-                R.array.choices,
-                android.R.layout.simple_spinner_item
-        );
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        emotionSpinner.setAdapter(adapter);
+        // Location Spinner
+        ArrayAdapter<CharSequence> locationAdapter = ArrayAdapter.createFromResource(
+                this, R.array.locationchoice, android.R.layout.simple_spinner_item);
+        locationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        locationSpinner.setAdapter(locationAdapter);
 
+        // Privacy Spinner
+        ArrayAdapter<CharSequence> privacyAdapter = ArrayAdapter.createFromResource(
+                this, R.array.privacy_levels, android.R.layout.simple_spinner_item);
+        privacyAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        privacySpinner.setAdapter(privacyAdapter);
+    }
+
+    private void setupImagePicker() {
+        resultLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    try {
+                        if (result.getData() != null && result.getData().getData() != null) {
+                            selectedImageUri = result.getData().getData();
+                            Bitmap bitmap = MediaStore.Images.Media.getBitmap(
+                                    getContentResolver(), selectedImageUri);
+                            compressAndDisplayImage(bitmap);
+                        }
+                    } catch (Exception e) {
+                        Toast.makeText(this, "Error selecting image", Toast.LENGTH_SHORT).show();
+                        Log.e("ImagePicker", "Error selecting image", e);
+                    }
+                });
+    }
+
+    private void compressAndDisplayImage(Bitmap bitmap) {
+        int quality = 100;
+        byte[] compressedBytes;
+
+        do {
+            compressedBytes = compressImage(bitmap, quality);
+            quality -= IMAGE_COMPRESSION_QUALITY_STEP;
+        } while (compressedBytes != null &&
+                compressedBytes.length > MAX_IMAGE_SIZE_BYTES &&
+                quality > 10);
+
+        if (compressedBytes != null && compressedBytes.length <= MAX_IMAGE_SIZE_BYTES) {
+            Bitmap compressedBitmap = BitmapFactory.decodeByteArray(
+                    compressedBytes, 0, compressedBytes.length);
+            selectedImageUri = saveCompressedImage(compressedBitmap);
+            imageview.setImageBitmap(compressedBitmap);
+        } else {
+            Toast.makeText(this,
+                    "Image too large even after compression. Please choose another image.",
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void setupButtons() {
+        ImageButton backButton = findViewById(R.id.backButton);
         backButton.setOnClickListener(v -> finish());
 
+        btnPickImage.setOnClickListener(v -> pickImage());
         submitButton.setOnClickListener(v -> saveMood());
-        registerNetworkCallback();
-    }
-    private void registerNetworkCallback() {
-        ConnectivityManager connectivityManager =
-                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        connectivityManager.registerDefaultNetworkCallback(new ConnectivityManager.NetworkCallback() {
-            @Override
-            public void onAvailable(Network network) {
-                // 网络恢复时自动同步
-                syncLocalMoods();
-            }
-        });
-    }
-    private boolean isOnline() {
-        ConnectivityManager connectivityManager =
-                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        Network network = connectivityManager.getActiveNetwork();
-        if (network == null) return false;
-
-        NetworkCapabilities capabilities = connectivityManager.getNetworkCapabilities(network);
-        return capabilities != null &&
-                (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
-                        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
-                        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET));
     }
 
-    /**
-     * Opens the image picker to select an image.
-     */
     private void pickImage() {
         Intent intent = new Intent(MediaStore.ACTION_PICK_IMAGES);
         resultLauncher.launch(intent);
     }
 
-    /**
-     * Registers the image picker result and handles compression of selected image.
-     */
-    private void registerResult() {
-        resultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-                o -> {
-                    try {
-                        selectedImageUri = o.getData().getData();
-                        if (selectedImageUri != null) {
-                            Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImageUri);
-                            int quality = 100;
-                            byte[] compressedBytes;
-
-                            do {
-                                compressedBytes = compressImage(bitmap, quality);
-                                quality -= 5;
-                            } while (compressedBytes != null && compressedBytes.length > 65536 && quality > 10);
-
-                            if (compressedBytes != null && compressedBytes.length <= 65536) {
-                                Bitmap compressedBitmap = BitmapFactory.decodeByteArray(compressedBytes, 0, compressedBytes.length);
-                                Uri compressedUri = saveCompressedImage(compressedBitmap, quality + 5);
-                                selectedImageUri = compressedUri;
-                                imageview.setImageURI(compressedUri);
-                            } else {
-                                Toast.makeText(this, "Image too large even after compression.Choose something else.", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    } catch (Exception e) {
-                        Toast.makeText(AddingMoodActivity.this, "Nothing selected", Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
-
-
-    /**
-     * Compresses the selected image to reduce its size.
-     *
-     * @param bitmap The image bitmap.
-     * @param quality Compression quality (0-100).
-     * @return A compressed Bitmap array.
-     */
     private byte[] compressImage(Bitmap bitmap, int quality) {
-        try {
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
             return outputStream.toByteArray();
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("ImageCompression", "Error compressing image", e);
             return null;
         }
     }
 
-
-
-    /**
-     * Saves a compressed bitmap to internal storage and returns its URI.
-     *
-     * @param compressedBitmap The compressed image.
-     * @param quality          Quality to use for saving.
-     * @return URI of the saved image file.
-     */
-    private Uri saveCompressedImage(Bitmap compressedBitmap,int quality) {
+    private Uri saveCompressedImage(Bitmap compressedBitmap) {
         try {
             File file = new File(getFilesDir(), "compressed_image_" + System.currentTimeMillis() + ".jpg");
-            FileOutputStream outputStream = new FileOutputStream(file);
-            compressedBitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream); // Adjust quality (0-100)
-            outputStream.close();
+            try (FileOutputStream outputStream = new FileOutputStream(file)) {
+                compressedBitmap.compress(Bitmap.CompressFormat.JPEG, 85, outputStream);
+            }
             return Uri.fromFile(file);
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e("ImageSaving", "Error saving compressed image", e);
             return null;
         }
     }
 
-    /**
-     * saves the updated attributes of the mood and update the firebase
-     */
     private void saveMood() {
         String selectedEmotion = emotionSpinner.getSelectedItem().toString();
         String reason = reasonEditText.getText().toString().trim();
         int socialSituationPosition = socialSituationSpinner.getSelectedItemPosition();
-        SocialSituation socialSituation = socialSituationPosition >= 0 ? SocialSituation.fromPosition(socialSituationPosition) : null;
-        Uri photoUri = selectedImageUri;
-        int choice = locationSpinner.getSelectedItemPosition();
+        SocialSituation socialSituation = socialSituationPosition >= 0 ?
+                SocialSituation.fromPosition(socialSituationPosition) : null;
 
         SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
         String username = prefs.getString("username", "Unknown User");
 
         int privacyPosition = privacySpinner.getSelectedItemPosition();
-        String[] privacyValues = getResources().getStringArray(R.array.privacy_values); // Get STORAGE values
+        String[] privacyValues = getResources().getStringArray(R.array.privacy_values);
         String selectedPrivacyValue = privacyValues[privacyPosition];
 
-        if (selectedPrivacyValue.isEmpty()){
-            Toast.makeText(this, "Please choose a privacy level.", Toast.LENGTH_SHORT).show();
+        if (selectedPrivacyValue.isEmpty()) {
+            Toast.makeText(this, "Please choose a privacy level", Toast.LENGTH_SHORT).show();
             return;
         }
-
 
         Emotion emotion;
         try {
             emotion = Emotion.valueOf(selectedEmotion.toUpperCase());
         } catch (IllegalArgumentException e) {
-            Toast.makeText(this, "Invalid Emotion Selected", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Invalid emotion selected", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        String photoUriString = selectedImageUri != null ? selectedImageUri.toString() : null;
-
-        // Create MoodEvent
         newMood = new MoodEvent(
                 username,
                 emotion,
@@ -299,227 +249,49 @@ public class AddingMoodActivity extends AppCompatActivity {
                 reason,
                 socialSituation,
                 null,
-                photoUriString,
+                selectedImageUri != null ? selectedImageUri.toString() : null,
                 selectedPrivacyValue
         );
 
-        if (choice==1){
+        if (locationSpinner.getSelectedItemPosition() == 1) {
             checkLocationSettings();
-        }else{
-            if (isNetworkAvailable()) {
-                uploadImageToFirebase(selectedImageUri, newMood);
-            } else {
-                newMood.setSynced(false);
-                newMood.setPendingOperation("ADD");
-                saveMoodLocally(newMood);
-                Toast.makeText(this, "offline, save locally", Toast.LENGTH_SHORT).show();
-                finishActivityResult(newMood);
-            }
+        } else {
+            handleMoodSave(newMood);
         }
-        newMood.setSynced(true);
-
-//        } else {
-//            // Offline: Save locally
-//            newMood.setSynced(false);
-//            newMood.setPendingOperation("ADD");
-//            saveMoodLocally(newMood);
-//            Toast.makeText(this, "Offline! Mood saved locally.", Toast.LENGTH_SHORT).show();
-//            finishActivityResult(newMood);
-//        }
-        finishActivityResult(newMood);
-
     }
+
     private void handleMoodSave(MoodEvent moodEvent) {
         if (isOnline()) {
-            // Try online save first
-            uploadImageToFirebase(selectedImageUri, moodEvent);
+            uploadImageAndSaveMood(moodEvent);
         } else {
-            // Offline: Save locally
-            moodEvent.setSynced(false);
-            moodEvent.setPendingOperation("ADD");
             saveMoodLocally(moodEvent);
-            Toast.makeText(this, "Offline! Mood saved locally.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Mood saved locally. Will sync when online.", Toast.LENGTH_SHORT).show();
             finishActivityResult(moodEvent);
         }
     }
 
-
-    /**
-     * Saves mood locally if offline (not used in current flow).
-     */
-    private void saveMoodLocally(MoodEvent mood) {
-        try {
-            SharedPreferences prefs = getSharedPreferences("OfflineMoods", MODE_PRIVATE);
-            Gson gson = new Gson();
-            String existing = prefs.getString("moods", "[]");
-            List<MoodEvent> moodList = gson.fromJson(existing, new TypeToken<List<MoodEvent>>(){}.getType());
-
-            //image
-            if (selectedImageUri != null) {
-                String localImagePath = saveImageToLocalStorage(mood.getId(), selectedImageUri);
-                mood.setPhotoUrl("local:" + localImagePath);
-            }
-
-            moodList.add(mood);
-
-            prefs.edit().putString("moods", gson.toJson(moodList)).apply();
-        } catch (Exception e) {
-            Toast.makeText(this, "failed in: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private String saveImageToLocalStorage(String moodId, Uri imageUri) throws IOException {
-        Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-        File file = new File(getFilesDir(), "mood_image_" + moodId + ".jpg");
-        try (FileOutputStream outputStream = new FileOutputStream(file)) {
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 70, outputStream);
-        }
-        return file.getAbsolutePath();
-    }
-
-    /**
-     * Sends the mood result back to the calling activity.
-     */
-    private void finishActivityResult(MoodEvent mood) {
-        Intent resultIntent = new Intent();
-        resultIntent.putExtra("newMood", mood);
-        setResult(RESULT_OK, resultIntent);
-        finish();
-    }
-
-    /**
-     * Requests location settings update if required by user.
-     */
-    private void checkLocationSettings() {
-        LocationRequest locationRequest = LocationRequest.create();
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
-                .addLocationRequest(locationRequest);
-
-        SettingsClient client = LocationServices.getSettingsClient(this);
-        Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
-
-        task.addOnSuccessListener(this, locationSettingsResponse -> {
-            getLastLocation();
-        });
-
-        task.addOnFailureListener(this, e -> {
-            if (e instanceof ResolvableApiException) {
-                try {
-                    ResolvableApiException resolvable = (ResolvableApiException) e;
-                    resolvable.startResolutionForResult(this, REQUEST_CHECK_SETTINGS);
-                } catch (IntentSender.SendIntentException sendEx) {
-                }
-            }
-        });
-    }
-
-    /**
-     * Fetches the last known location.
-     */
-    private void getLastLocation() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
+    private void uploadImageAndSaveMood(MoodEvent moodEvent) {
+        if (selectedImageUri == null) {
+            saveMoodToFirestore(moodEvent);
             return;
         }
 
-        fusedLocationProviderClient.getLastLocation().addOnSuccessListener(this, location -> {
-            if (location != null) {
-                currentLocation = location.getLatitude() + ", " + location.getLongitude();
-                saveMoodWithLocation();
-            } else {
-                requestNewLocation();
-            }
-        });
+        String fileName = "mood_images/" + moodEvent.getId() + ".jpg";
+        FirebaseStorage.getInstance().getReference(fileName)
+                .putFile(selectedImageUri)
+                .addOnSuccessListener(taskSnapshot -> {
+                    taskSnapshot.getStorage().getDownloadUrl().addOnSuccessListener(uri -> {
+                        moodEvent.setPhotoUrl(uri.toString());
+                        saveMoodToFirestore(moodEvent);
+                    });
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("ImageUpload", "Failed to upload image", e);
+                    moodEvent.setPhotoUrl(null);
+                    saveMoodToFirestore(moodEvent);
+                });
     }
 
-    /**
-     * Handles the result of the location settings dialog.
-     */
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CHECK_SETTINGS) {
-            if (resultCode == RESULT_OK) {
-                getLastLocation();
-            } else {
-                Toast.makeText(this, "Location services are required to fetch location.", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
-
-    /**
-     *
-     * @param requestCode The request code passed in {@link #requestPermissions(android.app.Activity, String[], int)}
-     * @param permissions The requested permissions. Never null.
-     * @param grantResults The grant results for the corresponding permissions
-     *     which is either {@link android.content.pm.PackageManager#PERMISSION_GRANTED}
-     *     or {@link android.content.pm.PackageManager#PERMISSION_DENIED}. Never null.
-     *
-     */
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                getLastLocation(); // Retry fetching location after permission is granted
-            } else {
-                Toast.makeText(this, "Location permission denied. Cannot fetch location.", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
-
-    /**
-     * Requests a new location update.
-     */
-    private void requestNewLocation() {
-        LocationRequest locationRequest = LocationRequest.create();
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        locationRequest.setInterval(10000); // 10 seconds
-        locationRequest.setFastestInterval(5000); // 5 seconds
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
-            return;
-        }
-
-        fusedLocationProviderClient.requestLocationUpdates(locationRequest, new LocationCallback() {
-            @Override
-            public void onLocationResult(LocationResult locationResult) {
-                if (locationResult == null) {
-                    return;
-                }
-                for (Location location : locationResult.getLocations()) {
-                    if (location != null) {
-                        currentLocation = location.getLatitude() + ", " + location.getLongitude();
-                        saveMoodWithLocation();
-                        fusedLocationProviderClient.removeLocationUpdates(this); // Stop updates
-                        break;
-                    }
-                }
-            }
-        }, null);
-    }
-
-    /**
-     * Saves the mood event with the current location.
-     */
-    private void saveMoodWithLocation() {
-        newMood.setLocation(currentLocation);
-        uploadImageToFirebase(selectedImageUri, newMood);
-    }
-
-
-    /**
-     * Saves the mood event to Firestore.
-     *
-     * @param moodEvent The mood event to be saved.
-     */
     private void saveMoodToFirestore(MoodEvent moodEvent) {
         Map<String, Object> moodData = new HashMap<>();
         moodData.put("author", moodEvent.getAuthor());
@@ -544,170 +316,211 @@ public class AddingMoodActivity extends AppCompatActivity {
         db.collection("MoodEvents")
                 .add(moodData)
                 .addOnSuccessListener(documentReference -> {
-                    String documentId = documentReference.getId();
-                    moodEvent.setDocumentId(documentId);
-
-                    if (moodEvent.getPendingOperation().equals("ADD")) {
-                        runOnUiThread(() ->
-                                Toast.makeText(this, "synchorized", Toast.LENGTH_SHORT).show());
-                    }
-
-                    if (moodEvent.getPhotoUrl() != null && moodEvent.getPhotoUrl().startsWith("local:")) {
-                        new File(moodEvent.getPhotoUrl().substring(6)).delete();
-                    }
+                    moodEvent.setSynced(true);
+                    moodEvent.setDocumentId(documentReference.getId());
+                    Toast.makeText(this, "Mood saved successfully", Toast.LENGTH_SHORT).show();
+                    finishActivityResult(moodEvent);
                 })
                 .addOnFailureListener(e -> {
-                    saveSingleMoodLocally(moodEvent);
-                    runOnUiThread(() ->
-                            Toast.makeText(this, "failed sync", Toast.LENGTH_SHORT).show());
+                    Log.e("FirestoreSave", "Failed to save mood", e);
+                    saveMoodLocally(moodEvent);
+                    Toast.makeText(this, "Failed to save online. Saved locally.", Toast.LENGTH_SHORT).show();
                 });
     }
-    private void saveSingleMoodLocally(MoodEvent mood) {
+
+    private void saveMoodLocally(MoodEvent mood) {
         try {
             SharedPreferences prefs = getSharedPreferences("OfflineMoods", MODE_PRIVATE);
             Gson gson = new Gson();
 
-            String existing = prefs.getString("moods", "[]");
-            List<MoodEvent> moodList = gson.fromJson(existing, new TypeToken<List<MoodEvent>>(){}.getType());
+            List<MoodEvent> moodList = gson.fromJson(
+                    prefs.getString("moods", "[]"),
+                    new TypeToken<List<MoodEvent>>(){}.getType());
 
-            boolean exists = moodList.stream().anyMatch(m -> m.getId().equals(mood.getId()));
-            if (!exists) {
-                moodList.add(mood);
-                prefs.edit().putString("moods", gson.toJson(moodList)).apply();
-            }
+            mood.setSynced(false);
+            mood.setPendingOperation("ADD");
+            moodList.add(mood);
+
+            prefs.edit().putString("moods", gson.toJson(moodList)).apply();
         } catch (Exception e) {
-            Log.e("AddingMoodActivity", "failed save locally", e);
+            Log.e("LocalSave", "Failed to save mood locally", e);
+            Toast.makeText(this, "Failed to save mood", Toast.LENGTH_SHORT).show();
         }
     }
 
-    private void uploadImageToFirebase(Uri imageUri, MoodEvent moodEvent) {
-        if (imageUri == null) {
-            handleFinalMoodSave(moodEvent);
+    private void finishActivityResult(MoodEvent mood) {
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra("newMood", mood);
+        setResult(RESULT_OK, resultIntent);
+        finish();
+    }
+
+    // Location related methods
+    private void checkLocationSettings() {
+        LocationRequest locationRequest = LocationRequest.create();
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+                .addLocationRequest(locationRequest);
+
+        SettingsClient client = LocationServices.getSettingsClient(this);
+        Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
+
+        task.addOnSuccessListener(this, response -> getLastLocation());
+        task.addOnFailureListener(this, e -> {
+            if (e instanceof ResolvableApiException) {
+                try {
+                    ((ResolvableApiException) e).startResolutionForResult(this, REQUEST_CHECK_SETTINGS);
+                } catch (IntentSender.SendIntentException sendEx) {
+                    Log.e("LocationSettings", "Error showing location settings", sendEx);
+                }
+            }
+        });
+    }
+
+    private void getLastLocation() {
+        if (checkLocationPermission()) {
+            fusedLocationProviderClient.getLastLocation()
+                    .addOnSuccessListener(this, location -> {
+                        if (location != null) {
+                            currentLocation = location.getLatitude() + ", " + location.getLongitude();
+                            newMood.setLocation(currentLocation);
+                        }
+                        handleMoodSave(newMood);
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("Location", "Error getting location", e);
+                        handleMoodSave(newMood);
+                    });
+        } else {
+            requestLocationPermission();
+        }
+    }
+
+    private boolean checkLocationPermission() {
+        return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestLocationPermission() {
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                LOCATION_PERMISSION_REQUEST_CODE);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                getLastLocation();
+            } else {
+                Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show();
+                handleMoodSave(newMood);
+            }
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CHECK_SETTINGS) {
+            if (resultCode == RESULT_OK) {
+                getLastLocation();
+            } else {
+                Toast.makeText(this, "Location services required", Toast.LENGTH_SHORT).show();
+                handleMoodSave(newMood);
+            }
+        }
+    }
+
+    // Network related methods
+    private void registerNetworkCallback() {
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        if (connectivityManager != null) {
+            connectivityManager.registerDefaultNetworkCallback(new ConnectivityManager.NetworkCallback() {
+                @Override
+                public void onAvailable(@NonNull Network network) {
+                    syncLocalMoods();
+                }
+            });
+        }
+    }
+
+    private void syncLocalMoods() {
+        if (!isOnline()) return;
+
+        SharedPreferences prefs = getSharedPreferences("OfflineMoods", MODE_PRIVATE);
+        Gson gson = new Gson();
+
+        List<MoodEvent> moodList = gson.fromJson(
+                prefs.getString("moods", "[]"),
+                new TypeToken<List<MoodEvent>>(){}.getType());
+
+        if (moodList.isEmpty()) return;
+
+        // Clear local data first to avoid duplicates
+        prefs.edit().putString("moods", "[]").apply();
+
+        for (MoodEvent mood : moodList) {
+            if (!mood.isSynced()) {
+                if (mood.getPhotoUrl() != null && mood.getPhotoUrl().startsWith("local:")) {
+                    uploadLocalImage(new File(mood.getPhotoUrl().substring(6)), mood);
+                } else {
+                    saveMoodToFirestore(mood);
+                }
+            }
+        }
+    }
+
+    private void uploadLocalImage(File imageFile, MoodEvent mood) {
+        if (!imageFile.exists()) {
+            mood.setPhotoUrl(null);
+            saveMoodToFirestore(mood);
             return;
         }
 
-        String fileName = "mood_images/" + moodEvent.getId() + ".jpg";
+        String fileName = "mood_images/" + mood.getId() + ".jpg";
         FirebaseStorage.getInstance().getReference(fileName)
-                .putFile(imageUri)
+                .putFile(Uri.fromFile(imageFile))
                 .addOnSuccessListener(taskSnapshot -> {
                     taskSnapshot.getStorage().getDownloadUrl().addOnSuccessListener(uri -> {
-                        moodEvent.setPhotoUrl(uri.toString());
-                        moodEvent.setSynced(true);
-                        handleFinalMoodSave(moodEvent);
+                        mood.setPhotoUrl(uri.toString());
+                        saveMoodToFirestore(mood);
+                        imageFile.delete();
                     });
                 })
                 .addOnFailureListener(e -> {
-                    if (isNetworkAvailable()) {
-                        moodEvent.setPhotoUrl(null);
-                        handleFinalMoodSave(moodEvent);
-                    } else {
-                        moodEvent.setSynced(false);
-                        saveMoodLocally(moodEvent);
-                        runOnUiThread(() ->
-                                Toast.makeText(this, "save locally! ", Toast.LENGTH_SHORT).show());
-                    }
+                    Log.e("ImageUpload", "Failed to upload local image", e);
+                    saveSingleMoodLocally(mood);
                 });
     }
-    private boolean isNetworkAvailable() {
+
+    private void saveSingleMoodLocally(MoodEvent mood) {
+        SharedPreferences prefs = getSharedPreferences("OfflineMoods", MODE_PRIVATE);
+        Gson gson = new Gson();
+
+        List<MoodEvent> moodList = gson.fromJson(
+                prefs.getString("moods", "[]"),
+                new TypeToken<List<MoodEvent>>(){}.getType());
+
+        moodList.add(mood);
+        prefs.edit().putString("moods", gson.toJson(moodList)).apply();
+    }
+
+    private boolean isOnline() {
         ConnectivityManager connectivityManager =
                 (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (connectivityManager == null) {
-            return false;
-        }
+        if (connectivityManager == null) return false;
 
         Network network = connectivityManager.getActiveNetwork();
-        if (network == null) {
-            return false;
-        }
+        if (network == null) return false;
 
         NetworkCapabilities capabilities = connectivityManager.getNetworkCapabilities(network);
         return capabilities != null &&
                 (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
                         capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR));
     }
-
-    private void handleFinalMoodSave(MoodEvent moodEvent) {
-        if (moodEvent.isSynced()) {
-            saveMoodToFirestore(moodEvent);
-        } else {
-            moodEvent.setPendingOperation("ADD");
-            saveMoodLocally(moodEvent);
-
-            runOnUiThread(() -> {
-                Toast.makeText(this, "save locally, sync after internet", Toast.LENGTH_LONG).show();
-                finishActivityResult(moodEvent);
-            });
-        }
-    }
-    public void syncLocalMoods() {
-        if (!isNetworkAvailable()) {
-            return;
-        }
-
-        SharedPreferences prefs = getSharedPreferences("OfflineMoods", MODE_PRIVATE);
-        String existing = prefs.getString("moods", "[]");
-        Gson gson = new Gson();
-        List<MoodEvent> moodList = gson.fromJson(existing, new TypeToken<List<MoodEvent>>(){}.getType());
-
-        List<MoodEvent> unsyncedMoods = new ArrayList<>();
-        for (MoodEvent mood : moodList) {
-            if (!mood.isSynced()) {
-                unsyncedMoods.add(mood);
-            }
-        }
-
-        // clear alldate
-        prefs.edit().putString("moods", "[]").apply();
-
-        for (MoodEvent mood : unsyncedMoods) {
-            if (mood.getPhotoUrl() != null && mood.getPhotoUrl().startsWith("local:")) {
-                String localPath = mood.getPhotoUrl().substring(6);
-                File imageFile = new File(localPath);
-                if (imageFile.exists()) {
-                    uploadLocalImage(imageFile, mood);
-                } else {
-                    // no photo
-                    mood.setPhotoUrl(null);
-                    saveMoodToFirestore(mood);
-                }
-            } else {
-                saveMoodToFirestore(mood);
-            }
-        }
-    }
-
-    private void uploadLocalImage(File imageFile, MoodEvent mood) {
-        Uri imageUri = Uri.fromFile(imageFile);
-        String fileName = "mood_images/" + mood.getId() + ".jpg";
-
-        FirebaseStorage.getInstance().getReference(fileName)
-                .putFile(imageUri)
-                .addOnSuccessListener(taskSnapshot -> {
-                    taskSnapshot.getStorage().getDownloadUrl().addOnSuccessListener(uri -> {
-                        mood.setPhotoUrl(uri.toString());
-                        mood.setSynced(true);
-                        saveMoodToFirestore(mood);
-                    });
-                })
-                .addOnFailureListener(e -> {
-                    saveSingleMoodLocally(mood);
-                    runOnUiThread(() ->
-                            Toast.makeText(this, "failed uplodaing, save locally", Toast.LENGTH_SHORT).show());
-                });
-    }
-
-//    private void removeSyncedMood(MoodEvent mood) {
-//        SharedPreferences prefs = getSharedPreferences("OfflineMoods", MODE_PRIVATE);
-//        String existing = prefs.getString("moods", "[]");
-//        Gson gson = new Gson();
-//        List<MoodEvent> moodList = gson.fromJson(existing, new TypeToken<List<MoodEvent>>(){}.getType());
-//
-//        moodList.removeIf(m -> m.getId().equals(mood.getId()));
-//        prefs.edit().putString("moods", gson.toJson(moodList)).apply();
-//
-//        if (mood.getPhotoUrl() != null && mood.getPhotoUrl().startsWith("local:")) {
-//            new File(mood.getPhotoUrl().substring(6)).delete();
-//        }
-//    }
-
 }
