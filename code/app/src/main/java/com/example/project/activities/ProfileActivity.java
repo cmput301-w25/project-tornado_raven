@@ -28,6 +28,7 @@ import com.example.project.models.Emotion;
 import com.example.project.models.MoodEvent;
 import com.example.project.R;
 import com.example.project.adapters.MoodHistoryAdapter;
+import com.example.project.utils.MoodSyncManager;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.XAxis;
@@ -90,6 +91,8 @@ public class ProfileActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.my_profile);
+
+        MoodSyncManager.syncOfflineMoods(this);
 
         addMoodLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
