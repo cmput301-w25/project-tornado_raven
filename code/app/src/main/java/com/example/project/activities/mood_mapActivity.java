@@ -38,6 +38,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
@@ -444,6 +445,10 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
                         allMoodEvents.clear();
                         filteredMoodEvents.clear();
                         mMap.clear();
+                        Map<String, Integer> followeeMoodCounts = new HashMap<>();
+                        for (String followee : followeeNames) {
+                            followeeMoodCounts.put(followee, 0);
+                        }
 
                         int loadedCount = 0;
                         for (QueryDocumentSnapshot document : task.getResult()) {
@@ -452,10 +457,14 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
                                     !moodEvent.getLocation().isEmpty() &&
                                     followeeNames.contains(moodEvent.getAuthor()) &&
                                     !Objects.equals(moodEvent.getPrivacyLevel(), "PRIVATE")) {
+                                String author=moodEvent.getAuthor();
+                                if (followeeMoodCounts.get(author) < 3) {
+                                    allMoodEvents.add(moodEvent);
+                                    addMarkerForMoodEvent(moodEvent, true);
+                                    loadedCount++;
+                                    followeeMoodCounts.put(author, followeeMoodCounts.get(author) + 1);
+                                }
 
-                                allMoodEvents.add(moodEvent);
-                                addMarkerForMoodEvent(moodEvent, true);
-                                loadedCount++;
                             }
                         }
 
