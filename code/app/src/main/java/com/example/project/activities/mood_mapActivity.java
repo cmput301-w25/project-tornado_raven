@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
@@ -31,6 +32,8 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -65,6 +68,7 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
     private Button btnClearFilters;
     private LatLng currentUserLocation;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1000;
+    private Circle proximityCircle;
 
     private List<MoodEvent> allMoodEvents = new ArrayList<>();
     private List<MoodEvent> filteredMoodEvents = new ArrayList<>();
@@ -105,6 +109,7 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
         btnFilterNearbyFollowees.setOnClickListener(v -> showNearbyFolloweesRecentMoods());
         loadFolloweeNames();
         toggleFollowees.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            removeProximityCircle();
             if (isChecked) {
                 loadAllFolloweesMoods();
             } else {
@@ -336,6 +341,7 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
      * @param selectedMood filter list on the basis of selected mood.
      */
     private void filterByMood(Emotion selectedMood) {
+        removeProximityCircle();
         filteredMoodEvents.clear();
         for (MoodEvent mood : allMoodEvents) {
             if (mood.getEmotion() == selectedMood) {
@@ -350,6 +356,7 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
      * Filters mood events to only those from the last week.
      */
     private void filterByLastWeek() {
+        removeProximityCircle();
         filteredMoodEvents.clear();
         long oneWeekAgo = System.currentTimeMillis() - (7L * 24 * 60 * 60 * 1000);
 
@@ -366,6 +373,7 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
      * clear filter and display all moods.
      */
     private void clearFilters() {
+        removeProximityCircle();
         filteredMoodEvents.clear();
         filteredMoodEvents.addAll(allMoodEvents);
         updateMapMarkers();
@@ -462,6 +470,17 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
                     }
                 });
     }
+    /**
+     *
+     * Remove the circle made in nearby filter
+     */
+    private void removeProximityCircle() {
+        if (proximityCircle != null) {
+            proximityCircle.remove();
+            proximityCircle = null;
+        }
+    }
+
 
 
     /**
@@ -489,13 +508,23 @@ public class mood_mapActivity extends FragmentActivity implements OnMapReadyCall
                         Toast.makeText(this, "You're not following anyone yet", Toast.LENGTH_SHORT).show();
                         return;
                     }
+                    // Clear previous markers
+                    mMap.clear();
+
+                    // Add the circle (only for nearby followees view)
+                    proximityCircle = mMap.addCircle(new CircleOptions()
+                            .center(currentUserLocation)
+                            .radius(MAX_DISTANCE_KM * 1000)
+                            .strokeColor(Color.argb(50, 70, 70, 70))
+                            .fillColor(Color.argb(40, 200, 230, 255))
+                            .strokeWidth(2f));
 
                     db.collection("MoodEvents")
                             .whereNotEqualTo("location", null)
                             .get()
                             .addOnCompleteListener(task -> {
                                 if (task.isSuccessful()) {
-                                    mMap.clear();
+
                                     Map<String, MoodEvent> latestEvents = new HashMap<>();
 
                                     for (QueryDocumentSnapshot document : task.getResult()) {
