@@ -1,0 +1,38 @@
+[33mfb4395b[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Resolved merge
+[33m3291ed4[m[33m ([m[1;31morigin/AnrajSinghDhanju[m[33m, [m[1;32mAnrajSinghDhanju[m[33m)[m made homescreen as well as added navigation bar to addingmood.xml & editingmood.xml
+[33m63c511a[m Merge pull request #90 from cmput301-w25/RosieWang
+[33m997ed4c[m Completed the basic mood history skeleton and added the corresponding xml files. Next steps: implement data updates, implement user interaction, implement page navigation in the nav_bar
+[33mf907d61[m Merge pull request #89 from cmput301-w25/Chenqi
+[33mccd1f7f[m Add login/register Dialog, Fixed some misnaming
+[33m7d9c12c[m Merge pull request #88 from cmput301-w25/LucyJing
+[33m051e2b2[m[33m ([m[1;31morigin/LucyJing[m[33m)[m Added mood history of followee's screen and updated a xml file for the bottom bar as a whole.
+[33m49f90eb[m Merge pull request #87 from cmput301-w25/Ishan
+[33mfbc3c96[m Emoticons and colour added + home page xml created
+[33m994db2c[m Emoticons and colour added + home page xml created
+[33m89e6ea1[m Database added
+[33m1590a57[m Merge pull request #86 from cmput301-w25/LucyJing
+[33m9e6b5ff[m Merge branch 'main' into LucyJing
+[33m3c5f658[m finished followee screen and follower screen
+[33m4cd5f83[m Merge resolved
+[33mb070326[m updating add and edit mood xml
+[33md0346d0[m Merge pull request #85 from cmput301-w25/JingtaoZhang
+[33m6143f3a[m[33m ([m[1;31morigin/JingtaoZhang[m[33m)[m added 5 icons
+[33mf12174c[m adding xml to mine branch
+[33m05ce887[m Merge pull request #64 from cmput301-w25/Chenqi
+[33meb63512[m Merge pull request #18 from cmput301-w25/RosieWang
+[33ma26009a[m[33m ([m[1;31morigin/RosieWang[m[33m)[m modified readme
+[33m3120301[m[33m ([m[1;31morigin/Chenqi[m[33m)[m Modified a discription in README.md
+[33m31a672f[m Merge pull request #3 from cmput301-w25/AnrajSinghDhanju
+[33m7148d3f[m Update README.md
+[33m11f512c[m Merge pull request #2 from cmput301-w25/AnrajSinghDhanju
+[33m8f5c834[m Update README.md
+[33md5c189b[m Update README.md
+[33m83903cc[m Update README.md
+[33m1ccd35a[m Merge pull request #1 from cmput301-w25/Ishan
+[33m7eba7c6[m[33m ([m[1;31morigin/Ishan[m[33m)[m Ishan Readme
+[33mc51c4bf[m Update README.md
+[33m816d775[m added info to README.md
+[33ma83226d[m Update README.md
+[33me029b38[m Updated my name and group name
+[33m8e162c5[m Create a new project and modified README.md
+[33mf3f2ae1[m Initial commit
