@@ -59,4 +59,7 @@ dependencies {
     annotationProcessor ("com.github.bumptech.glide:compiler:4.15.1")
 
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    androidTestImplementation("androidx.test.espresso:espresso-intents:3.5.1")
+    androidTestImplementation ("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation ("androidx.test.ext:junit:1.1.5")
 }
