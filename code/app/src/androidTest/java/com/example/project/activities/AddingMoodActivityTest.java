@@ -30,17 +30,17 @@ public class AddingMoodActivityTest {
         db = FirebaseFirestore.getInstance();
         CountDownLatch latch = new CountDownLatch(1);
 
-        // Step 1: Look up email by username
+        // Look up email by username
         db.collection("users")
                 .whereEqualTo("username", "test_user_jt")  // Replace with the entered username
                 .limit(1)
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful() && !task.getResult().isEmpty()) {
-                        // Step 2: Get email from Firestore
+                        //  Get email from Firestore
                         String email = task.getResult().getDocuments().get(0).getString("email");
 
-                        // Step 3: Log in with email and password
+                        //  Log in with email and password
                         auth.signInWithEmailAndPassword("test_user_jt@moodapp.com", "LandWhale921")  // Corrected email
                                 .addOnCompleteListener(loginTask -> {
                                     if (!loginTask.isSuccessful()) {
