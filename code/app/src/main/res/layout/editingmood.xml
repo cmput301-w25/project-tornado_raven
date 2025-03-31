@@ -57,7 +57,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Reason (Max 22 char):"
+                android:text="Reason (Max 200 char):"
                 android:textSize="16sp"
                 android:layout_marginTop="10dp" />
 
@@ -66,7 +66,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Enter reason"
-                android:maxLength="22"
+                android:maxLength="200"
                 android:inputType="text"
                 android:background="@android:drawable/edit_text"
                 android:padding="10dp"/>
