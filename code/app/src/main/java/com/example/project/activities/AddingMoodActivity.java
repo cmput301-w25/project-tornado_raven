@@ -385,8 +385,7 @@ public class AddingMoodActivity extends AppCompatActivity {
 
     /**
      *
-     * @param requestCode The request code passed in {@link #requestPermissions(
-     * android.app.Activity, String[], int)}
+     * @param requestCode The request code passed in {@link #requestPermissions(android.app.Activity, String[], int)}
      * @param permissions The requested permissions. Never null.
      * @param grantResults The grant results for the corresponding permissions
      *     which is either {@link android.content.pm.PackageManager#PERMISSION_GRANTED}
@@ -494,7 +493,7 @@ public class AddingMoodActivity extends AppCompatActivity {
 
     private void uploadImageToFirebase(Uri imageUri, MoodEvent moodEvent) {
         if (imageUri == null) {
-            saveMoodToFirestore(moodEvent);
+            handleFinalMoodSave(moodEvent);
             return;
         }
 
@@ -503,15 +502,29 @@ public class AddingMoodActivity extends AppCompatActivity {
                 .putFile(imageUri)
                 .addOnSuccessListener(taskSnapshot -> {
                     taskSnapshot.getStorage().getDownloadUrl().addOnSuccessListener(uri -> {
-                        String downloadUrl = uri.toString();
-                        moodEvent.setPhotoUrl(downloadUrl);
-                        saveMoodToFirestore(moodEvent);
+                        moodEvent.setPhotoUrl(uri.toString());
+                        handleFinalMoodSave(moodEvent);
                     });
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Image upload failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    saveMoodToFirestore(moodEvent);
+                    moodEvent.setSynced(false);
+                    moodEvent.setPendingOperation("ADD");
+                    saveMoodLocally(moodEvent);
+                    handleFinalMoodSave(moodEvent);
+
+                    finishActivityResult(moodEvent);
+
                 });
+    }
+
+    private void handleFinalMoodSave(MoodEvent moodEvent) {
+        if (moodEvent.isSynced()) {
+            saveMoodToFirestore(moodEvent);
+        } else {
+            // You may still want to store it later when reconnected
+            finishActivityResult(moodEvent); // Return to ProfileActivity
+        }
     }
 
 
