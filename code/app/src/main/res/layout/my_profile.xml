@@ -57,8 +57,10 @@
             android:text="Requests"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.811"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0" />
 
         <TextView
             android:id="@+id/follow_request_badge"
@@ -83,6 +85,7 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="16dp"
             app:layout_constraintEnd_toStartOf="@id/follow_request_button"
+            app:layout_constraintStart_toStartOf="parent"
             tools:ignore="MissingConstraints" />
 
         <Button
@@ -185,6 +188,7 @@
         app:layout_constraintBottom_toTopOf="@id/bottomNavigation"
         app:layout_constraintEnd_toEndOf="parent"
         app:tint="@android:color/white" />
+
 
     <!-- Bottom Navigation Toolbar (Anchored at Bottom) -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
