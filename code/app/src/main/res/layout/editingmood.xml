@@ -32,7 +32,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="5dp"
                 android:fontFamily="sans-serif-black"
                 android:text="EDITING MOOD"
                 android:textSize="34sp"
@@ -102,6 +102,54 @@
                 android:inputType="text"
                 android:background="@android:drawable/edit_text"
                 android:padding="10dp"/>
+
+            <!-- Privacy Level -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Privacy:"
+                android:textSize="16sp"
+                android:layout_marginTop="10dp" />
+
+            <Spinner
+                android:id="@+id/privacySpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:drawable/btn_dropdown"
+                android:padding="8dp" />
+            <!-- Photo Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp">
+
+                <!-- ImageView -->
+                <ImageView
+                    android:id="@+id/photoImageView"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:scaleType="centerCrop"
+                    android:background="@android:color/darker_gray"
+                    android:contentDescription="Photo preview"
+                    android:layout_marginEnd="10dp" />
+
+                <!-- Button -->
+                <Button
+                    android:id="@+id/changePhotoBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Change Photo" />
+
+            </LinearLayout>
+            <TextView
+                android:id="@+id/photoUrlText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#555"
+                android:textSize="12sp"
+                android:layout_marginTop="8dp" />
+
 
             <!-- Save and Cancel Buttons (Side by Side) -->
             <LinearLayout

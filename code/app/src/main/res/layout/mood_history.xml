@@ -18,56 +18,11 @@
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginBottom="16dp"/>
 
-    <!-- Filter Buttons (Horizontal) -->
-    <LinearLayout
-        android:id="@+id/layoutMoodHistoryFilters"
-        app:layout_constraintTop_toBottomOf="@id/textMoodHistoryTitle"
-        android:layout_width="368dp"
-        android:layout_height="83dp"
-        android:gravity="center"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:layout_editor_absoluteY="48dp">
-
-        <Button
-            android:id="@+id/btnShowLastMonth"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/btn_show_last_week" />
-
-        <Button
-            android:id="@+id/btnFilterByType"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="@string/btn_filter_by_mood" />
-
-<!--        <Button-->
-<!--            android:id="@+id/btnClearFilters"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_marginStart="8dp"-->
-<!--            android:padding="8dp"-->
-<!--            android:text="@string/btn_clear_filters" />-->
-    </LinearLayout>
-
-    <!-- RecyclerView for Moods from Followees -->
-    <Button
-        android:id="@+id/btnSearchKeyword"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/btn_filter_by_keyword"
-        app:layout_constraintBottom_toTopOf="@id/recyclerMoodHistory"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/layoutMoodHistoryFilters" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerMoodHistory"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@+id/btnSearchKeyword"
         app:layout_constraintBottom_toTopOf="@+id/bottomNavigation"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

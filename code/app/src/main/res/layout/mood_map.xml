@@ -1,83 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MoodMapActivity">
+    android:layout_height="match_parent">
 
     <!-- Google Map -->
     <fragment
         android:id="@+id/map"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@+id/filterContainer"
+        android:layout_above="@id/bottomNavigation"
         android:name="com.google.android.gms.maps.SupportMapFragment" />
 
-    <!-- Filters -->
+    <!-- Top Filter Buttons - Improved but consistent -->
     <LinearLayout
+        android:id="@+id/filterContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:background="#88000000"
         android:orientation="horizontal"
+        android:padding="8dp"
+        android:gravity="center_vertical">
+
+        <Button
+            android:id="@+id/btnNearbyFollowees"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:layout_marginHorizontal="4dp"
+            android:backgroundTint="#FF9800"
+            android:text="Nearby"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/btnFilterByEmotion"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:layout_marginHorizontal="4dp"
+            android:backgroundTint="#4CAF50"
+            android:text=" Filter by Emotion"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/btnFilterByDate"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:layout_marginHorizontal="4dp"
+            android:backgroundTint="#2196F3"
+            android:text="Last week"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/btnClearFilters"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:layout_marginHorizontal="4dp"
+            android:backgroundTint="#F44336"
+            android:text="Clear"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <!-- Toggle Button -->
+    <ToggleButton
+        android:id="@+id/toggleViewMode"
+        android:layout_width="100dp"
+        android:layout_height="40dp"
+        android:layout_below="@id/filterContainer"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:textColor="@color/fear"
+        android:background="@color/ripple_white"
+        android:textOff="My Moods"
+        android:textOn="Followees Moods"
+        android:textSize="12sp" />
+
+    <!-- Bottom Navigation -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:gravity="center"
-        android:background="#DDDDDD"
-        android:padding="10dp">
+        android:background="?android:attr/windowBackground"
+        app:menu="@menu/menu_bottom_navigation"
+        app:labelVisibilityMode="labeled"
+        app:itemHorizontalTranslationEnabled="false" />
 
-        <Button
-            android:id="@+id/btnFilterHistory"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Filter: My History" />
-
-        <Button
-            android:id="@+id/btnFilterFollowing"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Filter: Following"
-            android:layout_marginLeft="10dp" />
-
-        <Button
-            android:id="@+id/btnFilterNearby"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Filter: Nearby"
-            android:layout_marginLeft="10dp" />
-    </LinearLayout>
-
-    <!-- Zoom Controls -->
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="60dp">
-
-        <Button
-            android:id="@+id/btnZoomIn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Zoom In" />
-
-        <Button
-            android:id="@+id/btnZoomOut"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Zoom Out"
-            android:layout_marginLeft="10dp" />
-    </LinearLayout>
-
-    <!-- Mood Description -->
-    <TextView
-        android:id="@+id/moodDescription"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="The mood of Wendy.Pleakley is (Party)"
-        android:textSize="16sp"
-        android:textColor="#333333"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="100dp"
-        android:background="#E0E0E0"
-        android:padding="10dp" />
 </RelativeLayout>

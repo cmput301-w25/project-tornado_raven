@@ -1,137 +1,129 @@
 package com.example.project.adapters;
 
+import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import com.example.project.R;
 
-import java.util.ArrayList;
+import com.example.project.R;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
 import java.util.List;
 
+
 /**
- * Displays a simple list of followees or followed mood data.
- * Each item can show "Username" + "Unfollow" (or other logic).
+ * adapter for displaying the users that the current user is following.
+ * provide functionality to view their profile and also unfollow them.
  */
 public class FolloweesAdapter extends RecyclerView.Adapter<FolloweesAdapter.FolloweeViewHolder> {
 
-    private List<String> originalList;
-    private List<String> displayedList; // Filtered data
-
-    private OnItemActionListener itemActionListener;
-
-    public FolloweesAdapter(List<String> dataList, OnItemActionListener listener) {
-        /*this.dataList = dataList;*/
-        this.originalList = new ArrayList<>(dataList); // Keep a copy of all moods
-        this.displayedList = new ArrayList<>(dataList); // This is the list that changes on filtering
-        this.itemActionListener = listener;
-
-    }
+    private List<String> followees;
+    private Context context;
+    private String currentUsername;
 
     /**
-     * Creates a new ViewHolder for a followee item.
-     * This is called when a new item view is required for the RecyclerView.
      *
-     * @param parent The parent ViewGroup that the new item will be added to.
-     * @param viewType The type of view for the new item.
-     * @return A new FolloweeViewHolder instance.
+     * @param context The context where the adapter is used.
+     * @param followees The list of usernames the user is following.
+     * @param currentUsername The username of the currently logged-in user.
+     */
+    public FolloweesAdapter(Context context, List<String> followees, String currentUsername) {
+        this.context = context;
+        this.followees = followees;
+        this.currentUsername = currentUsername;
+    }
+
+
+    /**
+     *
+     * @param parent The ViewGroup into which the new View will be added after it is bound to
+     *               an adapter position.
+     * @param viewType The view type of the new View.
+     *
+     * @return A new instance of FolloweeViewHolder.
      */
     @NonNull
     @Override
     public FolloweeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Reuse item_user_followed.xml
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_user_followed, parent, false);
+                .inflate(R.layout.item_following_user, parent, false);
         return new FolloweeViewHolder(view);
     }
 
     /**
-     * Binds the data of a followee to the corresponding ViewHolder.
-     * This is called for each item in the RecyclerView.
      *
-     * @param holder The ViewHolder to bind data to.
-     * @param position The position of the item in the list.
+     * @param holder The ViewHolder which should be updated to represent the contents of the
+     *        item at the given position in the data set.
+     * @param position The position of the item within the adapter's data set.
      */
+
     @Override
     public void onBindViewHolder(@NonNull FolloweeViewHolder holder, int position) {
-        String data = originalList.get(position);
+        String followee = followees.get(position);
+        holder.textView.setText(followee);
 
-        // If data is "Username: Mood", let's parse it
-        // or we simply show "Username" as first word
-        // This is just a simple demonstration:
-        if (data.contains(":")) {
-            String[] parts = data.split(":");
-            holder.textFollowedUserName.setText(parts[0].trim());
-
-            if (parts.length > 1) {
-                holder.textFollowedUserMood.setText(parts[1].trim());
-            } else {
-                holder.textFollowedUserMood.setText("(No mood provided)");
-            }
-        } else {
-            // If there's no colon, treat entire string as a username
-            holder.textFollowedUserName.setText(data);
-            holder.textFollowedUserMood.setText("(No mood provided)");
-        }
-
-        // "Unfollow" or "Remove" button
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, com.example.project.activities.ProfileActivity.class);
+            intent.putExtra("userName", followee);
+            context.startActivity(intent);
+        });
+        // unfollow btn logic.
         holder.btnUnfollow.setOnClickListener(v -> {
-            if (itemActionListener != null) {
-                itemActionListener.onItemAction(position);
-            }
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+            db.collection("Follows")
+                    .whereEqualTo("followerUsername", currentUsername)
+                    .whereEqualTo("followedUsername", followee)
+                    .get()
+                    .addOnSuccessListener(querySnapshots -> {
+                        for (QueryDocumentSnapshot doc : querySnapshots) {
+                            db.collection("Follows").document(doc.getId()).delete();
+                        }
+
+                        followees.remove(position);
+                        notifyItemRemoved(position);
+                        Toast.makeText(context, "Unfollowed " + followee, Toast.LENGTH_SHORT).show();
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(context, "Unfollow failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
         });
     }
 
+
+    /**
+     *
+     * @return the number of followees.
+     */
     @Override
     public int getItemCount() {
-        return displayedList.size();
+        return followees.size();
     }
 
     /**
-     * Updates the list dynamically when filtering by Mood or Keyword.
+     * ViewHolder for holding views related to a followee item.
      */
-    public void updateList(List<String> newList) {
-        displayedList.clear();
-        displayedList.addAll(newList);
-        notifyDataSetChanged();
-    }
-
-    /**
-     * Resets the list to show all moods.
-     */
-    public void resetList() {
-        displayedList.clear();
-        displayedList.addAll(originalList);
-        notifyDataSetChanged();
-    }
-
-    /**
-     * ViewHolder class for holding views related to each followee item.
-     */
-    public static class FolloweeViewHolder extends RecyclerView.ViewHolder {
-        TextView textFollowedUserName, textFollowedUserMood;
+    static class FolloweeViewHolder extends RecyclerView.ViewHolder {
+        TextView textView;
         Button btnUnfollow;
 
         /**
-         * Constructor that initializes the views for each item in the RecyclerView.
          *
-         * @param itemView The item view that contains the followee information.
+         * @param itemView the item view representing a single followee.
          */
-        public FolloweeViewHolder(@NonNull View itemView) {
+        FolloweeViewHolder(@NonNull View itemView) {
             super(itemView);
-            textFollowedUserName = itemView.findViewById(R.id.textFollowedUserName);
-            textFollowedUserMood = itemView.findViewById(R.id.textFollowedUserMood);
-            btnUnfollow = itemView.findViewById(R.id.btnUnfollow);
+            textView = itemView.findViewById(R.id.textFolloweeName);
+            btnUnfollow = itemView.findViewById(R.id.btnRemoveFollowee);
         }
     }
-
-    /**
-     * Interface to handle followed/unfollowed actions on an item in the list.
-     */
-    public interface OnItemActionListener {
-        void onItemAction(int position);
-    }
 }
+

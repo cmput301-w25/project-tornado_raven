@@ -5,15 +5,20 @@
 
     <!-- Bottom Navigation Items (Left to Right) -->
     <string name="nav_common_space">Common Space</string>
-    <string name="nav_followed_moods">Followed Moods</string>
-    <string name="nav_my_mood_history">My Mood History</string>
+    <string name="nav_following_users">Followings</string>
     <string name="nav_mood_map">Mood Map</string>
-    <string name="nav_profile">My Profile</string>
+    <string name="nav_profile">Profile</string>
+    <string name="my_map_api_key">AIzaSyAlVnYd5KzVH50RWK8MkmFLSbf5SL3A1_Y</string>
+
+
+
+    <string name="nav_followees_moods">Followees Moods</string>
+
 
     <!-- Screens / Titles -->
     <string name="title_common_space">Common Space</string>
-    <string name="title_followed_moods">Followed Moods</string>
     <string name="mood_history">Mood History</string>
+    <string name="title_followees_moods">Moods from users you are following...</string>
 
     <!-- Filter Buttons / Actions -->
     <string name="btn_show_last_week">Show Last Week</string>
@@ -26,7 +31,10 @@
     <string name="btn_show_pending_requests">Show Pending Follow Requests</string>
     <string name="btn_details">Details</string>
 
-
+    <string-array name="locationchoice">
+        <item>No</item>
+        <item>Yes</item>
+    </string-array>
     <!-- spinner item-->
     <string-array name="choices">
         <item>ANGER</item>
@@ -46,6 +54,18 @@
             <item>With one other person</item>
             <item>With two to several people</item>
             <item>With a crowd</item>
+    </string-array>
+
+    <string-array name="privacy_levels">
+        <item>Public (All Users)</item>
+        <item>Followers Only</item>
+        <item>Private</item>
+    </string-array>
+
+    <string-array name="privacy_values">
+        <item>ALL_USERS</item>
+        <item>FOLLOWERS_ONLY</item>
+        <item>PRIVATE</item>
     </string-array>
 
 

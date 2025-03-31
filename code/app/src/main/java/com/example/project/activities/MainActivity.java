@@ -1,7 +1,6 @@
 package com.example.project.activities;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -10,8 +9,11 @@ import com.google.firebase.FirebaseApp;
 
 /**
  * Main activity of the application. This activity is responsible for handling
- * the bottom navigation menu and checking if the user is logged in.
- */
+ * <ul>
+ *     <li>Firebase initialization</li>
+ *     <li>Checking if a user is logged in</li>
+ *     <li>Navigation to other activities using the bottom navigation bar</li>
+ * </ul> */
 public class MainActivity extends AppCompatActivity {
 
     /**
@@ -25,17 +27,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         FirebaseApp.initializeApp(this);
-
-        // Check login status before setting up Bottom Navigation
+        //redirect to login if not logged in.
         if (!isUserLoggedIn()) {
             startActivity(new Intent(this, LoginActivity.class));
-            finish(); // Close MainActivity so the user can't go back without logging in
+            finish(); //prevent back navigation.
             return;
         }
 
         // Initialize and set up the BottomNavigationView
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
-        bottomNavigationView.setSelectedItemId(R.id.nav_my_mood_history); // Highlight the correct tab
+        bottomNavigationView.setSelectedItemId(R.id.nav_following_users); // Highlight the correct tab
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
@@ -45,17 +46,17 @@ public class MainActivity extends AppCompatActivity {
                 overridePendingTransition(0, 0);
                 finish();
                 return true;
-            } else if (id == R.id.nav_followed_moods && !isCurrentActivity(FollowedMoodsActivity.class)) {
-                startActivity(new Intent(this, FollowedMoodsActivity.class));
+            } else if (id == R.id.nav_followees_moods && !isCurrentActivity(FolloweesMoodsActivity.class)) {
+                startActivity(new Intent(this, FolloweesMoodsActivity.class));
                 overridePendingTransition(0, 0);
                 finish();
                 return true;
-            } else if (id == R.id.nav_my_mood_history && !isCurrentActivity(MoodHistoryActivity.class)) {
-                startActivity(new Intent(this, MoodHistoryActivity.class));
+            } else if (id == R.id.nav_following_users && !isCurrentActivity(FollowingUsersActivity.class)) {
+                startActivity(new Intent(this, FollowingUsersActivity.class));
                 overridePendingTransition(0, 0);
                 finish();
                 return true;
-            } else if (id == R.id.nav_profile && !isCurrentActivity(UsersFollowedActivity.class)) {
+            } else if (id == R.id.nav_profile && !isCurrentActivity(FolloweesMoodsActivity.class)) {
                 startActivity(new Intent(this, ProfileActivity.class));
                 overridePendingTransition(0, 0);
                 finish();
@@ -66,13 +67,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Checks if the user is logged in by reading the shared preferences.
-     *
+     * Checks if the user is logged.
      * @return true if the user is logged in, false otherwise.
      */
     private boolean isUserLoggedIn() {
-//        SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
-//        return prefs.getBoolean("is_logged_in", false);
         return false;
     }
 

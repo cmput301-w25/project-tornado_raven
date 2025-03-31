@@ -5,7 +5,8 @@
     <!-- Permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -38,19 +39,28 @@
             android:name=".activities.EditMoodActivity"
             android:exported="true" />
 
-        <!-- Followed Moods Activity -->
-        <activity android:name=".activities.FollowedMoodsActivity" />
-
-        <!-- Mood History Activity -->
-        <activity android:name=".activities.MoodHistoryActivity" />
         <activity android:name=".activities.AddingMoodActivity"/>
 
         <activity android:name=".activities.ProfileActivity" />
 
+        <!-- FolloweesMoods Activity -->
+        <activity android:name=".activities.FolloweesMoodsActivity" />
 
+
+        <!-- FollowingUsers Activity -->
+        <activity android:name=".activities.FollowingUsersActivity" />
 
         <!-- Common Space -->
         <activity android:name=".activities.CommonSpaceActivity" />
+        <activity android:name=".activities.mood_mapActivity" />
+
+        <activity android:name=".activities.FollowRequest" />
+
+        <!-- Comment Activity-->
+        <activity android:name=".activities.CommentActivity" />
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/my_map_api_key" />
 
 
     </application>

@@ -21,13 +21,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * LoginActivity handles user authentication, including login and registration.
+ * LoginActivity handles user authentication
+ * including login and registration.
  */
 public class LoginActivity extends AppCompatActivity {
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private CollectionReference userRef = db.collection("users");
 
+    /**
+     * called when activity is created
+     * @param savedInstanceState Tha saved instance state of the activity.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,19 +85,19 @@ public class LoginActivity extends AppCompatActivity {
             validateLogin(username, password, new LoginCallback() {
                 @Override
                 public void onSuccess() {
-                    // Store user profile by using SharedPreferences
+                    // Save login info in SharedPreferences
                     SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
                     SharedPreferences.Editor editor = prefs.edit();
                     editor.putBoolean("is_logged_in", true);
-                    editor.putString("username", username); // store username (unique)
-                    editor.putString("password", password); // store the password
-                    editor.apply(); // save changes
+                    editor.putString("username", username);
+                    editor.putString("password", password);
+                    editor.apply();
 
                     Toast.makeText(LoginActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
 
-                    // Launch the home page: MoodHistoryActivity
-                    Intent intent = new Intent(LoginActivity.this, MoodHistoryActivity.class);
+                    // Launch the home page (CommonSpace)
+                    Intent intent = new Intent(LoginActivity.this, CommonSpaceActivity.class);
                     startActivity(intent);
 
                     finish();
@@ -200,6 +205,11 @@ public class LoginActivity extends AppCompatActivity {
         void onSuccess(String docId);
         void onFailure(String errorMessage);
     }
+
+    /**
+     * SAVE the logged-in user's documenr ID to shared preferences.
+     * @param userId
+     */
     private void saveUserIdToPreferences(String userId) {
         getSharedPreferences("UserPrefs", MODE_PRIVATE)
                 .edit()

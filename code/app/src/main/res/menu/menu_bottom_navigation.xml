@@ -12,16 +12,16 @@
 
     <!-- 2) Followed Moods -->
     <item
-        android:id="@+id/nav_followed_moods"
-        android:title="@string/nav_followed_moods"
+        android:id="@+id/nav_followees_moods"
+        android:title="@string/nav_followees_moods"
         android:icon="@drawable/ic_mood"
         app:showAsAction="always" />
 
-    <!-- 3) My Mood History -->
+    <!-- 3) Following Users -->
     <item
-        android:id="@+id/nav_my_mood_history"
-        android:title="@string/nav_my_mood_history"
-        android:icon="@drawable/ic_history"
+        android:id="@+id/nav_following_users"
+        android:title="@string/nav_following_users"
+        android:icon="@drawable/ic_handshakes"
         app:showAsAction="always" />
 
     <!-- 4) Mood Map -->
